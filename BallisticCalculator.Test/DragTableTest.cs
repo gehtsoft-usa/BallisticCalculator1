@@ -8,7 +8,7 @@ namespace BallisticCalculator.Test
 {
     public class DragTableTest
     {
-        private void TestDataPoint(DragTableNode dataPoint, DragTable table, ref int counter)
+        private void TestDataPoint(DragTableNode dataPoint, DragTable table)
         {
             var node = table.Find(dataPoint.Mach + 0.01);
             node.Should().NotBeNull();
@@ -19,22 +19,6 @@ namespace BallisticCalculator.Test
             node.CalculateDrag(dataPoint.Mach).Should().BeApproximately(dataPoint.DragCoefficient, 1e-7);
             if (node.Next != null)
                 node.CalculateDrag(node.Next.Mach).Should().BeApproximately(node.Next.DragCoefficient, 1e-7);
-
-            if (node.Previous != null && node.Next != null && node.Next.Next != null)
-            {
-                //if we are not on the apex of the drag curve
-                if ((node.Previous.DragCoefficient < node.DragCoefficient && node.DragCoefficient < node.Next.DragCoefficient && node.Next.DragCoefficient < node.Next.Next.DragCoefficient) ||
-                    (node.Previous.DragCoefficient > node.DragCoefficient && node.DragCoefficient > node.Next.DragCoefficient && node.Next.DragCoefficient > node.Next.Next.DragCoefficient))
-                {
-                    //the drag of the velocity in the middle must be between borders
-                    double m = (node.Mach + node.Next.Mach) / 2;
-                    double min = Math.Min(node.DragCoefficient, node.Next.DragCoefficient);
-                    double max = Math.Max(node.DragCoefficient, node.Next.DragCoefficient);
-                    node.CalculateDrag(m).Should().BeInRange(min, max);
-                    counter++;
-                }
-            }
-
         }
 
         [Theory]
@@ -51,9 +35,8 @@ namespace BallisticCalculator.Test
             for (int i = 0; i < table.Count; i++)
             {
                 var dataPoint = table[i];
-                TestDataPoint(dataPoint, table, ref counter);
+                TestDataPoint(dataPoint, table);
             }
-            counter.Should().BeGreaterOrEqualTo(table.Count / 2);
         }
     }
 
