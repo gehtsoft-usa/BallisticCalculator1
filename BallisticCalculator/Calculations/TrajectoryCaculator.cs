@@ -59,9 +59,11 @@ namespace BallisticCalculator
                 Measurement<DistanceUnit> maximumRange = rangeTo;
                 Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000, DistanceUnit.Meter);
                 DragTableNode dragTableNode = null;
-                var earthGravity = new Measurement<AccelerationUnit>(1, AccelerationUnit.EarthGravity);
 
-                double ballisicFactor = 2.08551e-04 / ammunition.BallisticCoefficient.Value;
+                double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
+                double ballisicFactor = 2.08551e-04 * adjustBallisticFactorForVelocityUnits / ammunition.BallisticCoefficient.Value;
+                var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare), 
+                                                                  VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
                 //run all the way down the range
                 while (rangeVector.X <= maximumRange)
@@ -90,14 +92,12 @@ namespace BallisticCalculator
                     while (dragTableNode.Previous.Mach > currentMach)
                         dragTableNode = dragTableNode.Previous;
 
-                    drag = ballisicFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.In(VelocityUnit.FeetPerSecond);
+                    drag = ballisicFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
 
                     velocityVector = new Vector<VelocityUnit>(
-                        velocityVector.X - deltaTime.TotalSeconds * drag * velocityVector.X.To(VelocityUnit.FeetPerSecond),
-                        velocityVector.Y - deltaTime.TotalSeconds * drag * velocityVector.Y.To(VelocityUnit.FeetPerSecond)
-                                         - new Measurement<VelocityUnit>(deltaTime.TotalSeconds * earthGravity.In(AccelerationUnit.MeterPerSecondSquare), 
-                                                                         VelocityUnit.MetersPerSecond),
-                        velocityVector.Z - deltaTime.TotalSeconds * drag * velocityVector.Z.To(VelocityUnit.FeetPerSecond));
+                        velocityVector.X - deltaTime.TotalSeconds * drag * velocityVector.X,
+                        velocityVector.Y - deltaTime.TotalSeconds * drag * velocityVector.Y - earthGravity * deltaTime.TotalSeconds,
+                        velocityVector.Z - deltaTime.TotalSeconds * drag * velocityVector.Z);
 
 
                     var deltaRangeVector = new Vector<DistanceUnit>(calculationStep,
@@ -155,6 +155,9 @@ namespace BallisticCalculator
             if (shot.ShotAngle != null)
                 barrelElevation += shot.ShotAngle.Value;
 
+            Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
+            TimeSpan time = new TimeSpan(0);
+
             int currentWind = 0;
             Measurement<DistanceUnit> nextWindRange = new Measurement<DistanceUnit>(1e7, DistanceUnit.Meter);
             Vector<VelocityUnit> windVector;
@@ -164,12 +167,10 @@ namespace BallisticCalculator
             {
                 if (wind.Length > 1 && wind[0].MaximumRange != null)
                     nextWindRange = wind[0].MaximumRange.Value;
-                windVector = WindVector(shot, wind[0]);
+                windVector = WindVector(shot, wind[0], velocity.Unit);
             }
-
-
-            Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
-            TimeSpan time = new TimeSpan(0);
+            
+            
 
             //x - distance towards target,
             //y - drop and
@@ -183,17 +184,19 @@ namespace BallisticCalculator
                                                           velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Sin(barrelAzimuth));
 
             int currentItem = 0;
-            Measurement<DistanceUnit> maximumRange = rangeTo;
+            Measurement<DistanceUnit> maximumRange = rangeTo + calculationStep;
             Measurement<DistanceUnit> nextRangeDistance = new Measurement<DistanceUnit>(0, DistanceUnit.Meter);
 
             Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000, DistanceUnit.Meter);
             DragTableNode dragTableNode = null;
-            var earthGravity = new Measurement<AccelerationUnit>(1, AccelerationUnit.EarthGravity);
-
-            double ballisicFactor = 2.08551e-04 / ammunition.BallisticCoefficient.Value;
+            
+            double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
+            double ballisicFactor = 2.08551e-04 * adjustBallisticFactorForVelocityUnits / ammunition.BallisticCoefficient.Value;
+            var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
+                                                                  VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
             //run all the way down the range
-            while (rangeVector.X <= maximumRange + calculationStep)
+            while (rangeVector.X <= maximumRange)
             {
                 Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
                 
@@ -210,7 +213,7 @@ namespace BallisticCalculator
                 if (rangeVector.X >= nextWindRange)
                 {
                     currentWind++;
-                    windVector = WindVector(shot, wind[currentWind]);
+                    windVector = WindVector(shot, wind[currentWind], velocity.Unit);
 
                     if (currentWind == wind.Length - 1 || wind[currentWind].MaximumRange == null)
                         nextWindRange = new Measurement<DistanceUnit>(1e7, DistanceUnit.Meter);
@@ -222,7 +225,7 @@ namespace BallisticCalculator
                 {
                     var windage = rangeVector.Z;
                     if (calculateDrift)
-                        windage += new Measurement<DistanceUnit>((1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1)), DistanceUnit.Inch);
+                        windage += new Measurement<DistanceUnit>((1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? 1 : -1)), DistanceUnit.Inch);
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
@@ -256,14 +259,13 @@ namespace BallisticCalculator
                 while (dragTableNode.Mach > currentMach)
                     dragTableNode = dragTableNode.Previous;
 
-                drag = ballisicFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.In(VelocityUnit.FeetPerSecond);
+                drag = ballisicFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
 
                 velocityVector = new Vector<VelocityUnit>(
-                    velocityVector.X - deltaTime.TotalSeconds * drag * velocityAdjusted.X.To(VelocityUnit.FeetPerSecond),
-                    velocityVector.Y - deltaTime.TotalSeconds * drag * velocityAdjusted.Y.To(VelocityUnit.FeetPerSecond)
-                                     - new Measurement<VelocityUnit>(deltaTime.TotalSeconds * earthGravity.In(AccelerationUnit.MeterPerSecondSquare),
-                                                                     VelocityUnit.MetersPerSecond),
-                    velocityVector.Z - deltaTime.TotalSeconds * drag * velocityAdjusted.Z.To(VelocityUnit.FeetPerSecond));
+                    velocityVector.X - deltaTime.TotalSeconds * drag * velocityAdjusted.X,
+                    velocityVector.Y - deltaTime.TotalSeconds * drag * velocityAdjusted.Y
+                                     - earthGravity * deltaTime.TotalSeconds,
+                    velocityVector.Z - deltaTime.TotalSeconds * drag * velocityAdjusted.Z);
 
 
                 var deltaRangeVector = new Vector<DistanceUnit>(calculationStep,
@@ -291,7 +293,7 @@ namespace BallisticCalculator
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector<VelocityUnit> WindVector(ShotParameters shot, Wind wind)
+        private static Vector<VelocityUnit> WindVector(ShotParameters shot, Wind wind, VelocityUnit units)
         {
             double sightCosine = MeasurementMath.Cos(shot.SightAngle);
             double sightSine = MeasurementMath.Sin(shot.SightAngle);
@@ -302,13 +304,13 @@ namespace BallisticCalculator
 
             if (wind != null)
             {
-                rangeVelocity = wind.Velocity * MeasurementMath.Cos(wind.Direction);
-                crossComponent = wind.Velocity * MeasurementMath.Sin(wind.Direction);
+                rangeVelocity = (wind.Velocity * MeasurementMath.Cos(wind.Direction)).To(units);
+                crossComponent = (wind.Velocity * MeasurementMath.Sin(wind.Direction)).To(units);
             }
             else
             {
-                rangeVelocity = wind.Velocity;
-                crossComponent = new Measurement<VelocityUnit>(0, VelocityUnit.MetersPerSecond);
+                rangeVelocity = wind.Velocity.To(units);
+                crossComponent = new Measurement<VelocityUnit>(0, units);
             }
             
             Measurement<VelocityUnit> rangeFactor = -rangeVelocity * sightSine;

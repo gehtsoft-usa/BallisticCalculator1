@@ -5,8 +5,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="resources\g1_nowind.txt" />
+    <None Remove="resources\g1_twist.txt" />
+    <None Remove="resources\g1_wind.txt" />
+    <None Remove="resources\g1_wind_cold.txt" />
+    <None Remove="resources\g1_wind_hot.txt" />
+    <None Remove="resources\g7_nowind.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="resources\g1_twist.txt" />
+    <EmbeddedResource Include="resources\g7_nowind.txt" />
+    <EmbeddedResource Include="resources\g1_nowind.txt" />
+    <EmbeddedResource Include="resources\g1_wind_cold.txt" />
+    <EmbeddedResource Include="resources\g1_wind_hot.txt" />
+    <EmbeddedResource Include="resources\g1_wind.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="NReco.Csv" Version="1.0.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
