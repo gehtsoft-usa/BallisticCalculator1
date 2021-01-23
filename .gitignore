@@ -1,0 +1,11 @@
+bin/
+obj/
+.nuget/
+.vs/
+.vscode/
+TestResults/
+**/doc/dst/**/*
+**/doc/src/raw/**/*
+*.csproj.user
+*.nupkg
+nuget/*.nuspec

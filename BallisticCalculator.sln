@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BallisticCalculator", "BallisticCalculator\BallisticCalculator.csproj", "{C4E7751E-DCCE-4A24-88E1-75543BF9870D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BallisticCalculator.Test", "BallisticCalculator.Test\BallisticCalculator.Test.csproj", "{15E9136D-771C-46A4-A95B-D870E82C7EA1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4E7751E-DCCE-4A24-88E1-75543BF9870D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4E7751E-DCCE-4A24-88E1-75543BF9870D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4E7751E-DCCE-4A24-88E1-75543BF9870D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4E7751E-DCCE-4A24-88E1-75543BF9870D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15E9136D-771C-46A4-A95B-D870E82C7EA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15E9136D-771C-46A4-A95B-D870E82C7EA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15E9136D-771C-46A4-A95B-D870E82C7EA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15E9136D-771C-46A4-A95B-D870E82C7EA1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		        SolutionGuid = {1DB720A6-F8F3-459A-B73B-7B427A562420}
+		                        SolutionGuid = {08DCD22C-F051-46F7-B091-A7FA54E2A4FD}
+		                SolutionGuid = {AAE7D1C7-ADD5-4A4F-AE8E-445215839359}
+		SolutionGuid = {F8409515-AAAA-459A-8661-F651BF9FF1F1}
+	EndGlobalSection
+EndGlobal

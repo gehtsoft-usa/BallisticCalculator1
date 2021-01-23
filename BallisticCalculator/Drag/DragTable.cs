@@ -1,0 +1,135 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace BallisticCalculator
+{
+    /// <summary>
+    /// A drag table
+    /// </summary>
+    public abstract class DragTable
+    {
+        private static DragTable gG1;
+        private static DragTable gG2;
+        private static DragTable gG5;
+        private static DragTable gG6;
+        private static DragTable gG7;
+        private static DragTable gG8;
+        private static DragTable gGI;
+        private static DragTable gGS;
+
+
+        /// <summary>
+        /// Returns the drag table by its identifier
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static DragTable Get(DragTableId id)
+        {
+            switch (id)
+            {
+                case DragTableId.G1:
+                    return gG1 ?? (gG1 = new G1DragTable());
+                case DragTableId.G2:
+                    return gG2 ?? (gG2 = new G2DragTable());
+                case DragTableId.G5:
+                    return gG5 ?? (gG5 = new G5DragTable());
+                case DragTableId.G6:
+                    return gG6 ?? (gG6 = new G6DragTable());
+                case DragTableId.G7:
+                    return gG7 ?? (gG7 = new G7DragTable());
+                case DragTableId.G8:
+                    return gG8 ?? (gG8 = new G8DragTable());
+                case DragTableId.GI:
+                    return gGI ?? (gGI = new GIDragTable());
+                case DragTableId.GS:
+                    return gGS ?? (gGS = new GSDragTable());
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(id));
+            }
+        }
+
+        public abstract DragTableId TableId {get;}
+
+        /// <summary>
+        /// Returns the number of drag table nodes
+        /// </summary>
+        public int Count => mNodes.Length;
+
+        /// <summary>
+        /// Returns the drag table node by its index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public DragTableNode this[int index] => mNodes[index];
+
+        private DragTableNode[] mNodes;
+
+        /// <summary>
+        /// Parameterized constructor
+        ///
+        /// This class based on original JavaScript solution by Alexandre Trofimov
+        /// </summary>
+        /// <param name="points">The data points. The points must be pre-sorted in ascending order by Mach field</param>
+        internal DragTable(DragTableDataPoint[] points)
+        {
+            int numpts = points.Length;
+            mNodes = new DragTableNode[numpts];
+            double rate = (points[1].DragCoefficient - points[0].DragCoefficient) / (points[1].Mach - points[0].Mach);
+            mNodes[0] = new DragTableNode(points[0].Mach, points[0].DragCoefficient, 0, rate, points[0].DragCoefficient - points[0].Mach * rate, null);
+
+            // rest as 2nd degree polynomials on three adjacent points
+            for (int i = 1; i < numpts - 1; i++)
+            {
+                double x1 = points[i - 1].Mach;
+                double x2 = points[i].Mach;
+                double x3 = points[i + 1].Mach;
+
+                double y1 = points[i - 1].DragCoefficient;
+                double y2 = points[i].DragCoefficient;
+                double y3 = points[i + 1].DragCoefficient;
+
+                double a = ((y3 - y1) * (x2 - x1) - (y2 - y1) * (x3 - x1)) / ((x3 * x3 - x1 * x1) * (x2 - x1) - (x2 * x2 - x1 * x1) * (x3 - x1));
+                double b = (y2 - y1 - a * (x2 * x2 - x1 * x1)) / (x2 - x1);
+                double c = y1 - (a * x1 * x1 + b * x1);
+
+                mNodes[i] = new DragTableNode(points[i].Mach, points[i].DragCoefficient, a, b, c, mNodes[i - 1]);
+            }
+            rate = (points[numpts - 1].DragCoefficient - points[numpts - 2].DragCoefficient) / (points[numpts - 1].Mach - points[numpts - 2].Mach);
+            mNodes[numpts - 1] = new DragTableNode(points[numpts - 1].Mach, points[numpts - 1].DragCoefficient, 0, rate, points[numpts - 1].DragCoefficient - points[numpts - 2].Mach * rate, mNodes[numpts - 1]);
+        }
+
+        /// <summary>
+        /// Finds the drag table node by velocity
+        /// </summary>
+        /// <param name="mach"></param>
+        /// <returns></returns>
+        
+        public DragTableNode Find(double mach)
+        {
+            int numpts = mNodes.Length;
+            
+            int mlo = 0;
+            int mhi = numpts - 2;
+            int mid;
+
+            while ((mhi - mlo) > 1)
+            {
+                mid = (int)Math.Floor((mhi + mlo) / 2.0);
+                if (mNodes[mid].Mach < mach)
+                    mlo = mid;
+                else
+                    mhi = mid;
+            }
+
+
+            int m;
+            if ((mNodes[mhi].Mach - mach) > (mach - mNodes[mlo].Mach))
+                m = mlo;
+            else
+                m = mhi;
+
+            return mNodes[m];
+        }
+    }
+}
