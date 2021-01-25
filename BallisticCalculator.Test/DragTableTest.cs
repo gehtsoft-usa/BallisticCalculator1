@@ -31,7 +31,6 @@ namespace BallisticCalculator.Test
         public void TestTable(DragTableId id)
         {
             DragTable table = DragTable.Get(id);
-            int counter = 0;
             for (int i = 0; i < table.Count; i++)
             {
                 var dataPoint = table[i];

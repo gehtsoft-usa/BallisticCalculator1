@@ -41,8 +41,8 @@ namespace BallisticCalculator.Test
         [InlineData("g1_twist", 0.005, 0.2, 0.02)]
         [InlineData("g7_nowind", 0.005, 0.2, 0.2)]
         [InlineData("g1_wind", 0.005, 0.2, 0.2)]
-        [InlineData("g1_wind_hot", 0.05, 0.9, 0.9)]
-        [InlineData("g1_wind_cold", 0.05, 0.9, 0.9)]
+        [InlineData("g1_wind_hot", 0.005, 0.2, 0.2)]
+        [InlineData("g1_wind_cold", 0.005, 0.2, 0.2)]
         public void TrajectoryTest(string name, double velocityAccuracyInPercent, double dropAccuracyInMOA, double windageAccuracyInMOA)
         {
             TableLoader template = TableLoader.FromResource(name);

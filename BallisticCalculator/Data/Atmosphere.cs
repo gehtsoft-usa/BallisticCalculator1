@@ -41,6 +41,9 @@ namespace BallisticCalculator
         [JsonIgnore]
         public Measurement<DensityUnit> Density { get; }
 
+        /// <summary>
+        /// A standard density of the atmosphere
+        /// </summary>
         public static Measurement<DensityUnit> StandardDensity { get; } = new Measurement<DensityUnit>(0.076474, DensityUnit.PoundsPerCubicFoot);
 
 
@@ -101,14 +104,14 @@ namespace BallisticCalculator
         /// </summary>
         /// <param name="altitude"></param>
         /// <returns></returns>
-        public static Atmosphere CreateICAOAtmosphere(Measurement<DistanceUnit> altitude)
+        public static Atmosphere CreateICAOAtmosphere(Measurement<DistanceUnit> altitude, double humidity = 0)
         {
             double altitude1 = altitude.In(DistanceUnit.Meter);
             double pressure = Measurement<PressureUnit>.Convert(29.92, PressureUnit.InchesOfMercury, PressureUnit.Pascal);
             double temperature = Measurement<TemperatureUnit>.Convert(59, TemperatureUnit.Fahrenheit, TemperatureUnit.Kelvin);
 
-            return new Atmosphere(altitude, new Measurement<PressureUnit>(calculatePressure(pressure, temperature, 0, altitude1), PressureUnit.Pascal), false,
-                                  new Measurement<TemperatureUnit>(calculateTemperature(temperature, 0, altitude1), TemperatureUnit.Kelvin), 0);
+            return new Atmosphere(altitude, new Measurement<PressureUnit>(calculatePressure(pressure, temperature, humidity, altitude1), PressureUnit.Pascal), false,
+                                  new Measurement<TemperatureUnit>(calculateTemperature(temperature, 0, altitude1), TemperatureUnit.Kelvin), humidity);
         }
 
         // https://www.omnicalculator.com/physics/air-density
