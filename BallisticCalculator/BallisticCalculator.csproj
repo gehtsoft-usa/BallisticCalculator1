@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>default</LangVersion>
+    <DocumentationFile>bin/doc.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

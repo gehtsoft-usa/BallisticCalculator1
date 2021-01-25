@@ -1,0 +1,145 @@
+@group
+    @key=index
+    @brief=
+    @title=Ballistic Calculator
+    @ingroup=
+    @transform=yes
+    @sortgroups=no
+
+    The library provides trajectory calculations for projectiles, including for various applications, including air rifles, bows, firearms, artillery, and so on.
+
+    3DF (3 degrees of freedom) model that is used in this calculator is rooted in [eurl=http://www.jbmballistics.com/ballistics/downloads/downloads.shtml]old C sources[/eurl] of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's "Applied Ballistics" book and ideas of the friendly project by Alexandre Trofimov.
+
+    Changes made since porting original C sources:
+
+     * "Deciphering" formulas and making them readable for anyone familiar with the school curriculum of physics.
+
+     * New drag calculation method with higher accuracy (40+ approximation points for calculating polynomial coefficients vs 5-6).
+
+     * New atmosphere parameters calculating basing on NASA formulas
+
+     * New algorithm of step size definition to find the right balance between performance and accuracy.
+
+     * Drift calculation is added using Liltz's formulas
+
+     * Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern calculators.
+
+    The source code of the library is available in git: [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]https://github.com/gehtsoft-usa/BallisticCalculator1[/eurl]
+
+    The library is also available in Go: [eurl=https://github.com/gehtsoft-usa/go_ballisticcalc]https://github.com/gehtsoft-usa/go_ballisticcalc[/eurl]
+
+    For those who are looking for a JavaScript version, I highly recommend [eurl=https://ptosis.ch/ebalka/ebalka.html]Yet Another Ballistic Calculator[/eurl] project of our friend Alexandre Trofimov.
+
+    The current status of the project is ALPHA version.
+
+    Suggested reading:
+
+     * [eurl=https://en.wikipedia.org/wiki/Projectile_motion]Projectile motion[/eurl] at wiki.
+     * [eurl=https://en.wikipedia.org/wiki/Drag_coefficient]Drag coefficient[/eurl] at wiki.
+     * [eurl=https://en.wikipedia.org/wiki/Ballistic_coefficient]Ballistic coefficient[/eurl] at wiki.
+     * [eurl=https://en.wikipedia.org/wiki/External_ballistics]External ballistics[/eurl] at wiki.
+     * [eurl=https://en.wikipedia.org/wiki/Density_of_air]Density of air[/eurl] at wiki.
+
+    Recommended books:
+    [eurl=https://www.amazon.com/Applied-Ballistics-Long-Range-Shooting/dp/0990920615]Applied Ballistics For Long Range Shooting 3rd Edition[/eurl] by Bryan Litz
+
+    RISK NOTICE
+
+    The library performs very limited simulation of a complex physical process and so it performs a lot
+    of approximations. Therefore the calculation results MUST NOT be considered as completely and reliably
+    reflecting actual behavior or characteristics of projectiles. While these results may be used for
+    educational purpose, they must NOT be considered as reliable for the areas where incorrect calculation may
+    cause making a wrong decision, financial harm, or can put a human life at risk.
+
+    THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+    WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+@end
+
+@article
+    @title=Usage example
+    @brief=The example of library use
+    @transform=yes
+    @ingroup=index
+    @key=example
+
+    @example
+        @title=Calculate trajectory for M855 projectile shot from M16 rifle
+        @highlight=cs
+        @show=yes
+   !    //define M855 projectile out of 20 inch barrel
+   !    var ammo = new Ammunition(
+   !        weight: new Measurement<WeightUnit>(62, WeightUnit.Grain),
+   !        muzzleVelocity: new Measurement<VelocityUnit>(3095, VelocityUnit.FeetPerSecond),
+   !        ballisticCoefficient: new BallisticCoefficient(0.304, DragTableId.G1),
+   !        bulletDiameter: new Measurement<DistanceUnit>(0.224, DistanceUnit.Inch),
+   !        bulletLength: new Measurement<DistanceUnit>(0.9, DistanceUnit.Inch));
+   !
+   !    //define ACOG scope
+   !    var sight = new Sight(
+   !        sightHeight: new Measurement<DistanceUnit>(3.5, DistanceUnit.Inch),
+   !        verticalClick: new Measurement<AngularUnit>(1.0 / 3.0, AngularUnit.InchesPer100Yards),
+   !        horizontalClick: new Measurement<AngularUnit>(1.0 / 3.0, AngularUnit.InchesPer100Yards)
+   !        );
+   !
+   !    //M16 rifling
+   !    var rifling = new Rifling(
+   !        riflingStep: new Measurement<DistanceUnit>(12, DistanceUnit.Inch),
+   !        direction: TwistDirection.Right);
+   !
+   !    //standard 100 yard ACOG zeroing
+   !    var zero = new ZeroingParameters(
+   !        distance: new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+   !        ammunition: null,
+   !        atmosphere: null
+   !        );
+   !
+   !    //define rifle by sight, zeroing and rifling parameters
+   !    var rifle = new Rifle(sight: sight, zero: zero, rifling: rifling);
+   !
+   !    //define atmosphere
+   !    var atmosphere = new Atmosphere(
+   !        pressure: new Measurement<PressureUnit>(29.92, PressureUnit.InchesOfMercury),
+   !        pressureAtSeaLevel: true,
+   !        altitude: new Measurement<DistanceUnit>(100, DistanceUnit.Foot),
+   !        temperature: new Measurement<TemperatureUnit>(59, TemperatureUnit.Fahrenheit),
+   !        humidity: 0.78);
+   !
+   !    var calc = new TrajectoryCaculator();
+   !
+   !    //shot parameters
+   !    var shot = new ShotParameters()
+   !    {
+   !        MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+   !        Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+   !        //calculate sight angle for the specified zero distance
+   !        SightAngle = calc.SightAngle(ammo, rifle, atmosphere)
+   !    };
+   !
+   !    //define winds
+   !
+   !    Wind[] wind = new Wind[2]
+   !    {
+   !        new Wind()
+   !        {
+   !            Direction = new Measurement<AngularUnit>(45, AngularUnit.Degree),
+   !            Velocity = new Measurement<VelocityUnit>(10, VelocityUnit.MilesPerHour),
+   !            MaximumRange = new Measurement<DistanceUnit>(500, DistanceUnit.Yard),
+   !        },
+   !        new Wind()
+   !        {
+   !            Direction = new Measurement<AngularUnit>(15, AngularUnit.Degree),
+   !            Velocity = new Measurement<VelocityUnit>(5, VelocityUnit.MilesPerHour),
+   !        }
+   !    };
+   !
+   !
+   !    //calculate trajectory
+   !    var trajectory = calc.Calculate(ammo, rifle, atmosphere, shot, wind);
+   !
+   !    //print trajectory
+   !    foreach (var point in trajectory)
+   !        Console.WriteLine($"{point.Time} {point.Distance.In(DistanceUnit.Yard):N0} {point.Velocity.In(VelocityUnit.FeetPerSecond):N0} {point.Drop.In(DistanceUnit.Inch):N2} {point.Windage.In(DistanceUnit.Inch):N2}");
+    @end
+@end

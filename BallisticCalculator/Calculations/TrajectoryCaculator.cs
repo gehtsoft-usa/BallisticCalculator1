@@ -8,12 +8,35 @@ using System.Text;
 
 namespace BallisticCalculator
 {
+    /// <summary>
+    /// The calculator for the projectile trajectory
+    /// </summary>
     public class TrajectoryCaculator
     {
+        /// <summary>
+        /// The maximum step size of the calculation.
+        /// 
+        /// The default value is 10cm
+        /// </summary>
         public Measurement<DistanceUnit> MaximumCalculationStepSize { get; set; } = new Measurement<DistanceUnit>(0.1, DistanceUnit.Meter);
+
+        /// <summary>
+        /// The maximum drop value to stop further calculation
+        /// </summary>
         public static Measurement<DistanceUnit> MaximumDrop { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }  = new Measurement<DistanceUnit>(10000, DistanceUnit.Foot);
+
+        /// <summary>
+        /// The minimum velocity to stop the calculation
+        /// </summary>
         public static Measurement<VelocityUnit> MinimumVelocity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new Measurement<VelocityUnit>(50, VelocityUnit.FeetPerSecond);
 
+        /// <summary>
+        /// Calculates the sight angle for the specified zero distance 
+        /// </summary>
+        /// <param name="ammunition"></param>
+        /// <param name="rifle"></param>
+        /// <param name="atmosphere"></param>
+        /// <returns></returns>
 
         public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere)
         {
@@ -122,6 +145,17 @@ namespace BallisticCalculator
             throw new InvalidOperationException("Cannot find zero parameters");
 
         }
+
+
+        /// <summary>
+        /// Calculates the trajectory for the specified parameters.
+        /// </summary>
+        /// <param name="ammunition"></param>
+        /// <param name="rifle"></param>
+        /// <param name="atmosphere"></param>
+        /// <param name="shot"></param>
+        /// <param name="wind"></param>
+        /// <returns></returns>
         public TrajectoryPoint[] Calculate(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, ShotParameters shot, Wind[] wind)
         {
             Measurement<DistanceUnit> rangeTo = shot.MaximumDistance;

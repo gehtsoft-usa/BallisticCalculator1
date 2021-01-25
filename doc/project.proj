@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <TargetFramework>netstandard2.0</TargetFramework>
+ </PropertyGroup>
+ <ItemGroup>
+  <PackageReference Include="Gehtsoft.Build.DocGen" Version="0.1.6" IncludeAssets="build" />
+  <PackageReference Include="Gehtsoft.Build.ContentDelivery" Version="0.1.9" IncludeAssets="build" />
+ </ItemGroup>
+ <PropertyGroup>
+  <DocTargetDir>$(MSBuildProjectDirectory)\dst</DocTargetDir>
+  <RawDir>$(MSBuildProjectDirectory)\src\raw</RawDir>
+ </PropertyGroup>
+ <ItemGroup>
+  <CustomFile Include="$(MSBuildProjectDirectory)\img\**\*.png;$(MSBuildProjectDirectory)\html\**\*.*" />
+  <CurrentDocTargetDir Include="$(DocTargetDir)" />
+  <CurrentRawDir Include="$(RawDir)" />
+ </ItemGroup>
+ <Target Name="CleanDoc">
+  <RemoveDir Directories="@(CurrentDocTargetDir)" />
+  <RemoveDir Directories="@(CurrentRawDir)" />
+ </Target>
+ <Target Name="MakeDoc">
+  <RemoveDir Directories="@(CurrentDocTargetDir)" />
+  <MakeDir Directories="$(DocTargetDir)" />
+  <DocGen Project="project.xml" />
+  <Copy SourceFiles="@(CustomFile)" DestinationFolder="$(DocTargetDir)" />
+  <Copy SourceFiles="@(ContractFile)" DestinationFolder="$(PdfSampleDir)" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content\template\html\res" Version="0.1.6" Destination="$(DocTargetDir)\res" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content\template\html\highlighter" Version="0.1.6" Destination="$(DocTargetDir)\highlighter" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content\template\html\menu" Version="0.1.6" Destination="$(DocTargetDir)\menu" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content\template\html\pageImages" Version="0.1.6" Destination="$(DocTargetDir)\pageImages" />
+ </Target>
+ <ItemGroup>
+  <DocSource Include="$(MSBuildProjectDirectory)\..\BallisticCalculator\bin\Debug\netstandard2.0\BallisticCalculator.dll" />
+ </ItemGroup>
+ <Target Name="Scan">
+  <Asm2Xml Assemblies="@(DocSource)" OutputXml="obj/raw.xml" Mode="net50" />
+ </Target>
+ <Target Name="Raw">
+  <RemoveDir Directories="@(CurrentRawDir)" />
+  <MakeDir Directories="$(RawDir)" />
+  <DocGen Project="prepareproject.xml" />
+ </Target>
+</Project>
