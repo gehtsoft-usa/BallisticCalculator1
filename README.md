@@ -1,20 +1,30 @@
 # BallisticCalculator
 
-A new version of a ballistic calculator API, a new generation of a
-light-weight, LGPL library of modelling projectile trajectory in atmosphere
+A new version of a ballistic calculator API, a new generation of a light-weight, LGPL library of modeling projectile trajectory in atmosphere
 
-The library provides trajectory calculation for projectiles including for various
-applications, including air rifles, bows, firearms, artillery and so on.
+The library provides trajectory calculations for projectiles, including for various applications, including air rifles, bows, firearms, artillery, and so on.
 
-3DF model that is used in this calculator is rooted in old C sources of version 2 of the public version of JBM
-calculator, ported to C#, optimized, fixed and extended with elements described in
-Litz's "Applied Ballistics" book and ideas of friendly project by Alexandre Trofimov.
+3DF (degrees of freedom) model that is used in this calculator is rooted in [old C sources](http://www.jbmballistics.com/ballistics/downloads/downloads.shtml) of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's "Applied Ballistics" book and ideas of the friendly project by Alexandre Trofimov.
 
-The online version API documentation is located https://gehtsoft-usa.github.io/BallisticCalculator/web-content.html
+Changes made since porting original C sources:
+
+* "Deciphering" formulas and making them readable for anyone familiar with the school curriculum of physics.
+
+* New drag calculation method with higher accuracy (40+ approximation points for calculating polynomial coefficients vs 5-6).
+
+* New atmosphere parameters calculating basing on NASA formulas
+
+* New algorithm of step size definition to find the right balance between performance and accuracy.
+
+* Drift calculation is added using Liltz's formulas
+
+* Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern calculators.
+
+Please refer to [online version of the documentation] (https://gehtsoft-usa.github.io/BallisticCalculator/web-content.html)
 
 The library is also available in Go: https://github.com/gehtsoft-usa/go_ballisticcalc
 
-For those who is looking for a JavaScript version I highly recommend a project of our friend Alexandre Trofimov
+For those who are looking for a JavaScript version, I highly recommend [Yet Another Ballistic Calculator](https://ptosis.ch/ebalka/ebalka.html) project of our friend Alexandre Trofimov.
 
 The current status of the project is ALPHA version.
 
