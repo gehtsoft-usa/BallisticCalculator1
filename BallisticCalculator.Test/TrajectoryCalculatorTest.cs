@@ -38,6 +38,7 @@ namespace BallisticCalculator.Test
 
         [Theory]
         [InlineData("g1_nowind", 0.005, 0.2, 0.2)]
+        [InlineData("g1_nowind_up", 0.005, 0.4, 0.4)]
         [InlineData("g1_twist", 0.005, 0.2, 0.02)]
         [InlineData("g7_nowind", 0.005, 0.2, 0.2)]
         [InlineData("g1_wind", 0.005, 0.2, 0.2)]
@@ -53,7 +54,9 @@ namespace BallisticCalculator.Test
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere)
+                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere),
+                ShotAngle = template.ShotParameters?.ShotAngle,
+                CantAngle = template.ShotParameters?.CantAngle,
             };
 
             var winds = template.Wind == null ? null : new Wind[] { template.Wind };

@@ -14,6 +14,7 @@ namespace BallisticCalculator.Test
         public Rifle Rifle { get; private set; }
         public Atmosphere Atmosphere { get; private set; }
         public Wind Wind { get; private set; }
+        public ShotParameters ShotParameters { get; set; }
         
         List<TrajectoryPoint> mTrajectory = new List<TrajectoryPoint>();
         public IReadOnlyList<TrajectoryPoint> Trajectory => mTrajectory;
@@ -82,6 +83,14 @@ namespace BallisticCalculator.Test
                             humidity: double.Parse(csv[2], CultureInfo.InvariantCulture) / 100.0,
                             pressure: new Measurement<PressureUnit>(csv[3]),
                             altitude: new Measurement<DistanceUnit>(csv[4]));
+                    }
+                    else if (csv[0] == "shot")
+                    {
+                        ShotParameters = new ShotParameters()
+                        {
+                            ShotAngle = new Measurement<AngularUnit>(csv[1]),
+                            CantAngle = new Measurement<AngularUnit>(csv[2]),
+                        };
                     }
                     else
                     {
