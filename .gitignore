@@ -4,6 +4,7 @@ obj/
 .vs/
 .vscode/
 TestResults/
+**/doc/dst/
 **/doc/dst/**/*
 **/doc/src/raw/**/*
 *.csproj.user
