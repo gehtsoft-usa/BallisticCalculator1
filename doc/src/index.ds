@@ -22,7 +22,7 @@
 
      * Drift calculation is added using Liltz's formulas
 
-     * Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern calculators.
+     * Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern commercial calculators.
 
     The source code of the library is available in git: [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]https://github.com/gehtsoft-usa/BallisticCalculator1[/eurl]
 
