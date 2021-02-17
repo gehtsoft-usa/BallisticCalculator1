@@ -7,7 +7,13 @@
     /// </summary>
     public enum TwistDirection
     {
+        /// <summary>
+        /// Counter clockwise twist that makes the bullet to drift lefthand
+        /// </summary>
         Left,
+        /// <summary>
+        /// Clockwise twist that makes the bullet to drift righthand
+        /// </summary>
         Right
     }
 

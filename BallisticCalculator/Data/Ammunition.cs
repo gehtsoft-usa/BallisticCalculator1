@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,31 +7,44 @@ using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
 {
+
     /// <summary>
     /// Definition of a ammunition and projectile
     /// </summary>
+    [BXmlElement("ammunition")]
     public class Ammunition
     {
+
         /// <summary>
         /// Projectile weight
         /// </summary>
+        [BXmlProperty("bullet-weight")]
         public Measurement<WeightUnit> Weight { get; set; }
+
+
         /// <summary>
         /// Ballistic coefficient
         /// </summary>
+        [BXmlProperty("ballistic-coefficient")]
         public BallisticCoefficient BallisticCoefficient { get; set; }
+
+
         /// <summary>
         /// Muzzle velocity
         /// </summary>
+        [BXmlProperty("muzzle-velocity")]
         public Measurement<VelocityUnit> MuzzleVelocity { get; set; }
 
+        
         /// <summary>
         /// Diameter of the projectile
         /// 
         /// The value is required only if drift calculation is needed.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("bullet-diameter", Optional = true)]
         public Measurement<DistanceUnit>? BulletDiameter { get; set; }
+        
         /// <summary>
         /// Length of the projectile
         /// 

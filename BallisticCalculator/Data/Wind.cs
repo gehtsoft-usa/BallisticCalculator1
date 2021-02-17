@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
@@ -6,6 +7,7 @@ namespace BallisticCalculator
     /// <summary>
     /// Wind specification
     /// </summary>
+    [BXmlElement("wind")]
     public class Wind
     {
         /// <summary>
@@ -15,16 +17,19 @@ namespace BallisticCalculator
         /// winds are specified, they must be sorted by the range in ascending order.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("maximum-range", Optional = true)]
         public Measurement<DistanceUnit>? MaximumRange { get; set; }
 
         /// <summary>
         /// Wind velocity
         /// </summary>
+        [BXmlProperty("velocty")]
         public Measurement<VelocityUnit> Velocity { get; set; }
 
         /// <summary>
         /// Wind direction
         /// </summary>
+        [BXmlProperty("direction")]
         public Measurement<AngularUnit> Direction { get; set; }
 
         [JsonIgnore]

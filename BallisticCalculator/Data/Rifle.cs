@@ -1,10 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using BallisticCalculator.Serialization;
+using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
 {
     /// <summary>
     /// The definition of the rifle
     /// </summary>
+    [BXmlElement("rifle")]
     public class Rifle
     {
         /// <summary>
@@ -13,11 +15,13 @@ namespace BallisticCalculator
         /// The value is needed only in case drift calculation is needed
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty(ChildElement = true, Optional = true)]
         public Rifling Rifling { get; set; }
 
         /// <summary>
         /// The sight specification
         /// </summary>
+        [BXmlProperty(ChildElement = true)]
         public Sight Sight { get; set; }
 
         /// <summary>
@@ -26,6 +30,7 @@ namespace BallisticCalculator
         /// These parameters are used only to calculate sight angle by
         /// <see cref="TrajectoryCaculator.SightAngle(Ammunition, Rifle, Atmosphere)">TrajectoryCaculator.SightAngle</see> method.
         /// </summary>
+        [BXmlProperty(ChildElement = true)]
         public ZeroingParameters Zero { get; set; }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
@@ -6,6 +7,7 @@ namespace BallisticCalculator
     /// <summary>
     /// The specification of the rifling
     /// </summary>
+    [BXmlElement("rifling")]
     public class Rifling
     {
         /// <summary>
@@ -14,11 +16,13 @@ namespace BallisticCalculator
         /// Rifling step is the distance at which the rifling makes on full revolution, 
         /// e.g. AR-15 1:12 barrel means 1 full revolution in 12 inches. 
         /// </summary>
+        [BXmlProperty("rifling-step")]
         public Measurement<DistanceUnit> RiflingStep { get; set; }
 
         /// <summary>
         /// Twist direction
         /// </summary>
+        [BXmlProperty("direction")]
         public TwistDirection Direction { get; set; }
 
         /// <summary>

@@ -40,6 +40,10 @@ namespace BallisticCalculator
             Table = table;
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="text"></param>
         [JsonConstructor]
         public BallisticCoefficient(string text)
         {

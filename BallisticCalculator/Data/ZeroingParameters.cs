@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
@@ -6,6 +7,7 @@ namespace BallisticCalculator
     /// <summary>
     /// The parameters of zeroing
     /// </summary>
+    [BXmlElement("zeroing-parameter")]
     public class ZeroingParameters
     {
         /// <summary>
@@ -14,6 +16,7 @@ namespace BallisticCalculator
         /// If the parameter is null, shot ammunition will be used
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty(ChildElement = true, Optional = true)]
         public Ammunition Ammunition { get; set; }
 
         /// <summary>
@@ -22,11 +25,13 @@ namespace BallisticCalculator
         /// If the parameter is null, an atmosphere at should will be used
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty(ChildElement = true, Optional = true)]
         public Atmosphere Atmosphere { get; set; }
 
         /// <summary>
         /// The distance of zeroing
         /// </summary>
+        [BXmlProperty("zero-distance")]
         public Measurement<DistanceUnit> Distance { get; set; }
 
         /// <summary>

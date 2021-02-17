@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -10,23 +11,28 @@ namespace BallisticCalculator
     /// <summary>
     /// The specification of the current atmosphere conditions
     /// </summary>
+    [BXmlElement("atmosphere")]
     public class Atmosphere
     {
         /// <summary>
         /// The height above the sea level
         /// </summary>
+        [BXmlProperty("altitude")]
         public Measurement<DistanceUnit> Altitude { get; }
         /// <summary>
         /// The current air pressure
         /// </summary>
+        [BXmlProperty("pressure")]
         public Measurement<PressureUnit> Pressure { get; }
         /// <summary>
         /// The current temperature
         /// </summary>
+        [BXmlProperty("temperature")]
         public Measurement<TemperatureUnit> Temperature { get; }
         /// <summary>
         /// The current humidity in percents
         /// </summary>
+        [BXmlProperty("humidity")]
         public double Humidity { get; }
 
         /// <summary>
@@ -102,7 +108,8 @@ namespace BallisticCalculator
         /// <summary>
         /// Creates an ICAO default atmosphere at the specified altitude
         /// </summary>
-        /// <param name="altitude"></param>
+        /// <param name="altitude">The altitiude above sea level</param>
+        /// <param name="humidity">The relative humidity (0...1)</param>
         /// <returns></returns>
         public static Atmosphere CreateICAOAtmosphere(Measurement<DistanceUnit> altitude, double humidity = 0)
         {
@@ -147,6 +154,7 @@ namespace BallisticCalculator
         /// </summary>
         /// <param name="pressure">Pressure in pascals</param>
         /// <param name="temperature">Temperature in Kelvin</param>
+        /// <param name="humidity">Relative humidity (0 to 1)</param>
         /// <returns>The density in kg/m3</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double calculateDensity(double temperature, double pressure, double humidity)

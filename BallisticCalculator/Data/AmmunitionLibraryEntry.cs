@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
@@ -6,38 +7,45 @@ namespace BallisticCalculator
     /// <summary>
     /// An entry into a projectile library
     /// </summary>
+    [BXmlElement("ammunition-library-entry")]
     public class AmmunitionLibraryEntry
     {
         /// <summary>
         /// The name of the projectile
         /// </summary>
+        [BXmlProperty("name")]
         public string Name { get; set; }
 
         /// <summary>
         /// The source of the information
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("source", Optional = true)]
         public string Source { get; set; }
 
         /// <summary>
         /// The name of the caliber (e.g. 7.62x39)
         /// </summary>
+        [BXmlProperty("caliber", Optional = true)]
         public string Caliber { get; set; }
 
         /// <summary>
         /// The type of the projectile (e.g FMJ)
         /// </summary>
+        [BXmlProperty("ammunition-type", Optional = true)]
         public string AmmunitionType { get; set; }
 
         /// <summary>
         /// The length of the barrel at which the muzzle velocity is measured
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("barrel-length", Optional = true)]
         public Measurement<DistanceUnit>? BarrelLength { get; set; }
 
         /// <summary>
         /// The projectile parameters
         /// </summary>
+        [BXmlProperty(ChildElement = true)]
         public Ammunition Ammunition { get; set; }
 
         /// <summary>
