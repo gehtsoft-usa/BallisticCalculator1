@@ -9,7 +9,7 @@ using System.Xml;
 namespace BallisticCalculator.Serialization
 {
     /// <summary>
-    /// Serializer/deseralizer of the ballistic calculator data to XML
+    /// Serializer/de-seralizer of the ballistic calculator data to XML
     /// </summary>
     public class BallisticXmlSerializer
     {
@@ -134,11 +134,11 @@ namespace BallisticCalculator.Serialization
         }
 
         /// <summary>
-        /// Deserelize element of the specified type
+        /// Deserialize element of the specified type
         /// </summary>
         /// <param name="type">The expected type of the object</param>
         /// <param name="element">The element name</param>
-        /// <param name="forceIfNameDoesNotMatch">Force deserealization even if the name does not match</param>
+        /// <param name="forceIfNameDoesNotMatch">Force deserialization even if the name does not match</param>
         /// <returns></returns>
         public object Deserialize(Type type, XmlElement element, bool forceIfNameDoesNotMatch = false)
         {
@@ -307,9 +307,8 @@ namespace BallisticCalculator.Serialization
             return r; 
         }
 
-
         /// <summary>
-        /// Deserealize element resolving its type by the element name
+        /// Deserialize element resolving its type by the element name
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
@@ -342,7 +341,7 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         /// <param name="node">The node</param>
         /// <param name="name">The attribute name</param>
-        /// <param name="value">The text value of the attribite</param>
+        /// <param name="value">The text value of the attribute</param>
         /// <returns></returns>
         protected XmlAttribute AddAttribute(XmlElement node, string name, string value)
         {
@@ -460,6 +459,105 @@ namespace BallisticCalculator.Serialization
         }
 
 
+        /// <summary>
+        /// Reads legacy ammunition info from the XML node
+        /// </summary>
+        /// <param name="legacyEntry"></param>
+        /// <returns></returns>
+        public AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntry(XmlElement legacyEntry)
+        {
+            if (legacyEntry == null)
+                throw new ArgumentNullException(nameof(legacyEntry));
 
+            AmmunitionLibraryEntry entry = new AmmunitionLibraryEntry()
+            {
+                Ammunition = new Ammunition()
+            };
+
+            if (legacyEntry.Attributes["table"] == null)
+                throw new ArgumentException("The element must have table attribute", nameof(legacyEntry));
+
+            if (!Enum.TryParse<DragTableId>(legacyEntry.Attributes["table"].Value, out DragTableId table))
+                throw new ArgumentException("Unknown table identifier", nameof(legacyEntry));
+
+            if (legacyEntry.Attributes["bc"] == null)
+                throw new ArgumentException("The element must have bc attribute", nameof(legacyEntry));
+
+            if (!double.TryParse(legacyEntry.Attributes["bc"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double bc))
+                throw new ArgumentException("Ballistic coefficient is not a number", nameof(legacyEntry));
+
+            entry.Ammunition.BallisticCoefficient = new BallisticCoefficient(bc, table);
+
+            if (legacyEntry.Attributes["bullet-weight"] == null)
+                throw new ArgumentException("The element must have bullet-weight attribute", nameof(legacyEntry));
+
+            if (!Measurement<WeightUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["bullet-weight"].Value, out Measurement<WeightUnit> weight))
+                throw new ArgumentException("Can't parse bullet weight", nameof(legacyEntry));
+
+            entry.Ammunition.Weight = weight;
+
+            if (legacyEntry.Attributes["muzzle-velocity"] == null)
+                throw new ArgumentException("The element must have muzzle-velocity attribute", nameof(legacyEntry));
+
+            if (!Measurement<VelocityUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["muzzle-velocity"].Value, out Measurement<VelocityUnit> muzzleVelocity))
+                throw new ArgumentException("Can't parse muzzle velocity", nameof(legacyEntry));
+
+            entry.Ammunition.MuzzleVelocity = muzzleVelocity;
+
+            if (legacyEntry.Attributes["bullet-length"] != null)
+            {
+                if (Measurement<DistanceUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["bullet-length"].Value, out Measurement<DistanceUnit> bulletLength))
+                    entry.Ammunition.BulletLength = bulletLength;
+            }
+
+            if (legacyEntry.Attributes["bullet-diameter"] != null)
+            {
+                if (Measurement<DistanceUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["bullet-diameter"].Value, out Measurement<DistanceUnit> bulletDiameter))
+                    entry.Ammunition.BulletDiameter = bulletDiameter;
+            }
+
+            if (legacyEntry.Attributes["name"] == null)
+                throw new ArgumentException("The element must have name attribute", nameof(legacyEntry));
+
+            entry.Name = legacyEntry.Attributes["name"].Value;
+
+            if (legacyEntry.Attributes["barrel-length"] != null)
+            {
+                if (Measurement<DistanceUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["barrel-length"].Value, out Measurement<DistanceUnit> bulletLength))
+                    entry.BarrelLength = bulletLength;
+            }
+
+            if (legacyEntry.Attributes["source"] != null)
+                entry.Source = legacyEntry.Attributes["source"].Value;
+
+            if (legacyEntry.Attributes["caliber"] != null)
+                entry.Caliber = legacyEntry.Attributes["caliber"].Value;
+
+            if (legacyEntry.Attributes["bullet-type"] != null)
+                entry.AmmunitionType = legacyEntry.Attributes["bullet-type"].Value;
+
+            return entry;
+        }
+
+
+        /// <summary>
+        /// Reads legacy ammunition info from the XML text
+        /// </summary>
+        /// <param name="legacyXml">Either the XML or the file name containing the library entry</param>
+        /// <param name="fileName">The flag indicating whether the first parameter is a file name ([c]true[/c]) or an XML ([c]false[/c])</param>
+        /// <returns></returns>
+        public AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntry(string xmlText, bool fileName)
+        {
+            XmlDocument document = new XmlDocument();
+            if (fileName)
+                document.Load(xmlText);
+            else
+                document.LoadXml(xmlText);
+
+            if (document.DocumentElement.Name != "ammo-info-ex")
+                throw new ArgumentException("The root element of the XML must be ammo-info-ex", nameof(xmlText));
+
+            return ReadLegacyAmmunitionLibraryEntry(document.DocumentElement);
+        }
     }
 }

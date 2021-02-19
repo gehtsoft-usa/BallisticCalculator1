@@ -182,6 +182,165 @@ namespace BallisticCalculator.Test
             main1.Child.Should().BeNull();
         }
 
+        [Fact]
+        public void ReadLegacy_Imperial()
+        {
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var entry = serializer.ReadLegacyAmmunitionLibraryEntry("<ammo-info-ex table=\"G7\" bc=\"0.305\" bullet-weight=\"250.00000000gr\" muzzle-velocity=\"2960.00000000ft/s\" barrel-length=\"24.00000000in\" bullet-length=\"1.55000000in\" bullet-diameter=\"0.33800000in\" name=\".338 Lapua 250gr\" source=\"Lapua/Litz\" caliber=\".338 Lapua Magnum\" bullet-type=\"FMJ\" />", false);
+            entry.Should().NotBeNull();
+            entry.Ammunition.Should().NotBeNull();
+
+            entry.Name.Should().Be(".338 Lapua 250gr");
+            entry.AmmunitionType.Should().Be("FMJ");
+            entry.Source.Should().Be("Lapua/Litz");
+            entry.Caliber.Should().Be(".338 Lapua Magnum");
+            entry.BarrelLength.Should().Be(new Measurement<DistanceUnit>(24, DistanceUnit.Inch));
+
+            entry.Ammunition.BallisticCoefficient.Should().Be(new BallisticCoefficient(0.305, DragTableId.G7));
+            entry.Ammunition.Weight.Should().Be(new Measurement<WeightUnit>(250, WeightUnit.Grain));
+            entry.Ammunition.MuzzleVelocity.Should().Be(new Measurement<VelocityUnit>(2960, VelocityUnit.FeetPerSecond));
+            entry.Ammunition.BulletLength.Should().Be(new Measurement<DistanceUnit>(1.55, DistanceUnit.Inch));
+            entry.Ammunition.BulletDiameter.Should().Be(new Measurement<DistanceUnit>(0.338, DistanceUnit.Inch));
+        }
+
+        [Fact]
+        public void ReadLegacy_Metric()
+        {
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var entry = serializer.ReadLegacyAmmunitionLibraryEntry("<ammo-info-ex table=\"G1\" bc=\"0.297\" bullet-weight=\"7.70000g\" muzzle-velocity=\"730.00000m/s\" barrel-length=\"410.00000mm\" name=\"7N23\" source=\"GRAU\" caliber=\"7.62x39mm M43\" bullet-type=\"FMJ\" bullet-diameter=\"7.85mm\" bullet-length=\"26mm\" />", false);
+
+            entry.Should().NotBeNull();
+            entry.Ammunition.Should().NotBeNull();
+
+            entry.Name.Should().Be("7N23");
+            entry.AmmunitionType.Should().Be("FMJ");
+            entry.Source.Should().Be("GRAU");
+            entry.Caliber.Should().Be("7.62x39mm M43");
+            entry.BarrelLength.Should().Be(new Measurement<DistanceUnit>(410, DistanceUnit.Millimeter));
+
+            entry.Ammunition.BallisticCoefficient.Should().Be(new BallisticCoefficient(0.297, DragTableId.G1));
+            entry.Ammunition.Weight.Should().Be(new Measurement<WeightUnit>(7.7, WeightUnit.Gram));
+            entry.Ammunition.MuzzleVelocity.Should().Be(new Measurement<VelocityUnit>(730, VelocityUnit.MetersPerSecond));
+            entry.Ammunition.BulletLength.Should().Be(new Measurement<DistanceUnit>(26, DistanceUnit.Millimeter));
+            entry.Ammunition.BulletDiameter.Should().Be(new Measurement<DistanceUnit>(7.85, DistanceUnit.Millimeter));
+
+        }
+
+        [Fact]
+        public void ReadLegacy_Incomplete()
+        {
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var entry = serializer.ReadLegacyAmmunitionLibraryEntry("<ammo-info-ex table=\"G1\" bc=\"0.297\" bullet-weight=\"7.70000g\" muzzle-velocity=\"730.00000m/s\" name=\"7N23\"  />", false);
+
+            entry.Should().NotBeNull();
+            entry.Ammunition.Should().NotBeNull();
+
+            entry.Name.Should().Be("7N23");
+            entry.AmmunitionType.Should().BeNull();
+            entry.Source.Should().BeNull();
+            entry.Caliber.Should().BeNull();
+            entry.BarrelLength.Should().BeNull();
+
+            entry.Ammunition.BallisticCoefficient.Should().Be(new BallisticCoefficient(0.297, DragTableId.G1));
+            entry.Ammunition.Weight.Should().Be(new Measurement<WeightUnit>(7.7, WeightUnit.Gram));
+            entry.Ammunition.MuzzleVelocity.Should().Be(new Measurement<VelocityUnit>(730, VelocityUnit.MetersPerSecond));
+            entry.Ammunition.BulletLength.Should().BeNull();
+            entry.Ammunition.BulletDiameter.Should().BeNull();
+        }
+
+        [Fact]
+        public void RoundTrip_Ammunition1()
+        {
+            Ammunition ammo = new Ammunition()
+            {
+                BallisticCoefficient = new BallisticCoefficient(0.295, DragTableId.G1),
+                Weight = new Measurement<WeightUnit>(9.1, WeightUnit.Gram),
+                MuzzleVelocity = new Measurement<VelocityUnit>(2956.5, VelocityUnit.FeetPerSecond),
+                BulletDiameter = new Measurement<DistanceUnit>(0.224, DistanceUnit.Inch),
+                BulletLength = new Measurement<DistanceUnit>(0.98, DistanceUnit.Inch)
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+
+            var node = serializer.Serialize(ammo);
+            node.Should().NotBeNull();
+            
+            var ammo1 = serializer.Deserialize<Ammunition>(node);
+            ammo1.Should().NotBeNull();
+
+            ammo1.BallisticCoefficient.Should().Be(ammo.BallisticCoefficient);
+            ammo1.Weight.Should().Be(ammo.Weight);
+            ammo1.MuzzleVelocity.Should().Be(ammo.MuzzleVelocity);
+            ammo1.BulletDiameter.Should().Be(ammo.BulletDiameter);
+            ammo1.BulletLength.Should().Be(ammo.BulletLength); 
+        }
+
+        [Fact]
+        public void RoundTrip_Ammunition2()
+        {
+            Ammunition ammo = new Ammunition()
+            {
+                BallisticCoefficient = new BallisticCoefficient(0.295, DragTableId.G1),
+                Weight = new Measurement<WeightUnit>(9.1, WeightUnit.Gram),
+                MuzzleVelocity = new Measurement<VelocityUnit>(2956.5, VelocityUnit.FeetPerSecond),
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+
+            var node = serializer.Serialize(ammo);
+            node.Should().NotBeNull();
+
+            var ammo1 = serializer.Deserialize<Ammunition>(node);
+            ammo1.Should().NotBeNull();
+
+            ammo1.BallisticCoefficient.Should().Be(ammo.BallisticCoefficient);
+            ammo1.Weight.Should().Be(ammo.Weight);
+            ammo1.MuzzleVelocity.Should().Be(ammo.MuzzleVelocity);
+            ammo1.BulletDiameter.Should().Be(ammo.BulletDiameter);
+            ammo1.BulletLength.Should().Be(ammo.BulletLength);
+        }
+
+        [Fact]
+        public void RoundTrip_AmmuntionLibraryEntry()
+        {
+            AmmunitionLibraryEntry entry = new AmmunitionLibraryEntry()
+            {
+                Name = "Entry name",
+                Source = "Entry source",
+                Caliber = "Entry caliber",
+                AmmunitionType = "BTHP",
+                BarrelLength = new Measurement<DistanceUnit>(410, DistanceUnit.Millimeter),
+                Ammunition = new Ammunition()
+                {
+                    BallisticCoefficient = new BallisticCoefficient(0.295, DragTableId.G1),
+                    Weight = new Measurement<WeightUnit>(9.1, WeightUnit.Gram),
+                    MuzzleVelocity = new Measurement<VelocityUnit>(2956.5, VelocityUnit.FeetPerSecond),
+                    BulletDiameter = new Measurement<DistanceUnit>(0.224, DistanceUnit.Inch),
+                    BulletLength = new Measurement<DistanceUnit>(0.98, DistanceUnit.Inch)
+                }
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+
+            var node = serializer.Serialize(entry);
+            node.Should().NotBeNull();
+
+            var entry1 = serializer.Deserialize<AmmunitionLibraryEntry>(node);
+            entry1.Should().NotBeNull();
+
+
+            entry1.Name.Should().Be(entry.Name);
+            entry1.Source.Should().Be(entry.Source);
+            entry1.Caliber.Should().Be(entry.Caliber);
+            entry1.AmmunitionType.Should().Be(entry.AmmunitionType);
+            entry1.BarrelLength.Should().Be(entry.BarrelLength);
+
+            entry1.Ammunition.BallisticCoefficient.Should().Be(entry.Ammunition.BallisticCoefficient);
+            entry1.Ammunition.Weight.Should().Be(entry.Ammunition.Weight);
+            entry1.Ammunition.MuzzleVelocity.Should().Be(entry.Ammunition.MuzzleVelocity);
+            entry1.Ammunition.BulletDiameter.Should().Be(entry.Ammunition.BulletDiameter);
+            entry1.Ammunition.BulletLength.Should().Be(entry.Ammunition.BulletLength);
+        }
     }
 }
 

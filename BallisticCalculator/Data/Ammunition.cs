@@ -51,6 +51,7 @@ namespace BallisticCalculator
         /// The value is required only if drift calculation is needed.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("bullet-length", Optional = true)]
         public Measurement<DistanceUnit>? BulletLength { get; set; }
 
         /// <summary>
