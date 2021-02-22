@@ -27,7 +27,6 @@ namespace BallisticCalculator.Test
         [InlineData(DragTableId.G7)]
         [InlineData(DragTableId.G8)]
         [InlineData(DragTableId.GS)]
-        [InlineData(DragTableId.GI)]
         public void TestTable(DragTableId id)
         {
             DragTable table = DragTable.Get(id);

@@ -26,6 +26,11 @@ namespace BallisticCalculator.Serialization
         public bool ChildElement { get; set; } = false;
 
         /// <summary>
+        /// The flag indicating that the value is a collection
+        /// </summary>
+        public bool Collection { get; set; } = false;
+
+        /// <summary>
         /// The default constructor
         /// </summary>
         public BXmlPropertyAttribute()

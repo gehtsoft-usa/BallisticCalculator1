@@ -19,6 +19,15 @@ namespace BallisticCalculator.Test
             [BXmlProperty("name")]
             public string Name { get; set; }
 
+            public ChildClass()
+            {
+
+            }
+
+            public ChildClass(string name)
+            {
+                Name = name;
+            }
         }
 
         [BXmlElement("main")]
@@ -56,6 +65,20 @@ namespace BallisticCalculator.Test
 
             [BXmlProperty(ChildElement = true, Optional = true)]
             public ChildClass Child { get; set; }
+        }
+
+        [BXmlElement("collector")]
+        public class CollectorClass
+        {
+            [BXmlProperty(Name = "array", Collection = true)]
+            public ChildClass[] Array { get; set; }
+
+            [BXmlProperty(Name = "list", Collection = true)]
+            public List<ChildClass> List { get; set; }
+
+            [BXmlProperty(Name = "array2", Collection = true, Optional = true)]
+            public ChildClass[] Array2 { get; set; }
+
         }
 
         [Fact]
@@ -351,9 +374,7 @@ namespace BallisticCalculator.Test
                 0.57);
 
             BallisticXmlSerializer serializer = new BallisticXmlSerializer();
-
             var xml = serializer.Serialize(atmo);
-
             var atmo2 = serializer.Deserialize<Atmosphere>(xml);
 
             atmo2.Should().NotBeNull();
@@ -363,6 +384,160 @@ namespace BallisticCalculator.Test
             atmo2.Humidity.Should().Be(atmo.Humidity);
             atmo2.SoundVelocity.Should().Be(atmo.SoundVelocity);
             atmo2.Density.Should().Be(atmo.Density);
+        }
+
+        [Fact]
+        public void RoundTripRifle()
+        {
+            Rifle rifle = new Rifle()
+            {
+                Rifling = new Rifling()
+                {
+                    Direction = TwistDirection.Right,
+                    RiflingStep = new Measurement<DistanceUnit>(12, DistanceUnit.Inch)
+                },
+                Sight = new Sight()
+                {
+                    SightHeight = new Measurement<DistanceUnit>(3.2, DistanceUnit.Inch),
+                    VerticalClick = new Measurement<AngularUnit>(0.5, AngularUnit.MOA),
+                    HorizontalClick = new Measurement<AngularUnit>(0.25, AngularUnit.MOA),
+                },
+                Zero = new ZeroingParameters()
+                {
+                    Ammunition = new Ammunition()
+                    {
+                        BallisticCoefficient = new BallisticCoefficient(0.375, DragTableId.G7),
+                        MuzzleVelocity = new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond),
+                        Weight = new Measurement<WeightUnit>(168, WeightUnit.Grain)
+                    },
+                    Atmosphere = new Atmosphere(new Measurement<DistanceUnit>(123, DistanceUnit.Meter),
+                           new Measurement<PressureUnit>(30.02, PressureUnit.InchesOfMercury),
+                           new Measurement<TemperatureUnit>(16, TemperatureUnit.Celsius),
+                           0.57),
+                    Distance = new Measurement<DistanceUnit>(100, DistanceUnit.Yard)
+                }
+            };
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var xml = serializer.Serialize(rifle);
+            var rifle2 = serializer.Deserialize<Rifle>(xml);
+
+            rifle2.Rifling.Should().NotBeNull();
+            rifle2.Sight.Should().NotBeNull();
+            rifle2.Zero.Should().NotBeNull();
+
+            rifle2.Rifling.RiflingStep.Should().Be(rifle.Rifling.RiflingStep);
+            rifle2.Rifling.Direction.Should().Be(rifle.Rifling.Direction);
+
+            rifle2.Sight.SightHeight.Should().Be(rifle.Sight.SightHeight);
+            rifle2.Sight.VerticalClick.Should().Be(rifle.Sight.VerticalClick);
+            rifle2.Sight.HorizontalClick.Should().Be(rifle.Sight.HorizontalClick);
+
+            rifle2.Zero.Ammunition.Should().NotBeNull();
+            rifle2.Zero.Ammunition.BallisticCoefficient.Should().Be(rifle.Zero.Ammunition.BallisticCoefficient);
+            rifle2.Zero.Ammunition.Weight.Should().Be(rifle.Zero.Ammunition.Weight);
+            rifle2.Zero.Ammunition.MuzzleVelocity.Should().Be(rifle.Zero.Ammunition.MuzzleVelocity);
+
+            rifle2.Zero.Distance.Should().Be(rifle.Zero.Distance);
+
+            rifle2.Zero.Atmosphere.Should().NotBeNull();
+            rifle2.Zero.Atmosphere.Altitude.Should().Be(rifle.Zero.Atmosphere.Altitude);
+            rifle2.Zero.Atmosphere.Pressure.Should().Be(rifle.Zero.Atmosphere.Pressure);
+            rifle2.Zero.Atmosphere.Temperature.Should().Be(rifle.Zero.Atmosphere.Temperature);
+            rifle2.Zero.Atmosphere.Humidity.Should().Be(rifle.Zero.Atmosphere.Humidity);
+            rifle2.Zero.Atmosphere.SoundVelocity.Should().Be(rifle.Zero.Atmosphere.SoundVelocity);
+            rifle2.Zero.Atmosphere.Density.Should().Be(rifle.Zero.Atmosphere.Density);
+        }
+
+        [Fact]
+        public void RoundTripWind1()
+        {
+            var wind = new Wind()
+            {
+                Direction = new Measurement<AngularUnit>(45, AngularUnit.Degree),
+                Velocity = new Measurement<VelocityUnit>(10, VelocityUnit.Knot),
+                MaximumRange = new Measurement<DistanceUnit>(500, DistanceUnit.Yard),
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var xml = serializer.Serialize(wind);
+            var wind2 = serializer.Deserialize<Wind>(xml);
+
+            wind2.Direction.Should().Be(wind.Direction);
+            wind2.Velocity.Should().Be(wind.Velocity);
+            wind2.MaximumRange.Should().Be(wind.MaximumRange);
+        }
+
+        [Fact]
+        public void RoundTripWind2()
+        {
+            var wind = new Wind()
+            {
+                Direction = new Measurement<AngularUnit>(45, AngularUnit.Degree),
+                Velocity = new Measurement<VelocityUnit>(10, VelocityUnit.Knot),
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var xml = serializer.Serialize(wind);
+            var wind2 = serializer.Deserialize<Wind>(xml);
+
+            wind2.Direction.Should().Be(wind.Direction);
+            wind2.Velocity.Should().Be(wind.Velocity);
+            wind2.MaximumRange.Should().BeNull();
+        }
+
+        [Fact]
+        public void TestCollector1()
+        {
+            CollectorClass collector = new CollectorClass()
+            {
+                Array = new ChildClass[] { new ChildClass("array1_1"), new ChildClass("array1_2") },
+                List = new List<ChildClass>() { new ChildClass("list_1"), new ChildClass("list_2"), new ChildClass("list_3") },
+                Array2 = new ChildClass[] { new ChildClass("array2_1"), new ChildClass("array2_2") },
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var xml = serializer.Serialize(collector);
+            var collector2 = serializer.Deserialize<CollectorClass>(xml);
+
+            collector2.Array.Should().NotBeNull();
+            collector2.Array2.Should().NotBeNull();
+            collector2.List.Should().NotBeNull();
+
+            collector2.Array.Should().HaveCount(collector.Array.Length);
+            collector2.Array2.Should().HaveCount(collector.Array2.Length);
+            collector2.List.Should().HaveCount(collector.List.Count);
+
+            collector2.Array[0].Name.Should().Be(collector.Array[0].Name);
+            collector2.Array[1].Name.Should().Be(collector.Array[1].Name);
+
+            collector2.Array2[0].Name.Should().Be(collector.Array2[0].Name);
+            collector2.Array2[1].Name.Should().Be(collector.Array2[1].Name);
+
+            collector2.List[0].Name.Should().Be(collector.List[0].Name);
+            collector2.List[1].Name.Should().Be(collector.List[1].Name);
+            collector2.List[2].Name.Should().Be(collector.List[2].Name);
+        }
+
+        [Fact]
+        public void TestCollector2()
+        {
+            CollectorClass collector = new CollectorClass()
+            {
+                Array = new ChildClass[] {  },
+                List = new List<ChildClass>() {  },
+                Array2 = null,
+            };
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var xml = serializer.Serialize(collector);
+            var collector2 = serializer.Deserialize<CollectorClass>(xml);
+
+            collector2.Array.Should().NotBeNull();
+            collector2.Array2.Should().BeNull();
+            collector2.List.Should().NotBeNull();
+
+            collector2.Array.Should().HaveCount(0);
+            collector2.List.Should().HaveCount(0);
         }
     }
 }

@@ -6,11 +6,12 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Collections;
 
 namespace BallisticCalculator.Serialization
 {
     /// <summary>
-    /// Serializer/de-seralizer of the ballistic calculator data to XML
+    /// Serializer/deserializer of the ballistic calculator data to XML
     /// </summary>
     public class BallisticXmlSerializer
     {
@@ -68,7 +69,20 @@ namespace BallisticCalculator.Serialization
 
                 if (propertyValue != null)
                 {
-                    if (propertyAttribute.ChildElement)
+                    if (propertyAttribute.Collection)
+                    {
+                        if (propertyValue is IEnumerable ie)
+                        {
+                            XmlElement collection = CreateElement(propertyAttribute.Name);
+                            foreach (object x in ie)
+                                collection.AppendChild(Serialize(x));
+
+                            element.AppendChild(collection);
+                        }
+                        else
+                            throw new ArgumentException($"Property {property.Name} is attributed as a collection, but does not support IEnumerable interface", nameof(value));
+                    }
+                    else if (propertyAttribute.ChildElement)
                     {
                         element.AppendChild(Serialize(propertyValue));
                     }
@@ -229,7 +243,72 @@ namespace BallisticCalculator.Serialization
 
                 object propertyValue = null;
 
-                if (propertyAttribute.ChildElement)
+                if (propertyAttribute.Collection)
+                {
+                    Type elementType = null;
+                    
+                    if (property.PropertyType.IsArray)
+                        elementType = property.PropertyType.GetElementType();
+                    else
+                    {
+                        foreach (var iface in property.PropertyType.GetInterfaces())
+                        {
+                            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                            {
+                                elementType = iface.GetGenericArguments()[0];
+                                break;
+                            }
+                        }    
+                    }
+
+                    if (elementType == null)
+                        throw new ArgumentException($"Can't determine the element type of the collection {property.PropertyType.FullName} of property {type.Name}.{property.Name}", nameof(type));
+
+                    BXmlElementAttribute elementAttribute = elementType.GetCustomAttribute<BXmlElementAttribute>();
+
+                    if (elementAttribute == null)
+                        throw new ArgumentException($"The collection {property.PropertyType.FullName} of property {type.Name}.{property.Name} is not a collection of serializable types", nameof(type));
+
+                    List<object> values = null;
+                    foreach (XmlNode childNode in element.ChildNodes)
+                    {
+                        if (childNode.NodeType == XmlNodeType.Element && childNode.Name == propertyAttribute.Name)
+                        {
+                            values = new List<object>();
+                            foreach (XmlNode arrayElement in childNode)
+                            {
+                                if (arrayElement.NodeType == XmlNodeType.Element && arrayElement.Name == elementAttribute.Name)
+                                    values.Add(Deserialize(elementType, (XmlElement)arrayElement));
+                            }
+                        }
+                    }
+
+                    if (values == null)
+                    {
+                        propertyValue = null;
+                    }
+                    else if (property.PropertyType.IsArray)
+                    {
+                        Array x = (Array)Activator.CreateInstance(property.PropertyType, new object[] { values.Count });
+                        for (int i = 0; i < values.Count; i++)
+                            x.SetValue(values[i], i);
+                        propertyValue = x;
+                    }
+                    else
+                    {
+                        object x = Activator.CreateInstance(property.PropertyType);
+                        MethodInfo mi = property.PropertyType.GetMethod("Add", new Type[] { elementType });
+                        if (mi != null)
+                        {
+                            for (int i = 0; i < values.Count; i++)
+                                mi.Invoke(x, new object[] { values[i] });
+                        }
+                        propertyValue = x;
+
+
+                    }
+                }
+                else if (propertyAttribute.ChildElement)
                 {
                     var propertyElementAttribute = property.PropertyType.GetCustomAttribute<BXmlElementAttribute>();
                     if (propertyElementAttribute != null)

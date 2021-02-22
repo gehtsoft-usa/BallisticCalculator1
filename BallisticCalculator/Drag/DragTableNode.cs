@@ -24,7 +24,17 @@ namespace BallisticCalculator
         private double B { get; }
         private double C { get; }
 
+        /// <summary>
+        /// The reference to the previous node
+        /// 
+        /// Previous is the node with lower velocity
+        /// </summary>
         public DragTableNode Previous { get; private set;}
+        /// <summary>
+        /// The reference to the next node
+        /// 
+        /// Previous is the node with higher velocity
+        /// </summary>
         public DragTableNode Next { get; private set; }
 
 
@@ -53,6 +63,11 @@ namespace BallisticCalculator
             return C + mach * (B + A * mach);
         }
 
+        /// <summary>
+        /// Checks whether the specified mach velocity is within the node range
+        /// </summary>
+        /// <param name="mach"></param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool In(double mach)
         {

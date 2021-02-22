@@ -15,7 +15,6 @@ namespace BallisticCalculator
         private static DragTable gG6;
         private static DragTable gG7;
         private static DragTable gG8;
-        private static DragTable gGI;
         private static DragTable gGS;
 
 
@@ -40,8 +39,6 @@ namespace BallisticCalculator
                     return gG7 ?? (gG7 = new G7DragTable());
                 case DragTableId.G8:
                     return gG8 ?? (gG8 = new G8DragTable());
-                case DragTableId.GI:
-                    return gGI ?? (gGI = new GIDragTable());
                 case DragTableId.GS:
                     return gGS ?? (gGS = new GSDragTable());
                 default:
@@ -49,7 +46,10 @@ namespace BallisticCalculator
             }
         }
 
-        public abstract DragTableId TableId {get;}
+        /// <summary>
+        /// The identifier of a drag table
+        /// </summary>
+        public abstract DragTableId TableId { get; }
 
         /// <summary>
         /// Returns the number of drag table nodes

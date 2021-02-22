@@ -23,7 +23,7 @@ namespace BallisticCalculator
         /// <summary>
         /// Wind velocity
         /// </summary>
-        [BXmlProperty("velocty")]
+        [BXmlProperty("velocity")]
         public Measurement<VelocityUnit> Velocity { get; set; }
 
         /// <summary>
