@@ -75,6 +75,7 @@ namespace BallisticCalculator
         /// <param name="temperature"></param>
         /// <param name="humidity"></param>
         [JsonConstructor]
+        [BXmlConstructor]
         public Atmosphere(Measurement<DistanceUnit> altitude, Measurement<PressureUnit> pressure, Measurement<TemperatureUnit> temperature, double humidity) 
             :this(altitude, pressure, false, temperature, humidity)
         {

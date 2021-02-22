@@ -1,5 +1,6 @@
 ﻿using Gehtsoft.Measurements;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -148,15 +149,72 @@ namespace BallisticCalculator.Serialization
                 throw new ArgumentNullException(nameof(element));
 
             var elementAttribute = type.GetCustomAttribute<BXmlElementAttribute>();
-            
+
             if (elementAttribute == null)
                 throw new ArgumentException($"The type {type.FullName} is not attributed with {nameof(BXmlElementAttribute)}");
 
             if (!forceIfNameDoesNotMatch && elementAttribute.Name != element.Name)
                 throw new ArgumentException($"The element name {element.Name} does not match to the expected name {elementAttribute.Name} specified in the attribute {nameof(BXmlElementAttribute)} assigned to {type.FullName})");
 
-            var r = Activator.CreateInstance(type);
+            var constructors = type.GetConstructors();
+            ConstructorInfo deserializationConstructor = null;
+            ConstructorInfo defaultConstructor = null;
 
+            foreach (var constructor in constructors)
+            {
+                if (constructor.GetCustomAttribute<BXmlConstructor>() != null)
+                    deserializationConstructor = constructor;
+                else if (constructor.GetParameters() == null || constructor.GetParameters().Length == 0)
+                    defaultConstructor = constructor;
+            }
+
+            if (deserializationConstructor != null)
+            {
+                List<Tuple<string, object>> values = new List<Tuple<string, object>>();
+
+                ReadProperties(type, element,
+                    (property, propertyAttribute, propertyValue) =>
+                    {
+                        values.Add(new Tuple<string, object>(property.Name, propertyValue));
+                    });
+
+                var @params = deserializationConstructor.GetParameters();
+                object[] args = new object[@params.Length];
+
+                foreach (var arg in values)
+                {
+                    int index = -1;
+                    for (int i = 0; i < @params.Length && index == -1; i++)
+                        if (string.Compare(@params[i].Name, arg.Item1, true) == 0)
+                            index = i;
+
+                    if (index == -1)
+                        throw new ArgumentException($"Property {arg.Item1} does not have corresponding value in the constructor", nameof(type));
+
+                    args[index] = arg.Item2;
+                }
+
+                return deserializationConstructor.Invoke(args);
+            }
+            else
+            {
+                if (defaultConstructor == null)
+                    throw new ArgumentException("The type must have either deserialization or default constructor defined", nameof(type));
+
+                var r = Activator.CreateInstance(type);
+
+                ReadProperties(type, element,
+                    (property, propertyAttribute, propertyValue) =>
+                    {
+                        property.SetValue(r, propertyValue);
+                    });
+                return r;
+            }
+            
+        }
+
+        private void ReadProperties(Type type, XmlElement element, Action<PropertyInfo, BXmlPropertyAttribute, object> action)
+        {
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             foreach (var property in properties)
@@ -185,7 +243,7 @@ namespace BallisticCalculator.Serialization
                             }
                         }
                     }
-                    
+
                 }
                 else
                 {
@@ -208,7 +266,7 @@ namespace BallisticCalculator.Serialization
                                     {
                                         propertyValue = ci.Invoke(new object[] { propertyText });
                                     }
-                                    catch (Exception )
+                                    catch (Exception)
                                     {
                                         propertyValue = null;
                                     }
@@ -267,17 +325,11 @@ namespace BallisticCalculator.Serialization
                 }
 
                 if (propertyValue == null)
-                {
                     if (!propertyAttribute.Optional)
                         throw new InvalidOperationException($"The XML element or attribute associated with the property {type.FullName}.{property.Name} is not found and the value is not optional");
-                }
-                else
-                {
-                    property.SetValue(r, propertyValue);
-                }
-
+                
+                action(property, propertyAttribute, propertyValue);
             }
-            return r;
         }
 
         /// <summary>
@@ -312,7 +364,7 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public object Deserealize(XmlElement element)
+        public object Deserialize(XmlElement element)
         {
             if (!ElementNames.Value.TryGetValue(element.Name, out Type type))
                 throw new ArgumentException($"The element name is not found among all currently loaded classes with {nameof(BXmlElementAttribute)} attribute", nameof(element));
@@ -543,7 +595,7 @@ namespace BallisticCalculator.Serialization
         /// <summary>
         /// Reads legacy ammunition info from the XML text
         /// </summary>
-        /// <param name="legacyXml">Either the XML or the file name containing the library entry</param>
+        /// <param name="xmlText">Either the XML or the file name containing the library entry</param>
         /// <param name="fileName">The flag indicating whether the first parameter is a file name ([c]true[/c]) or an XML ([c]false[/c])</param>
         /// <returns></returns>
         public AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntry(string xmlText, bool fileName)

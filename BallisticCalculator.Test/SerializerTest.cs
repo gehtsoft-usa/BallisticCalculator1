@@ -341,6 +341,29 @@ namespace BallisticCalculator.Test
             entry1.Ammunition.BulletDiameter.Should().Be(entry.Ammunition.BulletDiameter);
             entry1.Ammunition.BulletLength.Should().Be(entry.Ammunition.BulletLength);
         }
+
+        [Fact]
+        public void RoundTripAtmosphere()
+        {
+            var atmo = new Atmosphere(new Measurement<DistanceUnit>(123, DistanceUnit.Meter),
+                new Measurement<PressureUnit>(30.02, PressureUnit.InchesOfMercury),
+                new Measurement<TemperatureUnit>(16, TemperatureUnit.Celsius),
+                0.57);
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+
+            var xml = serializer.Serialize(atmo);
+
+            var atmo2 = serializer.Deserialize<Atmosphere>(xml);
+
+            atmo2.Should().NotBeNull();
+            atmo2.Altitude.Should().Be(atmo.Altitude);
+            atmo2.Pressure.Should().Be(atmo.Pressure);
+            atmo2.Temperature.Should().Be(atmo.Temperature);
+            atmo2.Humidity.Should().Be(atmo.Humidity);
+            atmo2.SoundVelocity.Should().Be(atmo.SoundVelocity);
+            atmo2.Density.Should().Be(atmo.Density);
+        }
     }
 }
 
