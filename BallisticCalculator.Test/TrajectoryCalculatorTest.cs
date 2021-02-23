@@ -12,8 +12,10 @@ namespace BallisticCalculator.Test
     public class TrajectoryCalculatorTest
     {
         [Theory]
-        [InlineData(0.365, DragTableId.G1, 2600, VelocityUnit.FeetPerSecond, 100, DistanceUnit.Yard, 5.674, AngularUnit.MOA, 0.5e-2)]
-        [InlineData(0.47, DragTableId.G7, 725, VelocityUnit.MetersPerSecond, 200, DistanceUnit.Meter, 8.171, AngularUnit.MOA, 0.5e-2)]
+        [InlineData(0.365, DragTableId.G1, 2600, VelocityUnit.FeetPerSecond, 100, DistanceUnit.Yard, 5.674, AngularUnit.MOA, 5e-2)]
+        [InlineData(0.365, DragTableId.G1, 2600, VelocityUnit.FeetPerSecond, 25, DistanceUnit.Yard, 12.84, AngularUnit.MOA, 5e-2)]
+        [InlineData(0.365, DragTableId.G1, 2600, VelocityUnit.FeetPerSecond, 375, DistanceUnit.Yard, 12.78, AngularUnit.MOA, 5e-2)]
+        [InlineData(0.47, DragTableId.G7, 725, VelocityUnit.MetersPerSecond, 200, DistanceUnit.Meter, 8.171, AngularUnit.MOA, 5e-2)]
         public void Zero1(double ballisticCoefficient, DragTableId ballisticTable, double muzzleVelocity, VelocityUnit velocityUnit, double zeroDistance, DistanceUnit distanceUnit, double sightAngle, AngularUnit sightAngleUnit, double sightAngleAccuracy)
         {
             Ammunition ammunition = new Ammunition(
@@ -28,7 +30,7 @@ namespace BallisticCalculator.Test
 
             Atmosphere atmosphere = new Atmosphere();       //default atmosphere
 
-            var sightAngle1 = (new TrajectoryCaculator()).SightAngle(ammunition, rifle, atmosphere);
+            var sightAngle1 = (new TrajectoryCalculator()).SightAngle(ammunition, rifle, atmosphere);
             sightAngle1.In(sightAngleUnit).Should().BeApproximately(sightAngle, sightAngleAccuracy);
         }
 
@@ -48,7 +50,7 @@ namespace BallisticCalculator.Test
         {
             TableLoader template = TableLoader.FromResource(name);
 
-            var cal = new TrajectoryCaculator();
+            var cal = new TrajectoryCalculator();
 
             ShotParameters shot = new ShotParameters()
             {
@@ -123,7 +125,7 @@ namespace BallisticCalculator.Test
                 temperature: new Measurement<TemperatureUnit>(59, TemperatureUnit.Fahrenheit),
                 humidity: 0.78);
 
-            var calc = new TrajectoryCaculator();
+            var calc = new TrajectoryCalculator();
 
             //shot parameters
             var shot = new ShotParameters()

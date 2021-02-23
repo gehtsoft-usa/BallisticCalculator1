@@ -52,10 +52,10 @@ namespace BallisticCalculator.Serialization
                 throw new ArgumentException($"The element name associated with the type {value.GetType().FullName} is an empty string", nameof(value));
 
             var element = CreateElement(elementAttribute.Name);
+            
+            Type type = value.GetType();
 
-            var properties = value.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            foreach (var property in properties)
+            foreach (var property in value.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
             {
                 var propertyAttribute = property.GetCustomAttribute<BXmlPropertyAttribute>();
                 
@@ -88,64 +88,70 @@ namespace BallisticCalculator.Serialization
                     }
                     else
                     {
-                        var propertyType = property.PropertyType;
-                        var propertyType1 = Nullable.GetUnderlyingType(propertyType);
-                        if (propertyType1 != null && propertyType1 != propertyType)
-                            propertyType = propertyType1;
-
-                        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Measurement<>))
-                        {
-                            var textProperty = propertyType.GetProperty("Text");
-                            AddAttribute(element, propertyAttribute.Name, (string)textProperty.GetValue(propertyValue));
-                        }
-                        else if (propertyType.IsEnum)
-                        {
-                            var textValue = propertyValue.ToString();
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else if (propertyType == typeof(double))
-                        {
-                            var textValue = ((double)propertyValue).ToString(CultureInfo.InvariantCulture);
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else if (propertyType == typeof(int))
-                        {
-                            var textValue = ((int)propertyValue).ToString(CultureInfo.InvariantCulture);
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else if (propertyType == typeof(bool))
-                        {
-                            var textValue = (bool)propertyValue ? "true" : "false";
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else if (propertyType == typeof(DateTime))
-                        {
-                            var textValue = ((DateTime)propertyValue).ToString("yyyy-MM-dd HH:mm:ss");
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else if (propertyType == typeof(TimeSpan))
-                        {
-                            var textValue = ((TimeSpan)propertyValue).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else if (propertyType == typeof(string))
-                        {
-                            AddAttribute(element, propertyAttribute.Name, (string)propertyValue);
-                        }
-                        else if (propertyType == typeof(BallisticCoefficient))
-                        {
-                            var textValue = ((BallisticCoefficient)propertyValue).ToString(CultureInfo.InvariantCulture);
-                            AddAttribute(element, propertyAttribute.Name, textValue);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"The type {propertyType.FullName} of the property {value.GetType().FullName}.{property.Name} is not supported");
-                        }
+                        WriteAttribute(type, element, property, propertyAttribute, propertyValue);
                     }
                 }
             }
 
             return element;
+        }
+
+        private void WriteAttribute(Type type, XmlElement element, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, object propertyValue)
+        {
+            var propertyType = property.PropertyType;
+            var propertyType1 = Nullable.GetUnderlyingType(propertyType);
+            if (propertyType1 != null && propertyType1 != propertyType)
+                propertyType = propertyType1;
+
+            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Measurement<>))
+            {
+                var textProperty = propertyType.GetProperty("Text");
+                AddAttribute(element, propertyAttribute.Name, (string)textProperty.GetValue(propertyValue));
+            }
+            else if (propertyType.IsEnum)
+            {
+                var textValue = propertyValue.ToString();
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else if (propertyType == typeof(double))
+            {
+                var textValue = ((double)propertyValue).ToString(CultureInfo.InvariantCulture);
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else if (propertyType == typeof(int))
+            {
+                var textValue = ((int)propertyValue).ToString(CultureInfo.InvariantCulture);
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else if (propertyType == typeof(bool))
+            {
+                var textValue = (bool)propertyValue ? "true" : "false";
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else if (propertyType == typeof(DateTime))
+            {
+                var textValue = ((DateTime)propertyValue).ToString("yyyy-MM-dd HH:mm:ss");
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else if (propertyType == typeof(TimeSpan))
+            {
+                var textValue = ((TimeSpan)propertyValue).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else if (propertyType == typeof(string))
+            {
+                AddAttribute(element, propertyAttribute.Name, (string)propertyValue);
+            }
+            else if (propertyType == typeof(BallisticCoefficient))
+            {
+                var textValue = ((BallisticCoefficient)propertyValue).ToString(CultureInfo.InvariantCulture);
+                AddAttribute(element, propertyAttribute.Name, textValue);
+            }
+            else
+            {
+                throw new InvalidOperationException($"The type {propertyType.FullName} of the property {type.FullName}.{property.Name} is not supported");
+            }
+
         }
 
         /// <summary>
@@ -227,6 +233,12 @@ namespace BallisticCalculator.Serialization
             
         }
 
+        /// <summary>
+        /// Reads properties of the object from the element
+        /// </summary>
+        /// <param name="type">The type being read</param>
+        /// <param name="element">The element with the data</param>
+        /// <param name="action">The action to perform on each property value.</param>
         private void ReadProperties(Type type, XmlElement element, Action<PropertyInfo, BXmlPropertyAttribute, object> action)
         {
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -245,68 +257,7 @@ namespace BallisticCalculator.Serialization
 
                 if (propertyAttribute.Collection)
                 {
-                    Type elementType = null;
-                    
-                    if (property.PropertyType.IsArray)
-                        elementType = property.PropertyType.GetElementType();
-                    else
-                    {
-                        foreach (var iface in property.PropertyType.GetInterfaces())
-                        {
-                            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                            {
-                                elementType = iface.GetGenericArguments()[0];
-                                break;
-                            }
-                        }    
-                    }
-
-                    if (elementType == null)
-                        throw new ArgumentException($"Can't determine the element type of the collection {property.PropertyType.FullName} of property {type.Name}.{property.Name}", nameof(type));
-
-                    BXmlElementAttribute elementAttribute = elementType.GetCustomAttribute<BXmlElementAttribute>();
-
-                    if (elementAttribute == null)
-                        throw new ArgumentException($"The collection {property.PropertyType.FullName} of property {type.Name}.{property.Name} is not a collection of serializable types", nameof(type));
-
-                    List<object> values = null;
-                    foreach (XmlNode childNode in element.ChildNodes)
-                    {
-                        if (childNode.NodeType == XmlNodeType.Element && childNode.Name == propertyAttribute.Name)
-                        {
-                            values = new List<object>();
-                            foreach (XmlNode arrayElement in childNode)
-                            {
-                                if (arrayElement.NodeType == XmlNodeType.Element && arrayElement.Name == elementAttribute.Name)
-                                    values.Add(Deserialize(elementType, (XmlElement)arrayElement));
-                            }
-                        }
-                    }
-
-                    if (values == null)
-                    {
-                        propertyValue = null;
-                    }
-                    else if (property.PropertyType.IsArray)
-                    {
-                        Array x = (Array)Activator.CreateInstance(property.PropertyType, new object[] { values.Count });
-                        for (int i = 0; i < values.Count; i++)
-                            x.SetValue(values[i], i);
-                        propertyValue = x;
-                    }
-                    else
-                    {
-                        object x = Activator.CreateInstance(property.PropertyType);
-                        MethodInfo mi = property.PropertyType.GetMethod("Add", new Type[] { elementType });
-                        if (mi != null)
-                        {
-                            for (int i = 0; i < values.Count; i++)
-                                mi.Invoke(x, new object[] { values[i] });
-                        }
-                        propertyValue = x;
-
-
-                    }
+                    propertyValue = ReadCollection(type, element, property, propertyAttribute);
                 }
                 else if (propertyAttribute.ChildElement)
                 {
@@ -322,93 +273,177 @@ namespace BallisticCalculator.Serialization
                             }
                         }
                     }
-
                 }
                 else
                 {
-
                     if (!string.IsNullOrWhiteSpace(propertyAttribute.Name))
+                        propertyValue = ReadAttribute(type, element, property, propertyAttribute);
+                }
+
+                if (propertyValue == null && !propertyAttribute.Optional)
+                    throw new InvalidOperationException($"The XML element or attribute associated with the property {type.FullName}.{property.Name} is not found and the value is not optional");
+
+                action(property, propertyAttribute, propertyValue);
+            }
+        }
+
+        /// <summary>
+        /// Reads a collection property
+        /// </summary>
+        /// <param name="type">The type being read</param>
+        /// <param name="element"></param>
+        /// <param name="property"></param>
+        /// <param name="propertyAttribute"></param>
+        /// <returns></returns>
+        private object ReadCollection(Type type, XmlElement element, PropertyInfo property, BXmlPropertyAttribute propertyAttribute)
+        {
+            object propertyValue = null;
+            Type elementType = null;
+
+            if (property.PropertyType.IsArray)
+                elementType = property.PropertyType.GetElementType();
+            else
+            {
+                foreach (var iface in property.PropertyType.GetInterfaces())
+                {
+                    if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                     {
-                        string propertyText = GetAttribute(element, propertyAttribute.Name, null);
-                        if (propertyText != null)
+                        elementType = iface.GetGenericArguments()[0];
+                        break;
+                    }
+                }
+            }
+
+            if (elementType == null)
+                throw new ArgumentException($"Can't determine the element type of the collection {property.PropertyType.FullName} of property {type.Name}.{property.Name}", nameof(type));
+
+            BXmlElementAttribute elementAttribute = elementType.GetCustomAttribute<BXmlElementAttribute>();
+
+            if (elementAttribute == null)
+                throw new ArgumentException($"The collection {property.PropertyType.FullName} of property {type.Name}.{property.Name} is not a collection of serializable types", nameof(type));
+
+            List<object> values = null;
+            foreach (XmlNode childNode in element.ChildNodes)
+            {
+                if (childNode.NodeType == XmlNodeType.Element && childNode.Name == propertyAttribute.Name)
+                {
+                    values = new List<object>();
+                    foreach (XmlNode arrayElement in childNode)
+                    {
+                        if (arrayElement.NodeType == XmlNodeType.Element && arrayElement.Name == elementAttribute.Name)
+                            values.Add(Deserialize(elementType, (XmlElement)arrayElement));
+                    }
+                }
+            }
+
+            if (values == null)
+            {
+                propertyValue = null;
+            }
+            else if (property.PropertyType.IsArray)
+            {
+                Array x = (Array)Activator.CreateInstance(property.PropertyType, new object[] { values.Count });
+                for (int i = 0; i < values.Count; i++)
+                    x.SetValue(values[i], i);
+                propertyValue = x;
+            }
+            else
+            {
+                object x = Activator.CreateInstance(property.PropertyType);
+                MethodInfo mi = property.PropertyType.GetMethod("Add", new Type[] { elementType });
+                if (mi != null)
+                {
+                    for (int i = 0; i < values.Count; i++)
+                        mi.Invoke(x, new object[] { values[i] });
+                }
+                propertyValue = x;
+            }
+            return propertyValue;
+        }
+
+        /// <summary>
+        /// Reads a simple value from the attribute
+        /// </summary>
+        /// <param name="type">The type being read</param>
+        /// <param name="element"></param>
+        /// <param name="property"></param>
+        /// <param name="propertyAttribute"></param>
+        /// <returns></returns>
+        private object ReadAttribute(Type type, XmlElement element, PropertyInfo property, BXmlPropertyAttribute propertyAttribute)
+        {
+            object propertyValue = null;
+            string propertyText = GetAttribute(element, propertyAttribute.Name, null);
+            if (propertyText != null)
+            {
+                var propertyType = property.PropertyType;
+                var propertyType1 = Nullable.GetUnderlyingType(propertyType);
+                if (propertyType1 != null && propertyType1 != propertyType)
+                    propertyType = propertyType1;
+                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Measurement<>))
+                {
+                    var ci = propertyType.GetConstructor(new Type[] { typeof(string) });
+                    if (ci != null)
+                    {
+                        try
                         {
-                            var propertyType = property.PropertyType;
-                            var propertyType1 = Nullable.GetUnderlyingType(propertyType);
-                            if (propertyType1 != null && propertyType1 != propertyType)
-                                propertyType = propertyType1;
-                            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Measurement<>))
-                            {
-                                var ci = propertyType.GetConstructor(new Type[] { typeof(string) });
-                                if (ci != null)
-                                {
-                                    try
-                                    {
-                                        propertyValue = ci.Invoke(new object[] { propertyText });
-                                    }
-                                    catch (Exception)
-                                    {
-                                        propertyValue = null;
-                                    }
-                                }
-                            }
-                            else if (propertyType.IsEnum)
-                            {
-                                propertyValue = Enum.Parse(propertyType, propertyText);
-                            }
-                            else if (propertyType == typeof(double))
-                            {
-                                if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
-                                    propertyValue = x;
-                            }
-                            else if (propertyType == typeof(int))
-                            {
-                                if (int.TryParse(propertyText, NumberStyles.Any, CultureInfo.InvariantCulture, out int x))
-                                    propertyValue = x;
-                            }
-                            else if (propertyType == typeof(bool))
-                            {
-                                propertyValue = propertyText == "true";
-                            }
-                            else if (propertyType == typeof(DateTime))
-                            {
-                                DateTime d;
-                                if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
-                                    propertyValue = d;
-                                else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
-                                    propertyValue = d;
-                                else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
-                                    propertyValue = d;
-                            }
-                            else if (propertyType == typeof(TimeSpan))
-                            {
-                                if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
-                                    propertyValue = TimeSpan.FromMilliseconds(x);
-                                else if (TimeSpan.TryParse(propertyText, out TimeSpan ts))
-                                    propertyValue = ts;
-                            }
-                            else if (propertyType == typeof(string))
-                            {
-                                propertyValue = propertyText;
-                            }
-                            else if (propertyType == typeof(BallisticCoefficient))
-                            {
-                                if (BallisticCoefficient.TryParse(propertyText, CultureInfo.InvariantCulture, out BallisticCoefficient ballisticCoefficient))
-                                    propertyValue = ballisticCoefficient;
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException($"The type {propertyType.FullName} of the property {type.FullName}.{property.Name} is not supported");
-                            }
+                            propertyValue = ci.Invoke(new object[] { propertyText });
+                        }
+                        catch (Exception)
+                        {
+                            propertyValue = null;
                         }
                     }
                 }
-
-                if (propertyValue == null)
-                    if (!propertyAttribute.Optional)
-                        throw new InvalidOperationException($"The XML element or attribute associated with the property {type.FullName}.{property.Name} is not found and the value is not optional");
-                
-                action(property, propertyAttribute, propertyValue);
+                else if (propertyType.IsEnum)
+                {
+                    propertyValue = Enum.Parse(propertyType, propertyText);
+                }
+                else if (propertyType == typeof(double))
+                {
+                    if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
+                        propertyValue = x;
+                }
+                else if (propertyType == typeof(int))
+                {
+                    if (int.TryParse(propertyText, NumberStyles.Any, CultureInfo.InvariantCulture, out int x))
+                        propertyValue = x;
+                }
+                else if (propertyType == typeof(bool))
+                {
+                    propertyValue = propertyText == "true";
+                }
+                else if (propertyType == typeof(DateTime))
+                {
+                    DateTime d;
+                    if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
+                        propertyValue = d;
+                    else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
+                        propertyValue = d;
+                    else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
+                        propertyValue = d;
+                }
+                else if (propertyType == typeof(TimeSpan))
+                {
+                    if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
+                        propertyValue = TimeSpan.FromMilliseconds(x);
+                    else if (TimeSpan.TryParse(propertyText, out TimeSpan ts))
+                        propertyValue = ts;
+                }
+                else if (propertyType == typeof(string))
+                {
+                    propertyValue = propertyText;
+                }
+                else if (propertyType == typeof(BallisticCoefficient))
+                {
+                    if (BallisticCoefficient.TryParse(propertyText, CultureInfo.InvariantCulture, out BallisticCoefficient ballisticCoefficient))
+                        propertyValue = ballisticCoefficient;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The type {propertyType.FullName} of the property {type.FullName}.{property.Name} is not supported");
+                }
             }
+            return propertyValue;
         }
 
         /// <summary>

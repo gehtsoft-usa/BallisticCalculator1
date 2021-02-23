@@ -28,7 +28,7 @@ namespace BallisticCalculator
         /// Zeroing parameters
         /// 
         /// These parameters are used only to calculate sight angle by
-        /// <see cref="TrajectoryCaculator.SightAngle(Ammunition, Rifle, Atmosphere)">TrajectoryCaculator.SightAngle</see> method.
+        /// <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere)">TrajectoryCaculator.SightAngle</see> method.
         /// </summary>
         [BXmlProperty(ChildElement = true)]
         public ZeroingParameters Zero { get; set; }

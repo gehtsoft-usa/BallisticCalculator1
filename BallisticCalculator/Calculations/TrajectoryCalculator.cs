@@ -5,13 +5,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 
-
 namespace BallisticCalculator
 {
     /// <summary>
     /// The calculator for the projectile trajectory
     /// </summary>
-    public class TrajectoryCaculator
+    public class TrajectoryCalculator
     {
         /// <summary>
         /// The maximum step size of the calculation.
@@ -195,7 +194,7 @@ namespace BallisticCalculator
             int currentWind = 0;
             Measurement<DistanceUnit> nextWindRange = new Measurement<DistanceUnit>(1e7, DistanceUnit.Meter);
             Vector<VelocityUnit> windVector;
-            if (wind == null || wind.Length < 0)
+            if (wind == null || wind.Length < 1)
                 windVector = new Vector<VelocityUnit>();
             else
             {
@@ -209,7 +208,7 @@ namespace BallisticCalculator
             //x - distance towards target,
             //y - drop and
             //z - windage
-            var rangeVector = new Vector<DistanceUnit>(new Measurement<DistanceUnit>(0, DistanceUnit.Meter), 
+            var rangeVector = new Vector<DistanceUnit>(new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
                 -rifle.Sight.SightHeight, 
                 new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
             
@@ -234,7 +233,7 @@ namespace BallisticCalculator
             {
                 Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
                 
-                //update density and mach velocity each 10 feet
+                //update density and Mach velocity each 10 feet of altitude
                 if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
                 {
                     atmosphere.AtAltitude(alt, out densityFactor, out mach);
