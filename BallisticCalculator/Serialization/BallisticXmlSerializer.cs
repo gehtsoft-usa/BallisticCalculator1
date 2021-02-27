@@ -534,7 +534,7 @@ namespace BallisticCalculator.Serialization
         }
 
         /// <summary>
-        /// Add an attribute that contains a measurment
+        /// Add an attribute that contains a measurement
         /// </summary>
         /// <typeparam name="T">A measurement unit (e.g. AngularUnit)</typeparam>
         /// <param name="node">The node</param>

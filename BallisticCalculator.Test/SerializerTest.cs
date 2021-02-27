@@ -3,9 +3,6 @@ using FluentAssertions;
 using Gehtsoft.Measurements;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using Xunit;
 
@@ -523,8 +520,8 @@ namespace BallisticCalculator.Test
         {
             CollectorClass collector = new CollectorClass()
             {
-                Array = new ChildClass[] {  },
-                List = new List<ChildClass>() {  },
+                Array = new ChildClass[0],
+                List = new List<ChildClass>(),
                 Array2 = null,
             };
 
@@ -538,6 +535,39 @@ namespace BallisticCalculator.Test
 
             collector2.Array.Should().HaveCount(0);
             collector2.List.Should().HaveCount(0);
+        }
+
+        [Fact]
+        public void TestTrajectoryPoint()
+        {
+            var point = new TrajectoryPoint(TimeSpan.FromMilliseconds(0.5),
+                new Measurement<WeightUnit>(55, WeightUnit.Grain),
+                new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+                new Measurement<VelocityUnit>(2430, VelocityUnit.FeetPerSecond),
+                2.15937,
+                new Measurement<DistanceUnit>(1.54, DistanceUnit.Inch),
+                new Measurement<DistanceUnit>(-2.55, DistanceUnit.Inch));
+
+            point.OptimalGameWeight.In(WeightUnit.Pound).Should().BeApproximately(65, 0.5);
+            point.DropAdjustment.Should().Be(new Measurement<AngularUnit>(1.54, AngularUnit.InchesPer100Yards));
+            point.WindageAdjustment.Should().Be(new Measurement<AngularUnit>(-2.55, AngularUnit.InchesPer100Yards));
+
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+            var xml = serializer.Serialize(point);
+            var point2 = serializer.Deserialize<TrajectoryPoint>(xml);
+
+            point2.Time.Should().Be(point.Time);
+            point2.Distance.Should().Be(point.Distance);
+            point2.Velocity.Should().Be(point.Velocity);
+            point2.Mach.Should().Be(point.Mach);
+            point2.Energy.Should().Be(point.Energy);
+            point2.OptimalGameWeight.Should().Be(point.OptimalGameWeight);
+            point2.Drop.Should().Be(point.Drop);
+            point2.DropAdjustment.Should().Be(point.DropAdjustment);
+            point2.Windage.Should().Be(point.Windage);
+            point2.WindageAdjustment.Should().Be(point.WindageAdjustment);
+
+
         }
     }
 }

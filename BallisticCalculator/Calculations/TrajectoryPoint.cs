@@ -1,4 +1,5 @@
-﻿using Gehtsoft.Measurements;
+﻿using BallisticCalculator.Serialization;
+using Gehtsoft.Measurements;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,25 +10,31 @@ namespace BallisticCalculator
     /// <summary>
     /// One point of the projectile trajectory
     /// </summary>
+    [BXmlElement("point")]
     public class TrajectoryPoint
     {
+
         /// <summary>
         /// Time since start
         /// </summary>
+        [BXmlProperty(Name = "time")]
         public TimeSpan Time { get; }
         /// <summary>
         /// Distance traveled
         /// </summary>
+        [BXmlProperty(Name = "distance")]
         public Measurement<DistanceUnit> Distance { get; }
         /// <summary>
         /// Current velocity
         /// </summary>
+        [BXmlProperty(Name = "velocity")]
         public Measurement<VelocityUnit> Velocity { get; }
         /// <summary>
         /// Velocity in Mach 
         /// 
         /// The value shows proportion of the current velocity to the velocity of sound for the current atmosphere conditions
         /// </summary>
+        [BXmlProperty(Name = "mach")]
         public double Mach { get; }
 
         /// <summary>
@@ -35,6 +42,7 @@ namespace BallisticCalculator
         /// 
         /// The stop is vertical distance between trajectory and the line of sight.
         /// </summary>
+        [BXmlProperty(Name = "drop")]
         public Measurement<DistanceUnit> Drop { get; }
 
         /// <summary>
@@ -42,13 +50,14 @@ namespace BallisticCalculator
         /// 
         /// The windage is horizontal distance between trajectory and the line of sight
         /// </summary>
-
+        [BXmlProperty(Name = "windage")]
         public Measurement<DistanceUnit> Windage { get; }
 
 
         /// <summary>
         /// Projectile energy
         /// </summary>
+        [BXmlProperty(Name = "energy")]
         public Measurement<EnergyUnit> Energy { get; }
 
         /// <summary>
@@ -66,6 +75,7 @@ namespace BallisticCalculator
         /// <summary>
         /// Optimal weight of the game
         /// </summary>
+        [BXmlProperty(Name = "optimal-game-weight")]
         public Measurement<WeightUnit> OptimalGameWeight { get; }
 
         /// <summary>
@@ -100,6 +110,7 @@ namespace BallisticCalculator
         /// <param name="energy"></param>
         /// <param name="optimalGameWeight"></param>
         [JsonConstructor]
+        [BXmlConstructor]
         public TrajectoryPoint(TimeSpan time, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy, 
@@ -110,6 +121,7 @@ namespace BallisticCalculator
             Velocity = velocity;
             Drop = drop;
             DropAdjustment = MeasurementMath.Atan(Drop / Distance);
+            Mach = mach;
 
             Windage = windage;
             WindageAdjustment = MeasurementMath.Atan(Windage / Distance);
