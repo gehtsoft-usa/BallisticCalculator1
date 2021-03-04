@@ -4,8 +4,6 @@ using System.Text;
 
 namespace BallisticCalculator.Serialization
 {
-
-
     /// <summary>
     /// The attribute to markup the ballistic calculator serializable class 
     /// </summary>

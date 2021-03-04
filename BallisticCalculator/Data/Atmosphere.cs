@@ -29,6 +29,7 @@ namespace BallisticCalculator
         /// </summary>
         [BXmlProperty("temperature")]
         public Measurement<TemperatureUnit> Temperature { get; }
+        
         /// <summary>
         /// The current humidity in percents
         /// </summary>
