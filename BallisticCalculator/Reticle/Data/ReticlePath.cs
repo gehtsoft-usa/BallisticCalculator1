@@ -47,6 +47,9 @@ namespace BallisticCalculator.Reticle.Data
         [BXmlProperty(Name = "fill-color", Optional = true)]
         public string FillColor { get; set; }
 
+        /// <summary>
+        /// The collection of reticle's elements
+        /// </summary>
         [BXmlProperty(Name = "elements", Collection = true)]
         public ReticlePathElementsCollection Elements { get; } = new ReticlePathElementsCollection();
 

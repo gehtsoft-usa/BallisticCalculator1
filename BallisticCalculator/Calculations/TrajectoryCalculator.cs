@@ -92,7 +92,7 @@ namespace BallisticCalculator
                 {
                     Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
 
-                    //update density and mach velocity each 10 feet
+                    //update density and Mach velocity each 10 feet
                     if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
                     {
                         atmosphere.AtAltitude(alt, out densityFactor, out mach);
@@ -106,7 +106,7 @@ namespace BallisticCalculator
 
                     double currentMach = velocity / mach;
 
-                    //find mach node for the first time
+                    //find Mach node for the first time
                     if (dragTableNode == null)
                         dragTableNode = DragTable.Get(ammunition.BallisticCoefficient.Table).Find(currentMach);
 
@@ -284,7 +284,7 @@ namespace BallisticCalculator
                 velocity = velocityAdjusted.Magnitude;
                 double currentMach = velocity / mach;
 
-                //find mach node for the first time
+                //find Mach node for the first time
                 if (dragTableNode == null)
                     dragTableNode = DragTable.Get(ammunition.BallisticCoefficient.Table).Find(currentMach);
 
@@ -342,7 +342,7 @@ namespace BallisticCalculator
             }
             else
             {
-                rangeVelocity = wind.Velocity.To(units);
+                rangeVelocity = new Measurement<VelocityUnit>(0, units);
                 crossComponent = new Measurement<VelocityUnit>(0, units);
             }
             

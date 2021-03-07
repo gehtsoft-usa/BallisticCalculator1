@@ -66,18 +66,6 @@ namespace BallisticCalculator.Serialization
             return Deserialize(element, type);
         }
 
-        private string GetTargetName(BXmlPropertyAttribute propertyAttribute, PropertyInfo propertyInfo)
-        {
-            if (!string.IsNullOrEmpty(propertyAttribute.Name))
-                return propertyAttribute.Name;
-
-            BXmlElementAttribute elementAttribute = propertyInfo.PropertyType.GetCustomAttribute<BXmlElementAttribute>();
-            if (elementAttribute == null)
-                throw new ArgumentException($"The properties that has no name must have a type attributed with {nameof(BXmlElementAttribute)}");
-
-            return elementAttribute.Name;
-        }
-
         /// <summary>
         /// Deserialize object from the element using the specified type
         /// <param name="element"/>
@@ -95,8 +83,6 @@ namespace BallisticCalculator.Serialization
                     specificConstructor = constructor;
                     break;
                 }
-
-            var elementAttribute = type.GetCustomAttribute<BXmlElementAttribute>();
 
             object value = null;
             ParameterInfo[] constructorParams = null;
@@ -192,7 +178,7 @@ namespace BallisticCalculator.Serialization
                 if (elementAttribute1 == null && string.IsNullOrEmpty(propertyAttribute.Name))
                     throw new InvalidOperationException($"The value of the property {type.FullName}.{propertyName} must have the name specified in the {nameof(BXmlPropertyAttribute)}");
 
-                elementToSearch = propertyAttribute.Name ?? elementAttribute1.Name;
+                elementToSearch = propertyAttribute.Name ?? elementAttribute1?.Name;
 
                 if (!propertyAttribute.FlattenChild)
                 {
@@ -353,6 +339,7 @@ namespace BallisticCalculator.Serialization
         /// <param name="propertyName"></param>
         /// <param name="propertyType"></param>
         /// <param name="propertyAttribute"></param>
+        /// <param name="attributePrefix"></param>
         /// <returns></returns>
         private object ReadAttribute(Type type, XmlElement element, string propertyName, Type propertyType, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {

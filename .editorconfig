@@ -1,0 +1,7 @@
+﻿[*.cs]
+
+# RCS1061: Merge 'if' with nested 'if'.
+dotnet_diagnostic.RCS1061.severity = none
+
+# S1066: Collapsible "if" statements should be merged
+dotnet_diagnostic.S1066.severity = none

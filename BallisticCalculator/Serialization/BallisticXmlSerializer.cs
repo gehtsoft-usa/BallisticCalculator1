@@ -10,7 +10,7 @@ using System.Xml;
 namespace BallisticCalculator.Serialization
 {
     /// <summary>
-    /// Serializer 
+    /// Serializer
     /// </summary>
     public class BallisticXmlSerializer
     {
@@ -26,7 +26,6 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         public BallisticXmlSerializer() : this(new XmlDocument())
         {
-
         }
 
         /// <summary>
@@ -50,7 +49,7 @@ namespace BallisticCalculator.Serialization
                 throw new ArgumentNullException(nameof(value));
 
             if (forceName != null && string.IsNullOrWhiteSpace(forceName))
-                throw new ArgumentException($"The forced name of the attribute must not be an empty string if specified", nameof(forceName));
+                throw new ArgumentException("The forced name of the attribute must not be an empty string if specified", nameof(forceName));
 
             var elementAttribute = value.GetType().GetCustomAttribute<BXmlElementAttribute>();
 
@@ -74,12 +73,12 @@ namespace BallisticCalculator.Serialization
             foreach (var property in value.GetType().GetProperties())
             {
                 var propertyAttribute = property.GetCustomAttribute<BXmlPropertyAttribute>();
-                
+
                 if (propertyAttribute == null)
                     continue;
 
                 object propertyValue = property.GetValue(value);
-                
+
                 if (propertyValue == null)
                 {
                     if (propertyAttribute.Optional)
@@ -129,6 +128,7 @@ namespace BallisticCalculator.Serialization
         /// <param name="propertyValue"></param>
         /// <param name="property"></param>
         /// <param name="propertyAttribute"></param>
+        /// <param name="attributePrefix"></param>
         private void AddAttribute(XmlElement element, object targetObject, object propertyValue, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {
             var propertyType = property.PropertyType;
@@ -194,6 +194,7 @@ namespace BallisticCalculator.Serialization
         /// <param name="element"></param>
         /// <param name="name"></param>
         /// <param name="value"></param>
+        /// <param name="attributePrefix"></param>
         private void AddAttribute(XmlElement element, string name, string value, string attributePrefix)
         {
             if (!string.IsNullOrEmpty(attributePrefix))

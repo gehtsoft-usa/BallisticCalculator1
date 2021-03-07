@@ -9,6 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BallisticCalculator.Test", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BallisticCalculator.Debug", "BallisticCalculator.Debug\BallisticCalculator.Debug.csproj", "{096C2838-6364-4F84-B685-C1863F6E9747}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C7A03B43-1BDE-4141-9CD9-2943B294CE2D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,9 +37,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		        SolutionGuid = {1DB720A6-F8F3-459A-B73B-7B427A562420}
-		                        SolutionGuid = {08DCD22C-F051-46F7-B091-A7FA54E2A4FD}
-		                SolutionGuid = {AAE7D1C7-ADD5-4A4F-AE8E-445215839359}
 		SolutionGuid = {F8409515-AAAA-459A-8661-F651BF9FF1F1}
+		                SolutionGuid = {AAE7D1C7-ADD5-4A4F-AE8E-445215839359}
+		                        SolutionGuid = {08DCD22C-F051-46F7-B091-A7FA54E2A4FD}
+		        SolutionGuid = {1DB720A6-F8F3-459A-B73B-7B427A562420}
 	EndGlobalSection
 EndGlobal
