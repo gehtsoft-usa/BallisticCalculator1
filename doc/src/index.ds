@@ -26,6 +26,8 @@
 
     The source code of the library is available in git: [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]https://github.com/gehtsoft-usa/BallisticCalculator1[/eurl]
 
+    Please feel free to report defects in [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1/issues]Git Issues[/eurl].
+
     The library is also available in Go: [eurl=https://github.com/gehtsoft-usa/go_ballisticcalc]https://github.com/gehtsoft-usa/go_ballisticcalc[/eurl]
 
     For those who are looking for a JavaScript version, I highly recommend [eurl=https://ptosis.ch/ebalka/ebalka.html]Yet Another Ballistic Calculator[/eurl] project of our friend Alexandre Trofimov.
@@ -42,15 +44,48 @@
 
     Recommended books:
     [eurl=https://www.amazon.com/Applied-Ballistics-Long-Range-Shooting/dp/0990920615]Applied Ballistics For Long Range Shooting 3rd Edition[/eurl] by Bryan Litz
+@end
 
-    RISK NOTICE
+@article
+    @title=License Information
+    @brief=The information about the license
+    @transform=yes
+    @ingroup=index
+    @key=license
+
+    The code is distributed under LGPL 2.1 license.
+
+    The the full text of the license please refer to GNU website:
+    [eurl=https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html]LGPL 2.1[/eurl]
+
+    In short:
+
+    1) yes, you can to use the library as is in any kind of the software, including commercial software.
+
+    2) no, you can not create private derivatives of this library or make a changes in the code for the purpose of your product
+       and keep them private. Any changes introduced into the library must be published under the LGPL or more permissive license.
+@end
+
+@article
+    @title=Risk Notice
+    @brief=The explanation of the risks associated with using 3DF algorithms
+    @transform=yes
+    @ingroup=index
+    @key=risknotice
 
     The library performs very limited simulation of a complex physical process and so it performs a lot
     of approximations. Therefore the calculation results MUST NOT be considered as completely and reliably
     reflecting actual behavior or characteristics of projectiles. While these results may be used for
     educational purpose, they must NOT be considered as reliable for the areas where incorrect calculation may
     cause making a wrong decision, financial harm, or can put a human life at risk.
+@end
 
+@article
+    @title=No Warranty Notice
+    @brief=The explanation that no warranties of any kind is associated with this code
+    @transform=yes
+    @ingroup=index
+    @key=no_warranties
     THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
