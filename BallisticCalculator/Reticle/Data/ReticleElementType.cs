@@ -23,8 +23,7 @@
         Circle,
         /// <summary>
         /// An element is an arc
-        /// </summary>      
+        /// </summary>
         Text,
     }
-
 }

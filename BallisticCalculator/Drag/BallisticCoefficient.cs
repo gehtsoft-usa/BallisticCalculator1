@@ -9,7 +9,7 @@ namespace BallisticCalculator
     /// <summary>
     /// The value representing ballistic coefficient
     /// </summary>
-    public struct BallisticCoefficient : IEquatable<BallisticCoefficient>, IComparable<BallisticCoefficient>
+    public struct BallisticCoefficient : IEquatable<BallisticCoefficient>
     {
         /// <summary>
         /// The value of the coefficient
@@ -18,7 +18,7 @@ namespace BallisticCalculator
         public double Value { get; }
 
         /// <summary>
-        /// The ballistic table 
+        /// The ballistic table
         /// </summary>
         [JsonIgnore]
         public DragTableId Table { get; }
@@ -55,7 +55,6 @@ namespace BallisticCalculator
                 Value = value;
                 Table = table;
             }
-                
         }
 
         /// <summary>
@@ -94,9 +93,7 @@ namespace BallisticCalculator
             if (!Enum.TryParse<DragTableId>(tableName, out table))
                 return false;
             string v = text.Substring(0, text.Length - 2);
-            if (!double.TryParse(v, NumberStyles.Float, cultureInfo, out value))
-                return false;
-            return true;
+            return double.TryParse(v, NumberStyles.Float, cultureInfo, out value);
         }
 
         /// <summary>
@@ -118,22 +115,7 @@ namespace BallisticCalculator
         /// <param name="format"></param>
         /// <param name="ci"></param>
         /// <returns></returns>
-        public string ToString(string format, CultureInfo ci) => $"{(format == null ? Value.ToString() : Value.ToString(format))}{Table}";
-
-        /// <summary>
-        /// Compares value to other value
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public int CompareTo(BallisticCoefficient other)
-        {
-            if (Table < other.Table)
-                return -1;
-            else if (Table > other.Table)
-                return 1;
-            return Value.CompareTo(other.Value);
-        }
-
+        public string ToString(string format, CultureInfo ci) => $"{(format == null ? Value.ToString(ci) : Value.ToString(format, ci))}{Table}";
 
         /// <summary>
         /// Checks whether the object equals to other object
@@ -143,6 +125,18 @@ namespace BallisticCalculator
         public bool Equals(BallisticCoefficient other)
         {
             return Value == other.Value && Table == other.Table;
+        }
+
+        /// <summary>
+        /// Checks whether object equals to another object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is BallisticCoefficient bc)
+                return Equals(bc);
+            return false;
         }
 
         /// <summary>
@@ -158,18 +152,6 @@ namespace BallisticCalculator
                 hash = hash * 17 + Table.GetHashCode();
                 return hash;
             }
-        }
-
-        /// <summary>
-        /// Checks whether object equals to another object
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public override bool Equals(object other)
-        {
-            if (other is BallisticCoefficient bc)
-                return Equals(bc);
-            return false;
         }
     }
 }

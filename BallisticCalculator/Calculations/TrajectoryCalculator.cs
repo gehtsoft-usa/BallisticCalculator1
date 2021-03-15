@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-
 namespace BallisticCalculator
 {
     /// <summary>
@@ -13,16 +12,15 @@ namespace BallisticCalculator
     public class TrajectoryCalculator
     {
         /// <summary>
-        /// The maximum step size of the calculation.
-        /// 
-        /// The default value is 10cm
+        /// <para>The maximum step size of the calculation.</para>
+        /// <para>The default value is 10cm</para>
         /// </summary>
         public Measurement<DistanceUnit> MaximumCalculationStepSize { get; set; } = new Measurement<DistanceUnit>(0.1, DistanceUnit.Meter);
 
         /// <summary>
         /// The maximum drop value to stop further calculation
         /// </summary>
-        public static Measurement<DistanceUnit> MaximumDrop { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }  = new Measurement<DistanceUnit>(10000, DistanceUnit.Foot);
+        public static Measurement<DistanceUnit> MaximumDrop { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new Measurement<DistanceUnit>(10000, DistanceUnit.Foot);
 
         /// <summary>
         /// The minimum velocity to stop the calculation
@@ -30,13 +28,12 @@ namespace BallisticCalculator
         public static Measurement<VelocityUnit> MinimumVelocity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new Measurement<VelocityUnit>(50, VelocityUnit.FeetPerSecond);
 
         /// <summary>
-        /// Calculates the sight angle for the specified zero distance 
+        /// Calculates the sight angle for the specified zero distance
         /// </summary>
         /// <param name="ammunition"></param>
         /// <param name="rifle"></param>
         /// <param name="atmosphere"></param>
         /// <returns></returns>
-
         public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere)
         {
             Measurement<DistanceUnit> rangeTo = rifle.Zero.Distance * 2;
@@ -84,7 +81,7 @@ namespace BallisticCalculator
 
                 double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
                 double ballisicFactor = 2.08551e-04 * adjustBallisticFactorForVelocityUnits / ammunition.BallisticCoefficient.Value;
-                var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare), 
+                var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
                 //run all the way down the range
@@ -121,13 +118,12 @@ namespace BallisticCalculator
                         velocityVector.Y - deltaTime.TotalSeconds * drag * velocityVector.Y - earthGravity * deltaTime.TotalSeconds,
                         velocityVector.Z - deltaTime.TotalSeconds * drag * velocityVector.Z);
 
-
                     var deltaRangeVector = new Vector<DistanceUnit>(calculationStep,
                             new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
                             new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
-                    rangeVector = rangeVector + deltaRangeVector;
-                    
+                    rangeVector += deltaRangeVector;
+
                     if (rangeVector.X >= rifle.Zero.Distance)
                     {
                         if (Math.Abs(rangeVector.Y.In(DistanceUnit.Millimeter)) < 1)
@@ -142,9 +138,7 @@ namespace BallisticCalculator
                 }
             }
             throw new InvalidOperationException("Cannot find zero parameters");
-
         }
-
 
         /// <summary>
         /// Calculates the trajectory for the specified parameters.
@@ -178,10 +172,11 @@ namespace BallisticCalculator
                 calculateDrift = true;
             }
             else
+            {
                 calculateDrift = false;
+            }
 
-            TrajectoryPoint[] trajectoryPoints = null;
-            trajectoryPoints = new TrajectoryPoint[(int)(Math.Floor(rangeTo / step)) + 1];
+            TrajectoryPoint[] trajectoryPoints = new TrajectoryPoint[(int)(Math.Floor(rangeTo / step)) + 1];
 
             var barrelAzimuth = new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
             var barrelElevation = shot.SightAngle;
@@ -195,23 +190,23 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> nextWindRange = new Measurement<DistanceUnit>(1e7, DistanceUnit.Meter);
             Vector<VelocityUnit> windVector;
             if (wind == null || wind.Length < 1)
+            {
                 windVector = new Vector<VelocityUnit>();
+            }
             else
             {
                 if (wind.Length > 1 && wind[0].MaximumRange != null)
                     nextWindRange = wind[0].MaximumRange.Value;
                 windVector = WindVector(shot, wind[0], velocity.Unit);
             }
-            
-            
 
             //x - distance towards target,
             //y - drop and
             //z - windage
             var rangeVector = new Vector<DistanceUnit>(new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
-                -rifle.Sight.SightHeight, 
+                -rifle.Sight.SightHeight,
                 new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
-            
+
             var velocityVector = new Vector<VelocityUnit>(velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Cos(barrelAzimuth),
                                                           velocity * MeasurementMath.Sin(barrelElevation),
                                                           velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Sin(barrelAzimuth));
@@ -222,7 +217,7 @@ namespace BallisticCalculator
 
             Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000, DistanceUnit.Meter);
             DragTableNode dragTableNode = null;
-            
+
             double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
             double ballisicFactor = 2.08551e-04 * adjustBallisticFactorForVelocityUnits / ammunition.BallisticCoefficient.Value;
             var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
@@ -232,7 +227,7 @@ namespace BallisticCalculator
             while (rangeVector.X <= maximumRange)
             {
                 Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
-                
+
                 //update density and Mach velocity each 10 feet of altitude
                 if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
                 {
@@ -258,20 +253,16 @@ namespace BallisticCalculator
                 {
                     var windage = rangeVector.Z;
                     if (calculateDrift)
-                        windage += new Measurement<DistanceUnit>((1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? 1 : -1)), DistanceUnit.Inch);
+                        windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? 1 : -1), DistanceUnit.Inch);
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
-                        
-                        distance: rangeVector.X,
-                        drop: rangeVector.Y, 
-                        windage: windage, 
-
                         weight: ammunition.Weight,
+                        distance: rangeVector.X,
                         velocity: velocity,
-                        
-                        mach: velocity / mach
-                        );
+                        mach: velocity / mach,
+                        drop: rangeVector.Y,
+                        windage: windage);
                     nextRangeDistance += step;
                     currentItem++;
                     if (currentItem == trajectoryPoints.Length)
@@ -300,12 +291,11 @@ namespace BallisticCalculator
                                      - earthGravity * deltaTime.TotalSeconds,
                     velocityVector.Z - deltaTime.TotalSeconds * drag * velocityAdjusted.Z);
 
-
                 var deltaRangeVector = new Vector<DistanceUnit>(calculationStep,
                         new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
                         new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
-                rangeVector = rangeVector + deltaRangeVector;
+                rangeVector += deltaRangeVector;
                 velocity = velocityVector.Magnitude;
                 time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));
             }
@@ -320,7 +310,7 @@ namespace BallisticCalculator
             {
                 int stepOrder = (int)Math.Floor(Math.Log10(step.Value));
                 int maximumOrder = (int)Math.Floor(Math.Log10(MaximumCalculationStepSize.In(step.Unit)));
-                step = step / Math.Pow(10, stepOrder - maximumOrder + 1);
+                step /= Math.Pow(10, stepOrder - maximumOrder + 1);
             }
             return step;
         }
@@ -332,7 +322,7 @@ namespace BallisticCalculator
             double sightSine = MeasurementMath.Sin(shot.SightAngle);
             double cantCosine = MeasurementMath.Cos(shot.CantAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian));
             double cantSine = MeasurementMath.Sin(shot.CantAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian));
-            
+
             Measurement<VelocityUnit> rangeVelocity, crossComponent;
 
             if (wind != null)
@@ -345,9 +335,9 @@ namespace BallisticCalculator
                 rangeVelocity = new Measurement<VelocityUnit>(0, units);
                 crossComponent = new Measurement<VelocityUnit>(0, units);
             }
-            
+
             Measurement<VelocityUnit> rangeFactor = -rangeVelocity * sightSine;
-            
+
             return new Vector<VelocityUnit>(rangeVelocity * sightCosine, rangeFactor * cantCosine + crossComponent * cantSine, crossComponent * cantCosine - rangeFactor * cantSine);
         }
 

@@ -29,7 +29,7 @@ namespace BallisticCalculator
         /// </summary>
         [BXmlProperty("temperature")]
         public Measurement<TemperatureUnit> Temperature { get; }
-        
+
         /// <summary>
         /// The current humidity in percents
         /// </summary>
@@ -43,7 +43,7 @@ namespace BallisticCalculator
         public Measurement<VelocityUnit> SoundVelocity { get; }
 
         /// <summary>
-        /// Density of the atmosphere 
+        /// Density of the atmosphere
         /// </summary>
         [JsonIgnore]
         public Measurement<DensityUnit> Density { get; }
@@ -53,11 +53,9 @@ namespace BallisticCalculator
         /// </summary>
         public static Measurement<DensityUnit> StandardDensity { get; } = new Measurement<DensityUnit>(0.076474, DensityUnit.PoundsPerCubicFoot);
 
-
         /// <summary>
-        /// Create default atmosphere. 
-        /// 
-        /// The standard atmosphere is at sea level, 15C, the pressure of 1 atmosphere and 78% humidity
+        /// <para>Create default atmosphere.</para>
+        /// <para>The standard atmosphere is at sea level, 15C, the pressure of 1 atmosphere and 78% humidity</para>
         /// </summary>
         public Atmosphere() : this(new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
                                    new Measurement<PressureUnit>(29.95, PressureUnit.InchesOfMercury),
@@ -67,7 +65,6 @@ namespace BallisticCalculator
         {
         }
 
-        
         /// <summary>
         /// Parameterized constructor for the pressure at altitude
         /// </summary>
@@ -76,11 +73,10 @@ namespace BallisticCalculator
         /// <param name="temperature"></param>
         /// <param name="humidity"></param>
         [JsonConstructor]
-        [BXmlConstructor]
-        public Atmosphere(Measurement<DistanceUnit> altitude, Measurement<PressureUnit> pressure, Measurement<TemperatureUnit> temperature, double humidity) 
-            :this(altitude, pressure, false, temperature, humidity)
+        [BXmlConstructorAttribute]
+        public Atmosphere(Measurement<DistanceUnit> altitude, Measurement<PressureUnit> pressure, Measurement<TemperatureUnit> temperature, double humidity)
+            : this(altitude, pressure, false, temperature, humidity)
         {
-
         }
 
         /// <summary>
@@ -97,15 +93,14 @@ namespace BallisticCalculator
             if (!pressureAtSeaLevel || altitude.Value <= 0)
                 Pressure = pressure;
             else
-                Pressure = new Measurement<PressureUnit>(calculatePressure(pressure.In(PressureUnit.Bar), temperature.In(TemperatureUnit.Kelvin), 0, altitude.In(DistanceUnit.Meter)), PressureUnit.Bar);
-            
+                Pressure = new Measurement<PressureUnit>(CalculatePressure(pressure.In(PressureUnit.Bar), temperature.In(TemperatureUnit.Kelvin), 0, altitude.In(DistanceUnit.Meter)), PressureUnit.Bar);
+
             Temperature = temperature;
             Humidity = humidity;
 
-            Density = new Measurement<DensityUnit>(calculateDensity(temperature.In(TemperatureUnit.Kelvin), pressure.In(PressureUnit.Pascal), humidity), DensityUnit.KilogramPerCubicMeter);
-            SoundVelocity = new Measurement<VelocityUnit>(calculateSoundVelocity(temperature.In(TemperatureUnit.Kelvin)), VelocityUnit.MetersPerSecond);
+            Density = new Measurement<DensityUnit>(CalculateDensity(temperature.In(TemperatureUnit.Kelvin), pressure.In(PressureUnit.Pascal), humidity), DensityUnit.KilogramPerCubicMeter);
+            SoundVelocity = new Measurement<VelocityUnit>(CalculateSoundVelocity(temperature.In(TemperatureUnit.Kelvin)), VelocityUnit.MetersPerSecond);
         }
-
 
         /// <summary>
         /// Creates an ICAO default atmosphere at the specified altitude
@@ -119,8 +114,8 @@ namespace BallisticCalculator
             double pressure = Measurement<PressureUnit>.Convert(29.92, PressureUnit.InchesOfMercury, PressureUnit.Pascal);
             double temperature = Measurement<TemperatureUnit>.Convert(59, TemperatureUnit.Fahrenheit, TemperatureUnit.Kelvin);
 
-            return new Atmosphere(altitude, new Measurement<PressureUnit>(calculatePressure(pressure, temperature, humidity, altitude1), PressureUnit.Pascal), false,
-                                  new Measurement<TemperatureUnit>(calculateTemperature(temperature, 0, altitude1), TemperatureUnit.Kelvin), humidity);
+            return new Atmosphere(altitude, new Measurement<PressureUnit>(CalculatePressure(pressure, temperature, humidity, altitude1), PressureUnit.Pascal), false,
+                                  new Measurement<TemperatureUnit>(CalculateTemperature(temperature, 0, altitude1), TemperatureUnit.Kelvin), humidity);
         }
 
         // https://www.omnicalculator.com/physics/air-density
@@ -138,14 +133,13 @@ namespace BallisticCalculator
         private const double DRY_AIR_K = 287.058;
         private const double VAPOR_K = 461.495;
 
-
         /// <summary>
         /// Calculates 100% saturated vapor pressure for the specified temperature
         /// </summary>
         /// <param name="t">Temperature in degree of Celsius</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double saturatedVapourPressure(double t)
+        private static double SaturatedVapourPressure(double t)
         {
             double pt = SVP_C0 + t * (SVP_C1 + t * (SVP_C2 + t * (SVP_C3 + t * (SVP_C4 + t * (SVP_C5 + t * SVP_C6)))));
             return ES0 / Math.Pow(pt, 8);
@@ -154,17 +148,17 @@ namespace BallisticCalculator
         /// <summary>
         /// Calculate density of atmosphere in given conditions
         /// </summary>
-        /// <param name="pressure">Pressure in pascals</param>
         /// <param name="temperature">Temperature in Kelvin</param>
+        /// <param name="pressure">Pressure in pascals</param>
         /// <param name="humidity">Relative humidity (0 to 1)</param>
         /// <returns>The density in kg/m3</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double calculateDensity(double temperature, double pressure, double humidity)
+        private static double CalculateDensity(double temperature, double pressure, double humidity)
         {
             double t = temperature - 273.15;
             double tk = temperature;
 
-            double vaporSaturation = saturatedVapourPressure(t) * 100;
+            double vaporSaturation = SaturatedVapourPressure(t) * 100;
             double actualVapourPressure = vaporSaturation * humidity;
             double dryPressure = pressure - actualVapourPressure;
 
@@ -180,7 +174,7 @@ namespace BallisticCalculator
         /// <param name="temperature">The temperature in Kelvins</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double calculateSoundVelocity(double temperature)
+        private double CalculateSoundVelocity(double temperature)
         {
             return 331 * Math.Sqrt(temperature / 273);
         }
@@ -195,14 +189,14 @@ namespace BallisticCalculator
         /// Calculate the pressure on the specified altitude with known pressure on the other altitude
         /// </summary>
         /// <param name="basePressure">Pressure at base level (pascal)</param>
-        /// <param name="baseAltitude">Height of the base level (meter)</param>
         /// <param name="baseTemperature">Temperature at base level (kelvin)</param>
+        /// <param name="baseAltitude">Height of the base level (meter)</param>
         /// <param name="altitude">Altitude to calculate (meter)</param>
         /// <returns>The pressure at the specified altitude in pascals</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double calculatePressure(double basePressure, double baseTemperature, double baseAltitude, double altitude)
+        private static double CalculatePressure(double basePressure, double baseTemperature, double baseAltitude, double altitude)
         {
-            double exponent = -G_CONSTANT * AIR_MOLAR_MASS / (GAS_CONSTANT * TEMPERATURE_LAPSE);
+            const double exponent = -G_CONSTANT * AIR_MOLAR_MASS / (GAS_CONSTANT * TEMPERATURE_LAPSE);
             return basePressure * Math.Pow(1 + TEMPERATURE_LAPSE / baseTemperature * (altitude - baseAltitude), exponent);
         }
 
@@ -213,25 +207,23 @@ namespace BallisticCalculator
         /// <param name="baseAltitude">Base altitude</param>
         /// <param name="altitude">Altitude to calculate</param>
         /// <returns></returns>
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double calculateTemperature(double baseTemperature, double baseAltitude, double altitude)
+        private static double CalculateTemperature(double baseTemperature, double baseAltitude, double altitude)
         {
             return baseTemperature + TEMPERATURE_LAPSE * (altitude - baseAltitude);
         }
 
-        private double StandartDensity1 = StandardDensity.In(DensityUnit.KilogramPerCubicMeter);
+        private readonly double StandartDensity1 = StandardDensity.In(DensityUnit.KilogramPerCubicMeter);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AtAltitude(Measurement<DistanceUnit> altitude, out double densityFactor, out Measurement<VelocityUnit> mach)
         {
             double a = altitude.In(DistanceUnit.Meter);
-            var t = calculateTemperature(Temperature.In(TemperatureUnit.Kelvin), Altitude.In(DistanceUnit.Meter), a);
-            var p = calculatePressure(Pressure.In(PressureUnit.Pascal), Temperature.In(TemperatureUnit.Kelvin), Altitude.In(DistanceUnit.Meter), a);
-            var d = calculateDensity(t, p, Humidity);
+            var t = CalculateTemperature(Temperature.In(TemperatureUnit.Kelvin), Altitude.In(DistanceUnit.Meter), a);
+            var p = CalculatePressure(Pressure.In(PressureUnit.Pascal), Temperature.In(TemperatureUnit.Kelvin), Altitude.In(DistanceUnit.Meter), a);
+            var d = CalculateDensity(t, p, Humidity);
             densityFactor = d / StandartDensity1;
-            mach = new Measurement<VelocityUnit>(calculateSoundVelocity(t), VelocityUnit.MetersPerSecond);
+            mach = new Measurement<VelocityUnit>(CalculateSoundVelocity(t), VelocityUnit.MetersPerSecond);
         }
     }
-    
 }

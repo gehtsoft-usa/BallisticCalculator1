@@ -17,7 +17,6 @@ namespace BallisticCalculator
         private static DragTable gG8;
         private static DragTable gGS;
 
-
         /// <summary>
         /// Returns the drag table by its identifier
         /// </summary>
@@ -25,25 +24,19 @@ namespace BallisticCalculator
         /// <returns></returns>
         public static DragTable Get(DragTableId id)
         {
-            switch (id)
+            return id switch
             {
-                case DragTableId.G1:
-                    return gG1 ?? (gG1 = new G1DragTable());
-                case DragTableId.G2:
-                    return gG2 ?? (gG2 = new G2DragTable());
-                case DragTableId.G5:
-                    return gG5 ?? (gG5 = new G5DragTable());
-                case DragTableId.G6:
-                    return gG6 ?? (gG6 = new G6DragTable());
-                case DragTableId.G7:
-                    return gG7 ?? (gG7 = new G7DragTable());
-                case DragTableId.G8:
-                    return gG8 ?? (gG8 = new G8DragTable());
-                case DragTableId.GS:
-                    return gGS ?? (gGS = new GSDragTable());
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(id));
-            }
+#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
+                DragTableId.G1 => gG1 ??= new G1DragTable(),
+                DragTableId.G2 => gG2 ??= new G2DragTable(),
+                DragTableId.G5 => gG5 ??= new G5DragTable(),
+                DragTableId.G6 => gG6 ??= new G6DragTable(),
+                DragTableId.G7 => gG7 ??= new G7DragTable(),
+                DragTableId.G8 => gG8 ??= new G8DragTable(),
+                DragTableId.GS => gGS ??= new GSDragTable(),
+#pragma warning restore S1121 // Assignments should not be made from within sub-expressions
+                _ => throw new ArgumentOutOfRangeException(nameof(id)),
+            };
         }
 
         /// <summary>
@@ -63,15 +56,14 @@ namespace BallisticCalculator
         /// <returns></returns>
         public DragTableNode this[int index] => mNodes[index];
 
-        private DragTableNode[] mNodes;
+        private readonly DragTableNode[] mNodes;
 
         /// <summary>
-        /// Parameterized constructor
-        ///
-        /// This class based on original JavaScript solution by Alexandre Trofimov
+        /// <para>Parameterized constructor</para>
+        /// <para>This class based on original JavaScript solution by Alexandre Trofimov</para>
         /// </summary>
         /// <param name="points">The data points. The points must be pre-sorted in ascending order by Mach field</param>
-        internal DragTable(DragTableDataPoint[] points)
+        private protected DragTable(DragTableDataPoint[] points)
         {
             int numpts = points.Length;
             mNodes = new DragTableNode[numpts];
@@ -104,11 +96,10 @@ namespace BallisticCalculator
         /// </summary>
         /// <param name="mach"></param>
         /// <returns></returns>
-        
         public DragTableNode Find(double mach)
         {
             int numpts = mNodes.Length;
-            
+
             int mlo = 0;
             int mhi = numpts - 2;
             int mid;
@@ -121,7 +112,6 @@ namespace BallisticCalculator
                 else
                     mhi = mid;
             }
-
 
             int m;
             if ((mNodes[mhi].Mach - mach) > (mach - mNodes[mlo].Mach))

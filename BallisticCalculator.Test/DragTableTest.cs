@@ -8,7 +8,7 @@ namespace BallisticCalculator.Test
 {
     public class DragTableTest
     {
-        private void TestDataPoint(DragTableNode dataPoint, DragTable table)
+        private static void TestDataPoint(DragTableNode dataPoint, DragTable table)
         {
             var node = table.Find(dataPoint.Mach + 0.01);
             node.Should().NotBeNull();
@@ -33,7 +33,7 @@ namespace BallisticCalculator.Test
             for (int i = 0; i < table.Count; i++)
             {
                 var dataPoint = table[i];
-                TestDataPoint(dataPoint, table);
+                ((Action)(() => TestDataPoint(dataPoint, table))).Should().NotThrow();
             }
         }
     }
@@ -53,7 +53,7 @@ namespace BallisticCalculator.Test
             else
                 bc1.ToString(CultureInfo.InvariantCulture).Should().Be(expected);
 
-            BallisticCoefficient.TryParse(expected, out BallisticCoefficient bc2);
+            BallisticCoefficient.TryParse(expected, out BallisticCoefficient bc2).Should().BeTrue();
             bc2.Value.Should().BeApproximately(value, expectedAccuracy);
             bc2.Table.Should().Be(tableId);
         }
@@ -66,7 +66,6 @@ namespace BallisticCalculator.Test
             var bc2 = JsonSerializer.Deserialize<BallisticCoefficient>(s);
             bc2.Value.Should().Be(1.2345678);
             bc2.Table.Should().Be(DragTableId.G7);
-
         }
     }
 }

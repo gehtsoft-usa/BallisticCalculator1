@@ -26,7 +26,6 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticlePosition()
         {
-
         }
 
         /// <summary>

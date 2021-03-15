@@ -35,7 +35,6 @@ namespace BallisticCalculator
         /// </summary>
         public Sight()
         {
-
         }
 
         /// <summary>
@@ -52,6 +51,5 @@ namespace BallisticCalculator
             HorizontalClick = horizontalClick;
         }
     }
-
 }
 

@@ -11,18 +11,16 @@ namespace BallisticCalculator
     public class ZeroingParameters
     {
         /// <summary>
-        /// The ammunition used to zero
-        /// 
-        /// If the parameter is null, shot ammunition will be used
+        /// <para>The ammunition used to zero</para>
+        /// <para>If the parameter is null, shot ammunition will be used</para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty(ChildElement = true, Optional = true)]
         public Ammunition Ammunition { get; set; }
 
         /// <summary>
-        /// The atmosphere at zeroing
-        /// 
-        /// If the parameter is null, an atmosphere at should will be used
+        /// <para>The atmosphere at zeroing</para>
+        /// <para>If the parameter is null, an atmosphere at should will be used</para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty(ChildElement = true, Optional = true)]
@@ -39,7 +37,6 @@ namespace BallisticCalculator
         /// </summary>
         public ZeroingParameters()
         {
-
         }
 
         /// <summary>
@@ -55,8 +52,6 @@ namespace BallisticCalculator
             Atmosphere = atmosphere;
             Distance = distance;
         }
-
     }
-
 }
 

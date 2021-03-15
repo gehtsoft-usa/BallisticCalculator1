@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace BallisticCalculator.Debug
 {
-    static class Debug1
+    internal static class Debug1
     {
-        public static void Do()
+        public static void Do(String[] _)
         {
             //define M855 projectile out of 20 inch barrel
             var ammo = new Ammunition(
                 weight: new Measurement<WeightUnit>(62, WeightUnit.Grain),
-                muzzleVelocity: new Measurement<VelocityUnit>(3095, VelocityUnit.FeetPerSecond),
                 ballisticCoefficient: new BallisticCoefficient(0.304, DragTableId.G1),
+                muzzleVelocity: new Measurement<VelocityUnit>(3095, VelocityUnit.FeetPerSecond),
                 bulletDiameter: new Measurement<DistanceUnit>(0.224, DistanceUnit.Inch),
                 bulletLength: new Measurement<DistanceUnit>(0.9, DistanceUnit.Inch));
 
@@ -43,9 +43,9 @@ namespace BallisticCalculator.Debug
 
             //define atmosphere
             var atmosphere = new Atmosphere(
+                altitude: new Measurement<DistanceUnit>(100, DistanceUnit.Foot),
                 pressure: new Measurement<PressureUnit>(29.92, PressureUnit.InchesOfMercury),
                 pressureAtSeaLevel: true,
-                altitude: new Measurement<DistanceUnit>(100, DistanceUnit.Foot),
                 temperature: new Measurement<TemperatureUnit>(59, TemperatureUnit.Fahrenheit),
                 humidity: 0.78);
 
@@ -76,7 +76,6 @@ namespace BallisticCalculator.Debug
                     Velocity = new Measurement<VelocityUnit>(5, VelocityUnit.MilesPerHour),
                 }
             };
-
 
             //calculate trajectory
             var trajectory = calc.Calculate(ammo, rifle, atmosphere, shot, wind);

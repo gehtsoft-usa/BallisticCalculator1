@@ -3,10 +3,11 @@
 namespace BallisticCalculator.Serialization
 {
     /// <summary>
-    /// The type that may be serialized by multiple option(s)
-    /// 
-    /// The attribute to markup the class or interface that may 
+    /// <para>The type that may be serialized by multiple option(s)</para>
+    /// <para>
+    /// The attribute to markup the class or interface that may
     /// be serialized by one or more possible options
+    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
     public class BXmlSelectAttribute : Attribute
@@ -21,7 +22,6 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         public BXmlSelectAttribute()
         {
-
         }
 
         /// <summary>

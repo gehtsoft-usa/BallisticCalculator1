@@ -14,12 +14,10 @@ namespace BallisticCalculator.Serialization
     /// </summary>
     public class BallisticXmlSerializer
     {
-        private readonly XmlDocument mDocument;
-
         /// <summary>
         /// The property returns the document associated with the serializer
         /// </summary>
-        public XmlDocument Document => mDocument;
+        public XmlDocument Document { get; }
 
         /// <summary>
         /// Default constructor
@@ -32,9 +30,9 @@ namespace BallisticCalculator.Serialization
         /// Constructor for an existing document
         /// </summary>
         /// <param name="document"></param>
-        public BallisticXmlSerializer(XmlDocument document) 
+        public BallisticXmlSerializer(XmlDocument document)
         {
-            mDocument = document;
+            Document = document;
         }
 
         /// <summary>
@@ -59,10 +57,10 @@ namespace BallisticCalculator.Serialization
             if (string.IsNullOrEmpty(elementAttribute.Name))
                 throw new ArgumentException($"The attribute {nameof(BXmlElementAttribute)} of type {value.GetType().Name} must have an non-empty Name value", nameof(value));
 
-            XmlElement element = mDocument.CreateElement(forceName ?? elementAttribute.Name);
+            XmlElement element = Document.CreateElement(forceName ?? elementAttribute.Name);
             if (forceName != null && forceName != elementAttribute.Name)
                 AddAttribute(element, "data-type", elementAttribute.Name, null);
-            
+
             SerializeTo(value, element, null);
 
             return element;
@@ -106,8 +104,8 @@ namespace BallisticCalculator.Serialization
                 }
                 else if (propertyAttribute.Collection)
                 {
-                    var collectionElement = mDocument.CreateElement(propertyAttribute.Name);
-                    
+                    var collectionElement = Document.CreateElement(propertyAttribute.Name);
+
                     foreach (object o in (propertyValue as IEnumerable))
                         collectionElement.AppendChild(Serialize(o));
 
@@ -186,8 +184,6 @@ namespace BallisticCalculator.Serialization
             }
         }
 
-
-
         /// <summary>
         /// Adds an attribute
         /// </summary>
@@ -200,10 +196,9 @@ namespace BallisticCalculator.Serialization
             if (!string.IsNullOrEmpty(attributePrefix))
                 name = $"{attributePrefix}-{name}";
 
-            var attribute = mDocument.CreateAttribute(name);
+            var attribute = Document.CreateAttribute(name);
             attribute.Value = value;
             element.Attributes.Append(attribute);
-
         }
     }
 }

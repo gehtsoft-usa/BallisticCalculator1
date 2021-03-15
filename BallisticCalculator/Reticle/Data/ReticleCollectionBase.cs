@@ -17,7 +17,6 @@ namespace BallisticCalculator.Reticle.Data
         /// <summary>
         /// Returns number of the elements
         /// </summary>
-
         public int Count => mElements.Count;
 
         /// <summary>
@@ -35,7 +34,6 @@ namespace BallisticCalculator.Reticle.Data
         /// Adds a new element in the collection
         /// </summary>
         /// <param name="element"></param>
-
         public void Add(T element) => mElements.Add(element);
 
         /// <summary>

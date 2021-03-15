@@ -1,9 +1,8 @@
 ﻿namespace BallisticCalculator
 {
     /// <summary>
-    /// Direction of the twist
-    /// 
-    /// Value used to set the twist in <see cref="Rifling"/> data. 
+    /// <para>Direction of the twist</para>
+    /// <para>Value used to set the twist in <see cref="Rifling"/> data.</para>
     /// </summary>
     public enum TwistDirection
     {
@@ -16,6 +15,5 @@
         /// </summary>
         Right
     }
-
 }
 

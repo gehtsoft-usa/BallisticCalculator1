@@ -15,7 +15,7 @@ namespace BallisticCalculator
         /// </summary>
         public double Mach { get; }
 
-           /// <summary>
+        /// <summary>
         /// The basic drag coefficient value
         /// </summary>
         public double DragCoefficient { get; }
@@ -25,18 +25,15 @@ namespace BallisticCalculator
         private double C { get; }
 
         /// <summary>
-        /// The reference to the previous node
-        /// 
-        /// Previous is the node with lower velocity
+        /// <para>The reference to the previous node</para>
+        /// <para>Previous is the node with lower velocity</para>
         /// </summary>
-        public DragTableNode Previous { get; private set;}
+        public DragTableNode Previous { get; }
         /// <summary>
-        /// The reference to the next node
-        /// 
-        /// Previous is the node with higher velocity
+        /// <para>The reference to the next node</para>
+        /// <para>Previous is the node with higher velocity</para>
         /// </summary>
         public DragTableNode Next { get; private set; }
-
 
         internal DragTableNode(double range, double value, double a, double b, double c, DragTableNode previous)
         {

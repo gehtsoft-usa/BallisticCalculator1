@@ -10,9 +10,8 @@ namespace BallisticCalculator
     public class Rifle
     {
         /// <summary>
-        /// Rifling specification
-        /// 
-        /// The value is needed only in case drift calculation is needed
+        /// <para>Rifling specification</para>
+        /// <para>The value is needed only in case drift calculation is needed</para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty(ChildElement = true, Optional = true)]
@@ -25,10 +24,11 @@ namespace BallisticCalculator
         public Sight Sight { get; set; }
 
         /// <summary>
-        /// Zeroing parameters
-        /// 
+        /// <para>Zeroing parameters</para>
+        /// <para>
         /// These parameters are used only to calculate sight angle by
         /// <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere)">TrajectoryCaculator.SightAngle</see> method.
+        /// </para>
         /// </summary>
         [BXmlProperty(ChildElement = true)]
         public ZeroingParameters Zero { get; set; }
@@ -38,7 +38,6 @@ namespace BallisticCalculator
         /// </summary>
         public Rifle()
         {
-
         }
 
         /// <summary>
@@ -55,6 +54,5 @@ namespace BallisticCalculator
             Rifling = rifling;
         }
     }
-
 }
 

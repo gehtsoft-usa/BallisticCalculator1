@@ -1,6 +1,6 @@
 ﻿namespace BallisticCalculator
 {
-    class G1DragTable : DragTable
+    internal class G1DragTable : DragTable
     {
         public static int PointCount => gDataPoints.Length;
 
@@ -8,8 +8,7 @@
 
         public static DragTableDataPoint DataPoint(int index) => gDataPoints[index];
 
-
-        private static DragTableDataPoint[] gDataPoints = new DragTableDataPoint[]
+        private static readonly DragTableDataPoint[] gDataPoints = new DragTableDataPoint[]
         {
             new DragTableDataPoint(0.00, 0.2629),
             new DragTableDataPoint(0.05, 0.2558),
@@ -94,8 +93,6 @@
 
         public G1DragTable() : base(gDataPoints)
         {
-
         }
     }
-
 }

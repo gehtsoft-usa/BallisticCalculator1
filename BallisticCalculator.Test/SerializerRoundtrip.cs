@@ -5,8 +5,8 @@ namespace BallisticCalculator.Test
 {
     public class SerializerRoundtrip
     {
-        BallisticXmlSerializer serializer = new BallisticXmlSerializer();
-        BallisticXmlDeserializer deserializer = new BallisticXmlDeserializer();
+        private readonly BallisticXmlSerializer serializer = new BallisticXmlSerializer();
+        private readonly BallisticXmlDeserializer deserializer = new BallisticXmlDeserializer();
 
         internal XmlElement Serialize(object value) => serializer.Serialize(value);
 

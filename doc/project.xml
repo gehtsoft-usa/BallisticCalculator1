@@ -16,4 +16,9 @@
   <dg:define name="default-transform" value="yes" />
   <dg:define name="enable-highlighter" value="yes" />
  </dg:output>
+ <dg:output template="%docgen%/template/xmldoc/main.xsl" file="BallisticCaculator.xml" encoding="utf-8">
+  <dg:define name="assembly" value="BallisticCalculator" />
+  <dg:define name="namespace" value="BallisticCalculator.+" />
+  <dg:define name="write-summary" value="yes" />
+ </dg:output>
 </dg:help-project>

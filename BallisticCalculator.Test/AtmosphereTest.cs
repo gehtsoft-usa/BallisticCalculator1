@@ -20,13 +20,12 @@ namespace BallisticCalculator.Test
 
         public void Density(double temperature, TemperatureUnit temperatureUnit, double pressure, PressureUnit pressureUnit, double humidity, double expected, DensityUnit expectedUnit)
         {
-            Atmosphere atmosphere = new Atmosphere(new Measurement<DistanceUnit>(0, DistanceUnit.Foot),
-                                                   new Measurement<PressureUnit>(pressure, pressureUnit),
-                                                   true,
-                                                   new Measurement<TemperatureUnit>(temperature, temperatureUnit),
-                                                   humidity);
+            var atmosphere = new Atmosphere(new Measurement<DistanceUnit>(0, DistanceUnit.Foot),
+                                            new Measurement<PressureUnit>(pressure, pressureUnit),
+                                            true,
+                                            new Measurement<TemperatureUnit>(temperature, temperatureUnit),
+                                            humidity);
             atmosphere.Density.In(expectedUnit).Should().BeApproximately(expected, 1e-4);
-                                                    
         }
 
         [Theory]
@@ -36,13 +35,12 @@ namespace BallisticCalculator.Test
 
         public void SoundVelocity(double temperature, TemperatureUnit temperatureUnit, double pressure, PressureUnit pressureUnit, double humidity, double expected, VelocityUnit expectedUnit)
         {
-            Atmosphere atmosphere = new Atmosphere(new Measurement<DistanceUnit>(0, DistanceUnit.Foot),
-                                                   new Measurement<PressureUnit>(pressure, pressureUnit),
-                                                   true,
-                                                   new Measurement<TemperatureUnit>(temperature, temperatureUnit),
-                                                   humidity);
+            var atmosphere = new Atmosphere(new Measurement<DistanceUnit>(0, DistanceUnit.Foot),
+                                            new Measurement<PressureUnit>(pressure, pressureUnit),
+                                            true,
+                                            new Measurement<TemperatureUnit>(temperature, temperatureUnit),
+                                            humidity);
             atmosphere.SoundVelocity.In(expectedUnit).Should().BeApproximately(expected, 1);
-
         }
 
         [Theory]
@@ -66,7 +64,6 @@ namespace BallisticCalculator.Test
             var atmosphere = Atmosphere.CreateICAOAtmosphere(new Measurement<DistanceUnit>(altitude, DistanceUnit.Meter));
             atmosphere.Pressure.In(PressureUnit.Pascal).Should().BeApproximately(pressure, 1);
             atmosphere.Temperature.In(TemperatureUnit.Celsius).Should().BeApproximately(temperature, 0.1);
-
         }
 
         [Fact]
@@ -83,8 +80,6 @@ namespace BallisticCalculator.Test
             atmo2.Temperature.Should().Be(atmo1.Temperature);
             atmo2.Altitude.Should().Be(atmo1.Altitude);
             atmo2.Humidity.Should().Be(atmo2.Humidity);
-
-
         }
     }
 }

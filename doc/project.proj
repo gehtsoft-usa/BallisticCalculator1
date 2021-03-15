@@ -4,7 +4,7 @@
   <TargetFramework>netstandard2.0</TargetFramework>
  </PropertyGroup>
  <ItemGroup>
-  <PackageReference Include="Gehtsoft.Build.DocGen" Version="0.1.11" IncludeAssets="build" />
+  <PackageReference Include="Gehtsoft.Build.DocGen" Version="0.1.12" IncludeAssets="build" />
   <PackageReference Include="Gehtsoft.Build.ContentDelivery" Version="0.1.10" IncludeAssets="build" />
  </ItemGroup>
  <PropertyGroup>
@@ -26,10 +26,10 @@
   <DocGen Project="project.xml" />
   <Copy SourceFiles="@(CustomFile)" DestinationFolder="$(DocTargetDir)" />
   <Copy SourceFiles="@(ContractFile)" DestinationFolder="$(PdfSampleDir)" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/res" Version="0.1.11" Destination="$(DocTargetDir)/res" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/highlighter" Version="0.1.11" Destination="$(DocTargetDir)/highlighter" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/menu" Version="0.1.11" Destination="$(DocTargetDir)/menu" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/pageImages" Version="0.1.11" Destination="$(DocTargetDir)/pageImages" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/res" Version="0.1.12" Destination="$(DocTargetDir)/res" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/highlighter" Version="0.1.12" Destination="$(DocTargetDir)/highlighter" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/menu" Version="0.1.12" Destination="$(DocTargetDir)/menu" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/pageImages" Version="0.1.12" Destination="$(DocTargetDir)/pageImages" />
  </Target>
  <ItemGroup>
   <DocSource Include="$(MSBuildProjectDirectory)/../BallisticCalculator/bin/Debug/netstandard2.0/BallisticCalculator.dll" />

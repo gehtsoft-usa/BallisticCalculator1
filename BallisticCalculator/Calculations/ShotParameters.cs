@@ -14,10 +14,11 @@ namespace BallisticCalculator
     public class ShotParameters
     {
         /// <summary>
-        /// Sight angle 
-        /// 
+        /// <para>Sight angle</para>
+        /// <para>
         /// Use <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere)">TrajectoryCalculator.SightAngle</see> to calculate
         /// sight angle by the zero distance
+        /// </para>
         /// </summary>
         [BXmlProperty("sight-angle")]
         public Measurement<AngularUnit> SightAngle { get; set; }
@@ -28,7 +29,7 @@ namespace BallisticCalculator
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("cant-angle", Optional = true)]
         public Measurement<AngularUnit>? CantAngle { get; set; }
-        
+
         /// <summary>
         /// The angle of the shot
         /// </summary>

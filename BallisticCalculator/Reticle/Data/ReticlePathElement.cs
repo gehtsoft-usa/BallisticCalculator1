@@ -3,10 +3,11 @@
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// The base class for path elements
-    /// 
-    /// The implementations are <see cref="ReticlePathElementArc" />, <see cref="ReticlePathElementMoveTo" />, and 
+    /// <para>The base class for path elements</para>
+    /// <para>
+    /// The implementations are <see cref="ReticlePathElementArc" />, <see cref="ReticlePathElementMoveTo" />, and
     /// <see cref="ReticlePathElementLineTo" />
+    /// </para>
     /// </summary>
     [BXmlSelect(typeof(ReticlePathElementMoveTo), typeof(ReticlePathElementLineTo), typeof(ReticlePathElementArc))]
     public abstract class ReticlePathElement
@@ -16,19 +17,18 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         [BXmlProperty(Name = "position", ChildElement = true, FlattenChild = true)]
         public ReticlePosition Position { get; set; }
-        
+
         /// <summary>
         /// The type of the action
         /// </summary>
         public ReticlePathElementType ElementType { get; }
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="elementType"></param>
         protected ReticlePathElement(ReticlePathElementType elementType)
         {
-            Position = Position;
             ElementType = elementType;
         }
 

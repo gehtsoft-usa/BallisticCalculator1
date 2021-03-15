@@ -13,7 +13,6 @@ namespace BallisticCalculator
     [BXmlElement("point")]
     public class TrajectoryPoint
     {
-
         /// <summary>
         /// Time since start
         /// </summary>
@@ -30,29 +29,25 @@ namespace BallisticCalculator
         [BXmlProperty(Name = "velocity")]
         public Measurement<VelocityUnit> Velocity { get; }
         /// <summary>
-        /// Velocity in Mach 
-        /// 
-        /// The value shows proportion of the current velocity to the velocity of sound for the current atmosphere conditions
+        /// <para>Velocity in Mach</para>
+        /// <para>The value shows proportion of the current velocity to the velocity of sound for the current atmosphere conditions</para>
         /// </summary>
         [BXmlProperty(Name = "mach")]
         public double Mach { get; }
 
         /// <summary>
-        /// Current drop 
-        /// 
-        /// The stop is vertical distance between trajectory and the line of sight.
+        /// <para>Current drop</para>
+        /// <para>The stop is vertical distance between trajectory and the line of sight.</para>
         /// </summary>
         [BXmlProperty(Name = "drop")]
         public Measurement<DistanceUnit> Drop { get; }
 
         /// <summary>
-        /// Current windage 
-        /// 
-        /// The windage is horizontal distance between trajectory and the line of sight
+        /// <para>Current windage</para>
+        /// <para>The windage is horizontal distance between trajectory and the line of sight</para>
         /// </summary>
         [BXmlProperty(Name = "windage")]
         public Measurement<DistanceUnit> Windage { get; }
-
 
         /// <summary>
         /// Projectile energy
@@ -95,7 +90,6 @@ namespace BallisticCalculator
                   MeasurementMath.KineticEnergy(weight, velocity),
                   BallisticMath.OptimalGameWeight(weight, velocity))
         {
-
         }
 
         /// <summary>
@@ -110,10 +104,10 @@ namespace BallisticCalculator
         /// <param name="energy"></param>
         /// <param name="optimalGameWeight"></param>
         [JsonConstructor]
-        [BXmlConstructor]
+        [BXmlConstructorAttribute]
         public TrajectoryPoint(TimeSpan time, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
-                               Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy, 
+                               Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy,
                                Measurement<WeightUnit> optimalGameWeight)
         {
             Time = time;

@@ -7,20 +7,17 @@ using System.Text.Json.Serialization;
 
 namespace BallisticCalculator
 {
-
     /// <summary>
     /// Definition of a ammunition and projectile
     /// </summary>
     [BXmlElement("ammunition")]
     public class Ammunition
     {
-
         /// <summary>
         /// Projectile weight
         /// </summary>
         [BXmlProperty("bullet-weight")]
         public Measurement<WeightUnit> Weight { get; set; }
-
 
         /// <summary>
         /// Ballistic coefficient
@@ -28,27 +25,23 @@ namespace BallisticCalculator
         [BXmlProperty("ballistic-coefficient")]
         public BallisticCoefficient BallisticCoefficient { get; set; }
 
-
         /// <summary>
         /// Muzzle velocity
         /// </summary>
         [BXmlProperty("muzzle-velocity")]
         public Measurement<VelocityUnit> MuzzleVelocity { get; set; }
 
-        
         /// <summary>
-        /// Diameter of the projectile
-        /// 
-        /// The value is required only if drift calculation is needed.
+        /// <para>Diameter of the projectile</para>
+        /// <para>The value is required only if drift calculation is needed.</para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("bullet-diameter", Optional = true)]
         public Measurement<DistanceUnit>? BulletDiameter { get; set; }
-        
+
         /// <summary>
-        /// Length of the projectile
-        /// 
-        /// The value is required only if drift calculation is needed.
+        /// <para>Length of the projectile</para>
+        /// <para>The value is required only if drift calculation is needed.</para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("bullet-length", Optional = true)]
@@ -59,7 +52,6 @@ namespace BallisticCalculator
         /// </summary>
         public Ammunition()
         {
-
         }
 
         /// <summary>
@@ -81,6 +73,5 @@ namespace BallisticCalculator
             BulletLength = bulletLength;
         }
     }
-
 }
 

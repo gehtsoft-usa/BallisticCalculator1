@@ -12,37 +12,31 @@ namespace BallisticCalculator.Reticle.Data
     public class ReticlePath : ReticleElement
     {
         /// <summary>
-        /// The flag indicating whether the path needs to be filled
-        /// 
-        /// Default value is no.
+        /// <para>The flag indicating whether the path needs to be filled</para>
+        /// <para>Default value is no.</para>
         /// </summary>
         [BXmlProperty(Name = "fill", Optional = true)]
         public bool? Fill { get; set; }
 
         /// <summary>
-        /// The flag indicating the line width
-        /// 
-        /// If no value is set, the smallest possible line width will be used
+        /// <para>The flag indicating the line width</para>
+        /// <para>If no value is set, the smallest possible line width will be used</para>
         /// </summary>
         [BXmlProperty(Name = "line-width", Optional = true)]
         public Measurement<AngularUnit>? LineWidth { get; set; }
 
         /// <summary>
-        /// The line color.
-        /// 
-        /// The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see>
-        /// 
-        /// If no value is, a black color will be used
+        /// <para>The line color.</para>
+        /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
+        /// <para>If no value is, a black color will be used</para>
         /// </summary>
         [BXmlProperty(Name = "line-color", Optional = true)]
         public string LineColor { get; set; }
 
         /// <summary>
-        /// A fill color
-        /// 
-        /// The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see>
-        /// 
-        /// If no value is set, a fill color will be used 
+        /// <para>A fill color</para>
+        /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
+        /// <para>If no value is set, a fill color will be used </para>
         /// </summary>
         [BXmlProperty(Name = "fill-color", Optional = true)]
         public string FillColor { get; set; }
@@ -56,7 +50,6 @@ namespace BallisticCalculator.Reticle.Data
         /// <summary>
         /// Constructor
         /// </summary>
-
         public ReticlePath() : base(ReticleElementType.Path)
         {
         }

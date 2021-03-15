@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Xml;
 using Xunit;
 
+#pragma warning disable RCS1202 // Avoid NullReferenceException.
 namespace BallisticCalculator.Test
 {
-
     public class SerializerTest
     {
         [BXmlElement("child")]
@@ -19,7 +19,6 @@ namespace BallisticCalculator.Test
 
             public ChildClass()
             {
-
             }
 
             public ChildClass(string name)
@@ -79,7 +78,6 @@ namespace BallisticCalculator.Test
 
             [BXmlProperty(Name = "array2", Collection = true, Optional = true)]
             public ChildClass[] Array2 { get; set; }
-
         }
 
         [BXmlSelect(typeof(Implementation1), typeof(Implementation2))]
@@ -116,7 +114,7 @@ namespace BallisticCalculator.Test
         {
             [BXmlProperty(Name = "value1", ChildElement = true, FlattenChild = true)]
             public Implementation1 Value1 { get; set; }
-            
+
             [BXmlProperty(Name = "value2", ChildElement = true, FlattenChild = true)]
             public Implementation2 Value2 { get; set; }
         }
@@ -154,13 +152,12 @@ namespace BallisticCalculator.Test
             element.Should().HaveAttribute("int", "123");
             element.Should().HaveAttribute("subint", "456");
 
-
             element.Should().HaveAttribute("coefficient", "0.345G1");
             element.Should().HaveAttribute("length", "1.23m");
-            
+
             element.Should().HaveAttribute("real", "1.234");
             element.Should().HaveAttribute("bool", "true");
-            
+
             element.Should().HaveAttribute("span", "123.456");
             element.Should().HaveAttribute("date", "2010-05-27 11:30:25");
 
@@ -188,7 +185,7 @@ namespace BallisticCalculator.Test
             main1.Child.Should().NotBeNull();
             main1.Child.Name.Should().Be("child name");
         }
-        
+
         [Fact]
         public void SerializedXmlTest2()
         {
@@ -215,7 +212,6 @@ namespace BallisticCalculator.Test
 
             element.Should().HaveAttribute("int", "123");
             element.Attributes["subint"].Should().BeNull();
-            
 
             element.Should().HaveAttribute("coefficient", "0.345G1");
             element.Should().HaveAttribute("length", "1.23m");
@@ -244,7 +240,6 @@ namespace BallisticCalculator.Test
 
             main1.Child.Should().BeNull();
         }
-       
 
         [Fact]
         public void TestCollector1()
@@ -291,7 +286,7 @@ namespace BallisticCalculator.Test
         {
             CollectorClass collector = new CollectorClass()
             {
-                Array = new ChildClass[0],
+                Array = Array.Empty<ChildClass>(),
                 List = new List<ChildClass>(),
                 Array2 = null,
             };
@@ -371,8 +366,8 @@ namespace BallisticCalculator.Test
                 container2.Elements[3].Should().BeOfType(typeof(Implementation2));
                 (container2.Elements[3] as Implementation2).ID.Should().Be(2);
             }
-        } 
-        
+        }
+
         [Fact]
         public void FlatenningContainer()
         {
@@ -388,7 +383,6 @@ namespace BallisticCalculator.Test
             container2.Value1.Name.Should().Be("123");
             container2.Value2.ID.Should().Be(456);
         }
-        
     }
 }
-
+#pragma warning restore RCS1202 // Avoid NullReferenceException.

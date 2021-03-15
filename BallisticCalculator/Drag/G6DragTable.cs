@@ -1,6 +1,6 @@
 ﻿namespace BallisticCalculator
 {
-    class G6DragTable : DragTable
+    internal class G6DragTable : DragTable
     {
         public override DragTableId TableId => DragTableId.G6;
 
@@ -8,8 +8,7 @@
 
         public static DragTableDataPoint DataPoint(int index) => gDataPoints[index];
 
-
-        private static DragTableDataPoint[] gDataPoints = new DragTableDataPoint[]
+        private static readonly DragTableDataPoint[] gDataPoints = new DragTableDataPoint[]
         {
             new DragTableDataPoint(0.00, 0.2617),
             new DragTableDataPoint(0.05, 0.2553),
@@ -90,13 +89,10 @@
             new DragTableDataPoint(4.60, 0.1673),
             new DragTableDataPoint(4.80, 0.1621),
             new DragTableDataPoint(5.00, 0.1574),
-
         };
 
         public G6DragTable() : base(gDataPoints)
         {
-
         }
     }
-
 }

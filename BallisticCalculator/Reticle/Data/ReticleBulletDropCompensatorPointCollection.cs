@@ -16,5 +16,4 @@ namespace BallisticCalculator.Reticle.Data
             mElements.Sort((a, b) => a.Drop.CompareTo(b.Drop));
         }
     }
-
 }

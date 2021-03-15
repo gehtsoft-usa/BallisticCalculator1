@@ -21,7 +21,6 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         public BallisticXmlDeserializer()
         {
-
         }
 
         /// <summary>
@@ -78,11 +77,13 @@ namespace BallisticCalculator.Serialization
             //check whether the object has specific constructor
             ConstructorInfo specificConstructor = null;
             foreach (var constructor in type.GetConstructors())
-                if (constructor.GetCustomAttribute<BXmlConstructor>() != null)
+            {
+                if (constructor.GetCustomAttribute<BXmlConstructorAttribute>() != null)
                 {
                     specificConstructor = constructor;
                     break;
                 }
+            }
 
             object value = null;
             ParameterInfo[] constructorParams = null;
@@ -107,7 +108,7 @@ namespace BallisticCalculator.Serialization
                         }
                     }
                 };
-                getAction = (propertyInfo) => null;
+                getAction = (_) => null;
             }
             else
             {
@@ -116,7 +117,6 @@ namespace BallisticCalculator.Serialization
                 getAction = (propertyInfo) => propertyInfo.GetMethod == null ? null : () => propertyInfo.GetValue(value);
             }
 
-
             foreach (var property in type.GetProperties())
             {
                 var propertyAttribute = property.GetCustomAttribute<BXmlPropertyAttribute>();
@@ -124,7 +124,7 @@ namespace BallisticCalculator.Serialization
                     continue;
 
                 ReadProperty(element, type, property.Name, property.PropertyType, propertyAttribute, attributePrefix,
-                             setAction(property), getAction(property)); 
+                             setAction(property), getAction(property));
             }
 
             if (specificConstructor != null)
@@ -154,10 +154,7 @@ namespace BallisticCalculator.Serialization
             }
             else
             {
-                targetType = Nullable.GetUnderlyingType(propertyType);
-                if (targetType == null)
-                    targetType = propertyType;
-
+                targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
             }
 
             BXmlElementAttribute elementAttribute1 = targetType.GetCustomAttribute<BXmlElementAttribute>();
@@ -168,8 +165,9 @@ namespace BallisticCalculator.Serialization
 
             if ((propertyAttribute.ChildElement || propertyAttribute.Collection) &&
                 (elementAttribute1 == null && selectAttribute == null))
+            {
                 throw new InvalidOperationException($"The type of the property {type.FullName}.{propertyName} must have either {nameof(BXmlElementAttribute)} or {nameof(BXmlSelectAttribute)}");
-
+            }
 
             if (propertyAttribute.ChildElement)
             {
@@ -201,8 +199,10 @@ namespace BallisticCalculator.Serialization
                     string prefix = $"{elementToSearch}-";
                     bool any = false;
                     for (int i = 0; !any && i < element.Attributes.Count; i++)
+                    {
                         if (element.Attributes[i].Name.StartsWith(prefix))
                             any = true;
+                    }
 
                     if (any)
                     {
@@ -224,7 +224,6 @@ namespace BallisticCalculator.Serialization
                 }
                 else
                 {
-
                     if (getProperty != null)
                         collection = getProperty();
                     if (collection == null)
@@ -278,14 +277,14 @@ namespace BallisticCalculator.Serialization
 
         private string ElementPath(XmlElement element)
         {
-            List<XmlElement> path = new List<XmlElement>();
+            var path = new List<XmlElement>();
             while (element != null)
             {
                 path.Add(element);
                 element = element.ParentNode as XmlElement;
             }
 
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             for (int i = path.Count - 1; i >= 0; i--)
             {
                 builder.Append("\\");
@@ -352,7 +351,7 @@ namespace BallisticCalculator.Serialization
                 name = $"{attributePrefix}-{propertyAttribute.Name}";
 
             string propertyText = element.Attributes[name]?.Value;
-            
+
             if (propertyText != null)
             {
                 var propertyType1 = Nullable.GetUnderlyingType(propertyType);
@@ -393,8 +392,7 @@ namespace BallisticCalculator.Serialization
                 }
                 else if (propertyType == typeof(DateTime))
                 {
-                    DateTime d;
-                    if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
+                    if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out DateTime d))
                         propertyValue = d;
                     else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
                         propertyValue = d;
@@ -435,7 +433,7 @@ namespace BallisticCalculator.Serialization
             if (legacyEntry == null)
                 throw new ArgumentNullException(nameof(legacyEntry));
 
-            AmmunitionLibraryEntry entry = new AmmunitionLibraryEntry()
+            var entry = new AmmunitionLibraryEntry()
             {
                 Ammunition = new Ammunition()
             };
@@ -512,7 +510,7 @@ namespace BallisticCalculator.Serialization
         /// <returns></returns>
         public static AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntry(string rawLegacyEntry)
         {
-            XmlDocument document = new XmlDocument();
+            var document = new XmlDocument();
             document.LoadXml(rawLegacyEntry);
             return ReadLegacyAmmunitionLibraryEntry(document.DocumentElement);
         }

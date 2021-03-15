@@ -5,7 +5,7 @@ using System.Text;
 namespace BallisticCalculator.Serialization
 {
     /// <summary>
-    /// The attribute to markup the ballistic calculator serializable class 
+    /// The attribute to markup the ballistic calculator serializable class
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class BXmlElementAttribute : Attribute
@@ -20,7 +20,6 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         public BXmlElementAttribute()
         {
-
         }
 
         /// <summary>

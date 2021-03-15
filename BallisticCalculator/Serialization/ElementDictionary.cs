@@ -7,11 +7,12 @@ namespace BallisticCalculator.Serialization
     /// <summary>
     /// The dictionary of element names and corresponding types
     /// </summary>
-    class ElementDictionary
+    internal class ElementDictionary
     {
-        private object mMutex = new object();
-        private Lazy<Dictionary<string, Type>> mReferences = new Lazy<Dictionary<string, Type>>(SearchAllTypes);
-     
+        public object SyncRoot { get; } = new object();
+
+        private readonly Lazy<Dictionary<string, Type>> mReferences = new Lazy<Dictionary<string, Type>>(SearchAllTypes);
+
         private static Dictionary<string, Type> SearchAllTypes()
         {
             Dictionary<string, Type> dict = new Dictionary<string, Type>();

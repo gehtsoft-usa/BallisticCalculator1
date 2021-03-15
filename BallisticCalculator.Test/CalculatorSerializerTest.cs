@@ -62,7 +62,6 @@ namespace BallisticCalculator.Test
         [Fact]
         public void ReadLegacy_Metric()
         {
-            SerializerRoundtrip serializer = new SerializerRoundtrip();
             var entry = BallisticXmlDeserializer.ReadLegacyAmmunitionLibraryEntry("<ammo-info-ex table=\"G1\" bc=\"0.297\" bullet-weight=\"7.70000g\" muzzle-velocity=\"730.00000m/s\" barrel-length=\"410.00000mm\" name=\"7N23\" source=\"GRAU\" caliber=\"7.62x39mm M43\" bullet-type=\"FMJ\" bullet-diameter=\"7.85mm\" bullet-length=\"26mm\" />");
 
             entry.Should().NotBeNull();
@@ -79,7 +78,6 @@ namespace BallisticCalculator.Test
             entry.Ammunition.MuzzleVelocity.Should().Be(new Measurement<VelocityUnit>(730, VelocityUnit.MetersPerSecond));
             entry.Ammunition.BulletLength.Should().Be(new Measurement<DistanceUnit>(26, DistanceUnit.Millimeter));
             entry.Ammunition.BulletDiameter.Should().Be(new Measurement<DistanceUnit>(7.85, DistanceUnit.Millimeter));
-
         }
 
         [Fact]
@@ -182,7 +180,6 @@ namespace BallisticCalculator.Test
 
             var entry1 = serializer.Deserialize<AmmunitionLibraryEntry>(node);
             entry1.Should().NotBeNull();
-
 
             entry1.Name.Should().Be(entry.Name);
             entry1.Source.Should().Be(entry.Source);

@@ -17,5 +17,4 @@
             mElements[index2] = x;
         }
     }
-
 }

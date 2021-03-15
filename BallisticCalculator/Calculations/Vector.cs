@@ -11,15 +11,15 @@ namespace BallisticCalculator
         where T : Enum
     {
         /// <summary>
-        /// X coordinate 
+        /// X coordinate
         /// </summary>
         public Measurement<T> X { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
         /// <summary>
-        /// Y coordinate 
+        /// Y coordinate
         /// </summary>
         public Measurement<T> Y { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
         /// <summary>
-        /// Z coordinate 
+        /// Z coordinate
         /// </summary>
         public Measurement<T> Z { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
@@ -55,13 +55,13 @@ namespace BallisticCalculator
         public Measurement<T> Magnitude
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get 
+            get
             {
                 T units = X.Unit;
                 return new Measurement<T>(Math.Sqrt(X.Value * X.Value + Y.In(units) * Y.In(units) + Z.In(units) * Z.In(units)), units);
             }
         }
-        
+
         /// <summary>
         /// Adds two vectors
         /// </summary>
@@ -70,7 +70,7 @@ namespace BallisticCalculator
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector<T> operator +(Vector<T> a, Vector<T> b) => new Vector<T>(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
-        
+
         /// <summary>
         /// Multiples a vector to a constant
         /// </summary>
@@ -88,7 +88,7 @@ namespace BallisticCalculator
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector<T> operator *(Vector<T> a, double b) => new Vector<T>(b * a.X, b * a.Y, b * a.Z);
-        
+
         /// <summary>
         /// Subtracts on vector from another
         /// </summary>
@@ -97,7 +97,7 @@ namespace BallisticCalculator
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector<T> operator -(Vector<T> a, Vector<T> b) => new Vector<T>(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
-        
+
         /// <summary>
         /// Inverts the vector
         /// </summary>
@@ -116,7 +116,7 @@ namespace BallisticCalculator
         public static Measurement<T> Distance(Vector<T> a, Vector<T> b) => (a - b).Magnitude;
 
         /// <summary>
-        /// Normalizes vector 
+        /// Normalizes vector
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -128,6 +128,5 @@ namespace BallisticCalculator
 
             return (1.0 / Magnitude.Value) * this;
         }
-       
     }
 }

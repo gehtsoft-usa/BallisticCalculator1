@@ -13,7 +13,6 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticlePathElementLineTo() : base(ReticlePathElementType.LineTo)
         {
-
         }
     }
 }

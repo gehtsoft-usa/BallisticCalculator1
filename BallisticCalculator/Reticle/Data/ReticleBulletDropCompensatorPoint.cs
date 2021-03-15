@@ -6,10 +6,11 @@ using System.Text;
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// The information about bullet drop compensator point
-    /// 
-    /// Typically, an applications shows a distance that corresponds to the 
+    /// <para>The information about bullet drop compensator point</para>
+    /// <para>
+    /// Typically, an applications shows a distance that corresponds to the
     /// specific point.
+    /// </para>
     /// </summary>
     [BXmlElement("bdc")]
     public class ReticleBulletDropCompensatorPoint
@@ -27,9 +28,8 @@ namespace BallisticCalculator.Reticle.Data
         public ReticlePosition Position { get; set; }
 
         /// <summary>
-        /// Offset of the text from the BDC point 
-        /// 
-        /// Positive value means text at right of BDC, negative - text at left of BDC
+        /// <para>Offset of the text from the BDC point</para>
+        /// <para>Positive value means text at right of BDC, negative - text at left of BDC</para>
         /// </summary>
         [BXmlProperty("text-offset")]
         public Measurement<AngularUnit> TextOffset { get; set; }
@@ -39,7 +39,6 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticleBulletDropCompensatorPoint()
         {
-
         }
     }
 }

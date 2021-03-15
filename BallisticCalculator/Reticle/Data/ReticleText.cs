@@ -10,7 +10,7 @@ namespace BallisticCalculator.Reticle.Data
     public class ReticleText : ReticleElement
     {
         /// <summary>
-        /// Position of the top-left corner of the text 
+        /// Position of the top-left corner of the text
         /// </summary>
         [BXmlProperty(Name = "position", ChildElement = true, FlattenChild = true)]
         public ReticlePosition Position { get; set; }
@@ -22,17 +22,15 @@ namespace BallisticCalculator.Reticle.Data
         public Measurement<AngularUnit> TextHeight { get; set; }
 
         /// <summary>
-        /// The text 
+        /// The text
         /// </summary>
         [BXmlProperty(Name = "text")]
         public string Text { get; set; }
 
         /// <summary>
-        /// The text color.
-        /// 
-        /// The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see>
-        /// 
-        /// If no value is, a black color will be used
+        /// <para>The text color.</para>
+        /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
+        /// <para>If no value is, a black color will be used</para>
         /// </summary>
         [BXmlProperty(Name = "text-color", Optional = true)]
         public string TextColor { get; set; }
@@ -44,5 +42,4 @@ namespace BallisticCalculator.Reticle.Data
         {
         }
     }
-
 }

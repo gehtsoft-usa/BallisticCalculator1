@@ -11,10 +11,11 @@ namespace BallisticCalculator
     public class Wind
     {
         /// <summary>
-        /// Maximum range at which these winds condition are observed.
-        /// 
-        /// The value is used to specify multiple winds along the trajectory. If multiple 
+        /// <para>Maximum range at which these winds condition are observed.</para>
+        /// <para>
+        /// The value is used to specify multiple winds along the trajectory. If multiple
         /// winds are specified, they must be sorted by the range in ascending order.
+        /// </para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("maximum-range", Optional = true)]
@@ -40,7 +41,6 @@ namespace BallisticCalculator
         /// </summary>
         public Wind()
         {
-
         }
 
         /// <summary>
@@ -57,6 +57,5 @@ namespace BallisticCalculator
             MaximumRange = maximumRange;
         }
     }
-
 }
 

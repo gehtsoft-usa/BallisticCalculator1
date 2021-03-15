@@ -11,10 +11,11 @@ namespace BallisticCalculator
     public class Rifling
     {
         /// <summary>
-        /// Rifling step 
-        /// 
-        /// Rifling step is the distance at which the rifling makes on full revolution, 
-        /// e.g. AR-15 1:12 barrel means 1 full revolution in 12 inches. 
+        /// <para>Rifling step</para>
+        /// <para>
+        /// Rifling step is the distance at which the rifling makes on full revolution,
+        /// e.g. AR-15 1:12 barrel means 1 full revolution in 12 inches.
+        /// </para>
         /// </summary>
         [BXmlProperty("rifling-step")]
         public Measurement<DistanceUnit> RiflingStep { get; set; }
@@ -30,7 +31,6 @@ namespace BallisticCalculator
         /// </summary>
         public Rifling()
         {
-
         }
 
         /// <summary>
@@ -45,6 +45,5 @@ namespace BallisticCalculator
             Direction = direction;
         }
     }
-
 }
 

@@ -53,7 +53,6 @@ namespace BallisticCalculator
         /// </summary>
         public AmmunitionLibraryEntry()
         {
-
         }
 
         /// <summary>
@@ -76,6 +75,5 @@ namespace BallisticCalculator
             BarrelLength = barrelLength;
         }
     }
-
 }
 

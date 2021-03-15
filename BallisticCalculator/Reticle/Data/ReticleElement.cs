@@ -5,11 +5,12 @@ using System.Text;
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// An element of a reticle
-    /// 
+    /// <para>An element of a reticle</para>
+    /// <para>
     /// The implementation types are <see cref="ReticleCircle" />,
     /// <see cref="ReticleLine" />, <see cref="ReticlePath" />, <see cref="ReticleRectangle" />, and
     /// <see cref="ReticleText" />.
+    /// </para>
     /// </summary>
     [BXmlSelect(typeof(ReticleCircle), typeof(ReticlePath),
                 typeof(ReticleLine), typeof(ReticleRectangle), typeof(ReticleText))]
@@ -36,5 +37,4 @@ namespace BallisticCalculator.Reticle.Data
         /// <returns></returns>
         public T As<T>() where T : ReticleElement => this as T;
     }
-
 }

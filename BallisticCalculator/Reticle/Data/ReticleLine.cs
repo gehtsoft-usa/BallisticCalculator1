@@ -4,7 +4,7 @@ using Gehtsoft.Measurements;
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// A line 
+    /// A line
     /// </summary>
     [BXmlElement("reticle-line")]
     public class ReticleLine : ReticleElement
@@ -22,19 +22,16 @@ namespace BallisticCalculator.Reticle.Data
         public ReticlePosition End { get; set; }
 
         /// <summary>
-        /// The flag indicating the line width
-        /// 
-        /// If no value is set, the smallest possible line width will be used
+        /// <para>The flag indicating the line width</para>
+        /// <para>If no value is set, the smallest possible line width will be used</para>
         /// </summary>
         [BXmlProperty(Name = "line-width", Optional = true)]
         public Measurement<AngularUnit>? LineWidth { get; set; }
 
         /// <summary>
-        /// The line color.
-        /// 
-        /// The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see>
-        /// 
-        /// If no value is, a black color will be used
+        /// <para>The line color.</para>
+        /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
+        /// <para>If no value is, a black color will be used</para>
         /// </summary>
         [BXmlProperty(Name = "line-color", Optional = true)]
         public string LineColor { get; set; }
@@ -46,5 +43,4 @@ namespace BallisticCalculator.Reticle.Data
         {
         }
     }
-
 }

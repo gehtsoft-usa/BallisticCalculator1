@@ -32,8 +32,6 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticlePathElementArc() : base(ReticlePathElementType.Arc)
         {
-
         }
     }
-
 }
