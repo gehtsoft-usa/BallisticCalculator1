@@ -10,7 +10,7 @@
  <dg:output template="%docgen%/template/html/main.xsl" file="dst/null-file" encoding="utf-8">
   <dg:define name="text-language" value="en" />
   <dg:define name="write-hhp" value="no" />
-  <dg:define name="help-title" value="Gehtsoft PDF Flow Library" />
+  <dg:define name="help-title" value="Gehtsoft Ballistic Calculator Library" />
   <dg:define name="advanced-web-content" value="yes" />
   <dg:define name="default-transform" value="yes" />
   <dg:define name="enable-highlighter" value="yes" />

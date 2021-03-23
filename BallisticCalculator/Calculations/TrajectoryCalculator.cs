@@ -320,8 +320,8 @@ namespace BallisticCalculator
         {
             double sightCosine = MeasurementMath.Cos(shot.SightAngle);
             double sightSine = MeasurementMath.Sin(shot.SightAngle);
-            double cantCosine = MeasurementMath.Cos(shot.CantAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian));
-            double cantSine = MeasurementMath.Sin(shot.CantAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian));
+            double cantCosine = MeasurementMath.Cos(shot.CantAngle ?? AngularUnit.Radian.New(0));
+            double cantSine = MeasurementMath.Sin(shot.CantAngle ?? AngularUnit.Radian.New(0));
 
             Measurement<VelocityUnit> rangeVelocity, crossComponent;
 

@@ -6,7 +6,7 @@ using System.Text;
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// The reticle
+    /// The definition of a reticle
     /// </summary>
     [BXmlElement("reticle")]
     public class ReticleDefinition

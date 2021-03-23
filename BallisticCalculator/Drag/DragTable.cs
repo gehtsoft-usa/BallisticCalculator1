@@ -47,14 +47,14 @@ namespace BallisticCalculator
         /// <summary>
         /// Returns the number of drag table nodes
         /// </summary>
-        public int Count => mNodes.Length;
+        internal int Count => mNodes.Length;
 
         /// <summary>
         /// Returns the drag table node by its index
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public DragTableNode this[int index] => mNodes[index];
+        internal DragTableNode this[int index] => mNodes[index];
 
         private readonly DragTableNode[] mNodes;
 
@@ -96,7 +96,7 @@ namespace BallisticCalculator
         /// </summary>
         /// <param name="mach"></param>
         /// <returns></returns>
-        public DragTableNode Find(double mach)
+        internal DragTableNode Find(double mach)
         {
             int numpts = mNodes.Length;
 

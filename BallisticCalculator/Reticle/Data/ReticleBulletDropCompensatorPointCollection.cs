@@ -13,7 +13,7 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public void Sort()
         {
-            mElements.Sort((a, b) => a.Drop.CompareTo(b.Drop));
+            mElements.Sort((a, b) => -a.Position.Y.CompareTo(b.Position.Y));
         }
     }
 }

@@ -6,7 +6,8 @@ using System.Collections.Generic;
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// Reticle path
+    /// <para>Reticle path.</para>
+    /// <para>Path is a sequence of drawing primitives - lines and arcs.</para>
     /// </summary>
     [BXmlElement("reticle-path")]
     public class ReticlePath : ReticleElement

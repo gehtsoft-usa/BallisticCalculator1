@@ -7,7 +7,7 @@ namespace BallisticCalculator
     /// <summary>
     /// The data point of initial drag table
     /// </summary>
-    public class DragTableDataPoint
+    internal class DragTableDataPoint
     {
         /// <summary>
         /// Velocity in Mach (relative to speed of sound)

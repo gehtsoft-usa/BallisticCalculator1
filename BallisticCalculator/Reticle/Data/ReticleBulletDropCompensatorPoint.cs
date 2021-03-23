@@ -16,12 +16,6 @@ namespace BallisticCalculator.Reticle.Data
     public class ReticleBulletDropCompensatorPoint
     {
         /// <summary>
-        /// The amount of drop below the aim point
-        /// </summary>
-        [BXmlProperty("drop")]
-        public Measurement<AngularUnit> Drop { get; set; }
-
-        /// <summary>
         /// Position of the BDC point at reticle
         /// </summary>
         [BXmlProperty(Name = "position", ChildElement = true, FlattenChild = true)]

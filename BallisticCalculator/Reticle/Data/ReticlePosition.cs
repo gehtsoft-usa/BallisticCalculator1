@@ -29,6 +29,18 @@ namespace BallisticCalculator.Reticle.Data
         }
 
         /// <summary>
+        /// Constructor for the coordinates specified as numbers
+        /// </summary>
+        /// <param name="x">The x-coordinate</param>
+        /// <param name="y">The y-coordinate</param>
+        /// <param name="unit">The unit. </param>
+        public ReticlePosition(double x, double y, AngularUnit unit)
+        {
+            X = unit.New(x);
+            Y = unit.New(y);
+        }
+
+        /// <summary>
         /// Constructor for the specified position coordinates
         /// </summary>
         /// <param name="x"></param>

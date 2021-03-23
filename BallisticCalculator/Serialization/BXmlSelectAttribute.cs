@@ -9,7 +9,7 @@ namespace BallisticCalculator.Serialization
     /// be serialized by one or more possible options
     /// </para>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, Inherited = false)]
     public class BXmlSelectAttribute : Attribute
     {
         /// <summary>
