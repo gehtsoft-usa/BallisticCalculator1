@@ -1,5 +1,5 @@
 @group
-    @key=index
+    @key=main
     @brief=
     @title=Ballistic Calculator
     @ingroup=

@@ -6,6 +6,6 @@
  <dg:output template="%docgen%/template/cs2ds/main.xsl" file="src/raw/null-file" encoding="utf-8">
   <dg:define name="settings" value="preparesettings.xml" />
   <dg:define name="source" value="obj/raw.xml" />
-  <dg:define name="default-group" value="index" />
+  <dg:define name="default-group" value="main" />
  </dg:output>
 </dg:help-project>

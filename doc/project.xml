@@ -15,6 +15,8 @@
   <dg:define name="default-transform" value="yes" />
   <dg:define name="enable-highlighter" value="yes" />
   <dg:define name="external-resources" value="yes" />
+  <dg:define name="web-content-file-name" value="index" />
+  <dg:define name="web-content-file-name-backward-compatibility" value="yes" />
  </dg:output>
  <dg:output template="%docgen%/template/xmldoc/main.xsl" file="BallisticCaculator.xml" encoding="utf-8">
   <dg:define name="assembly" value="BallisticCalculator" />
