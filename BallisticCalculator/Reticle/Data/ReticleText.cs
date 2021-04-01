@@ -33,7 +33,7 @@ namespace BallisticCalculator.Reticle.Data
         /// <para>If no value is, a black color will be used</para>
         /// </summary>
         [BXmlProperty(Name = "text-color", Optional = true)]
-        public string TextColor { get; set; }
+        public string Color { get; set; }
 
         /// <summary>
         /// Constructor

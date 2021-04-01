@@ -149,6 +149,11 @@ namespace BallisticCalculator.Serialization
                 var textValue = ((double)propertyValue).ToString(CultureInfo.InvariantCulture);
                 AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
             }
+            else if (propertyType == typeof(float))
+            {
+                var textValue = ((float)propertyValue).ToString(CultureInfo.InvariantCulture);
+                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
+            }
             else if (propertyType == typeof(int))
             {
                 var textValue = ((int)propertyValue).ToString(CultureInfo.InvariantCulture);

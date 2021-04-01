@@ -6,6 +6,7 @@ using Xunit;
 
 namespace BallisticCalculator.Test
 {
+
     public class DragTableTest
     {
         private static void TestDataPoint(DragTableNode dataPoint, DragTable table)

@@ -29,6 +29,13 @@ namespace BallisticCalculator.Reticle.Data
         public Measurement<AngularUnit> TextOffset { get; set; }
 
         /// <summary>
+        /// The height of the BDC text
+        /// </summary>
+        [BXmlProperty("text-height")]
+        public Measurement<AngularUnit> TextHeight { get; set; }
+
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public ReticleBulletDropCompensatorPoint()

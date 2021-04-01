@@ -31,8 +31,7 @@ namespace BallisticCalculator.Test
             var path = new ReticlePath()
             {
                 Fill = true,
-                FillColor = "black",
-                LineColor = "red",
+                Color = "red",
                 LineWidth = AngularUnit.MOA.New(5),
             };
 
@@ -52,8 +51,7 @@ namespace BallisticCalculator.Test
 
             path2.Should().NotBeNull();
             path2.Fill.Should().BeTrue();
-            path2.FillColor.Should().Be("black");
-            path2.LineColor.Should().Be("red");
+            path2.Color.Should().Be("red");
             path2.LineWidth.Should().Be(AngularUnit.MOA.New(5));
 
             path2.Elements.Should().HaveCount(3);
@@ -93,7 +91,7 @@ namespace BallisticCalculator.Test
             {
                 Start = new ReticlePosition(1, 2, AngularUnit.Mil),
                 End = new ReticlePosition(3, 4, AngularUnit.Mil),
-                LineColor = "gray",
+                Color = "gray",
                 LineWidth = AngularUnit.Mil.New(1.5),
             });
 
@@ -101,9 +99,8 @@ namespace BallisticCalculator.Test
             {
                 TopLeft = new ReticlePosition(7, 8, AngularUnit.Mil),
                 Size = new ReticlePosition(0.5, 0.75, AngularUnit.Mil),
-                LineColor = "gray",
+                Color = "gray",
                 Fill = true,
-                FillColor = "blue",
                 LineWidth = AngularUnit.Mil.New(1.5),
             });
 
@@ -111,7 +108,7 @@ namespace BallisticCalculator.Test
             {
                 Position = new ReticlePosition(0, -7, AngularUnit.MOA),
                 Text = "Text",
-                TextColor = "black",
+                Color = "black",
                 TextHeight = AngularUnit.MOA.New(1),
                
             });
@@ -122,7 +119,7 @@ namespace BallisticCalculator.Test
                 Radius = AngularUnit.MOA.New(1.5),
                 Fill = false,
                 LineWidth = AngularUnit.MOA.New(0.25),
-                LineColor = "black",
+                Color = "black",
             });
 
             SerializerRoundtrip serializer = new SerializerRoundtrip();

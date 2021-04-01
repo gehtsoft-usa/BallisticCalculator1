@@ -381,6 +381,11 @@ namespace BallisticCalculator.Serialization
                     if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
                         propertyValue = x;
                 }
+                else if (propertyType == typeof(float))
+                {
+                    if (float.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out float x))
+                        propertyValue = x;
+                }
                 else if (propertyType == typeof(int))
                 {
                     if (int.TryParse(propertyText, NumberStyles.Any, CultureInfo.InvariantCulture, out int x))

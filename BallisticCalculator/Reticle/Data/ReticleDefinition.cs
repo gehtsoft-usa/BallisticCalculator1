@@ -30,6 +30,7 @@ namespace BallisticCalculator.Reticle.Data
         [BXmlProperty(Name = "zero", ChildElement = true, FlattenChild = true, Optional = true)]
         public ReticlePosition Zero { get; set; }
 
+
         /// <summary>
         /// Collection of a reticle elements
         /// </summary>

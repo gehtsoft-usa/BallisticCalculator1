@@ -40,16 +40,8 @@ namespace BallisticCalculator.Reticle.Data
         /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
         /// <para>If no value is, a black color will be used</para>
         /// </summary>
-        [BXmlProperty(Name = "line-color", Optional = true)]
-        public string LineColor { get; set; }
-
-        /// <summary>
-        /// <para>A fill color</para>
-        /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
-        /// <para>If no value is set, a fill color will be used</para>
-        /// </summary>
-        [BXmlProperty(Name = "fill-color", Optional = true)]
-        public string FillColor { get; set; }
+        [BXmlProperty(Name = "color", Optional = true)]
+        public string Color { get; set; }
 
         /// <summary>
         /// Constructor
