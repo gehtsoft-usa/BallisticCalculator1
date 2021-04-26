@@ -33,14 +33,14 @@ namespace BallisticCalculator.Reticle.Draw
                     {
                         translator.Transform(line.Start.X, line.Start.Y, out float x0, out float y0);
                         translator.Transform(line.End.X, line.End.Y, out float x1, out float y1);
-                        canvas.Line(x0, y0, x1, y1, translator.TransformX(line.LineWidth), line.Color ?? "black");
+                        canvas.Line(x0, y0, x1, y1, translator.TransformL(line.LineWidth), line.Color ?? "black");
 
                     }
                     break;
                 case ReticleCircle circle:
                     {
                         translator.Transform(circle.Center.X, circle.Center.Y, out float x0, out float y0);
-                        canvas.Circle(x0, y0, translator.TransformX(circle.Radius), translator.TransformX(circle.LineWidth), circle.Fill ?? false, circle.Color ?? "black");
+                        canvas.Circle(x0, y0, translator.TransformL(circle.Radius), translator.TransformL(circle.LineWidth), circle.Fill ?? false, circle.Color ?? "black");
 
                     }
                     break;
@@ -48,13 +48,13 @@ namespace BallisticCalculator.Reticle.Draw
                     {
                         translator.Transform(rectangle.TopLeft.X, rectangle.TopLeft.Y, out float x0, out float y0);
                         translator.Transform(rectangle.Size.X, rectangle.Size.Y, out float x1, out float y1);
-                        canvas.Rectangle(x0, y0, x0 + x1, y0 + y1, translator.TransformX(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? "black");
+                        canvas.Rectangle(x0, y0, x0 + x1, y0 + y1, translator.TransformL(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? "black");
                     }
                     break;
                 case ReticleText text:
                     {
                         translator.Transform(text.Position.X, text.Position.Y, out float x0, out float y0);
-                        var h = translator.TransformY(text.TextHeight);
+                        var h = translator.TransformL(text.TextHeight);
                         canvas.Text(x0, y0, h, text.Text, text.Color);
                     }
                     break;
@@ -80,12 +80,14 @@ namespace BallisticCalculator.Reticle.Draw
                                 case ReticlePathElementArc arc:
                                     {
                                         translator.Transform(arc.Position.X, arc.Position.Y, out float x, out float y);
-                                        path1.Arc(translator.TransformX(arc.Radius), x, y, arc.MajorArc, arc.ClockwiseDirection);
+                                        path1.Arc(translator.TransformL(arc.Radius), x, y, arc.MajorArc, arc.ClockwiseDirection);
                                     }
                                     break;
                             }
                         }
-                        canvas.Path(path1, translator.TransformX(path.LineWidth), path.Fill ?? false, path.Color ?? "black");
+                        if (path.Fill ?? false)
+                            path1.Close();
+                        canvas.Path(path1, translator.TransformL(path.LineWidth), path.Fill ?? false, path.Color ?? "black");
                     }
                     break;
             }

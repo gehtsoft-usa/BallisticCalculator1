@@ -6,8 +6,6 @@ using System.Xml;
 
 namespace BallisticCalculator.Reticle.Draw
 {
-
-
     internal class SvgCanvas : IReticleCanvas
     {
         private void AppendAttribute(XmlNode node, string attributeName, string value)

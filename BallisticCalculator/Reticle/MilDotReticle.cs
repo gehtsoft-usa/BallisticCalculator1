@@ -22,7 +22,7 @@ namespace BallisticCalculator.Reticle
 
             Elements.Add(new ReticleCircle() { Center = new ReticlePosition(0, 0, AngularUnit.Mil), Radius = AngularUnit.Mil.New(6), Color = "black", LineWidth = AngularUnit.Mil.New(0.01) });
             Elements.Add(new ReticleLine() { Start = new ReticlePosition(-5, 0, AngularUnit.Mil), End = new ReticlePosition(5, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = "black" });
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, -5, AngularUnit.Mil), End = new ReticlePosition(0, -5, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = "black" });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, -5, AngularUnit.Mil), End = new ReticlePosition(0, 5, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = "black" });
 
             Elements.Add(new ReticleLine() { Start = new ReticlePosition(-5, 0, AngularUnit.Mil), End = new ReticlePosition(-6, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = "black" });
             Elements.Add(new ReticleLine() { Start = new ReticlePosition(5, 0, AngularUnit.Mil), End = new ReticlePosition(6, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = "black" });

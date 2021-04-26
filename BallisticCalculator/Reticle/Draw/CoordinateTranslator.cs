@@ -82,12 +82,29 @@ namespace BallisticCalculator.Reticle.Draw
         }
 
         /// <summary>
+        /// Transform linear measurement
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public float TransformL(float x)
+        {
+            return x * mScaleX;
+        }
+
+        /// <summary>
         /// Transforms just X coordinate (angular units)
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
 
         public float TransformX(Measurement<AngularUnit>? x) => x == null ? 1 : TransformX((float)x.Value.In(AngularUnit.Mil));
+
+        /// <summary>
+        /// Transform linear value
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public float TransformL(Measurement<AngularUnit>? x) => x == null ? 1 : TransformL((float)x.Value.In(AngularUnit.Mil));
 
         /// <summary>
         /// Transforms just Y coordinate
