@@ -110,7 +110,6 @@ namespace BallisticCalculator.Test.Data.Serialization
                 Text = "Text",
                 Color = "black",
                 TextHeight = AngularUnit.MOA.New(1),
-               
             });
 
             reticle.Elements.Add(new ReticleCircle()
@@ -147,7 +146,6 @@ namespace BallisticCalculator.Test.Data.Serialization
             reticle2.Elements[2].ElementType.Should().Be(ReticleElementType.Text);
 
             reticle2.Elements[3].ElementType.Should().Be(ReticleElementType.Circle);
-
         }
     }
 }

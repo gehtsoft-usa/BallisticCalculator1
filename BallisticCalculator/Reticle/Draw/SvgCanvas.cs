@@ -53,11 +53,10 @@ namespace BallisticCalculator.Reticle.Draw
             Title = title;
             SvgWidth = width;
             SvgHeight = height;
-            ViewBoxWidth = (int)viewBoxWidth;
+            ViewBoxWidth = viewBoxWidth;
             ViewBoxHeight = (int)Math.Floor(YtoXratio * (double)ViewBoxWidth);
             Clear();
         }
-
 
         /// <summary>
         /// Maximum Y coordinate
@@ -76,7 +75,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// </summary>
         public float Right => ViewBoxWidth - 1;
         /// <summary>
-        /// Width 
+        /// Width
         /// </summary>
         public float Width => ViewBoxWidth;
         /// <summary>
@@ -132,7 +131,6 @@ namespace BallisticCalculator.Reticle.Draw
             AppendAttribute(element, "stroke-width", width < 1 && !fill ? 1 : width);
             AppendAttribute(element, "fill", fill ? color : "none");
             document.DocumentElement.AppendChild(element);
-
         }
 
         /// <summary>
@@ -234,7 +232,9 @@ namespace BallisticCalculator.Reticle.Draw
                 document.DocumentElement.AppendChild(element);
             }
             else
+            {
                 throw new ArgumentException($"Path is not created by {nameof(SvgCanvas)}.{nameof(SvgCanvas.CreatePath)}", nameof(path));
+            }
         }
     }
 }

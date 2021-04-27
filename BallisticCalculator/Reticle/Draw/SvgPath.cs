@@ -3,7 +3,7 @@ using System.Text;
 
 namespace BallisticCalculator.Reticle.Draw
 {
-    sealed class SvgPath : IReticleCanvasPath
+    internal sealed class SvgPath : IReticleCanvasPath
     {
         private readonly StringBuilder mPath = new StringBuilder();
 
@@ -28,7 +28,6 @@ namespace BallisticCalculator.Reticle.Draw
             if (mPath.Length > 0)
                 mPath.Append(' ');
             mPath.AppendFormat("L{0},{1}", (int)Math.Floor((double)x), (int)Math.Floor((double)y));
-
         }
 
         public void Arc(float r, float x, float y, bool largeArc, bool clockwiseDirection)
@@ -42,7 +41,6 @@ namespace BallisticCalculator.Reticle.Draw
             if (mPath.Length > 0)
                 mPath.Append(' ');
             mPath.Append('z');
-
         }
     }
 }

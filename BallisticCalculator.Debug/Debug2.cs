@@ -14,7 +14,7 @@ using Svg;
 
 namespace BallisticCalculator.Debug
 {
-    public class Debug2
+    public static class Debug2
     {
         private static void Draw(ReticleDefinition reticle, string baseName)
         {
@@ -39,7 +39,6 @@ namespace BallisticCalculator.Debug
         {
             var reticle = new MilDotReticle();
             Draw(reticle, "mildot");
-            
         }
 
         private static void TestShapes()
@@ -57,7 +56,7 @@ namespace BallisticCalculator.Debug
                 Color = "red",
                 Fill = true,
             };
-            
+
             path.Elements.Add(new ReticlePathElementMoveTo()
             {
                 Position = new ReticlePosition(-2.5, 0, AngularUnit.Mil),
@@ -99,7 +98,6 @@ namespace BallisticCalculator.Debug
                 Color = "blue",
             });
 
-
             reticle.Elements.Add(new ReticleText()
             {
                 Position = new ReticlePosition(0, 0, AngularUnit.Mil),
@@ -111,7 +109,7 @@ namespace BallisticCalculator.Debug
             Draw(reticle, "test");
         }
 
-        public static void Do(string[] args)
+        public static void Do(string[] _)
         {
             Mildot();
             TestShapes();

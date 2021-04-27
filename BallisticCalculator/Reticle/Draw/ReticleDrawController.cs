@@ -7,6 +7,9 @@ using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Draw
 {
+    /// <summary>
+    /// The controller to draw a reticle on a canvas.
+    /// </summary>
     public class ReticleDrawController
     {
         private readonly CoordinateTranslator translator;
@@ -34,14 +37,12 @@ namespace BallisticCalculator.Reticle.Draw
                         translator.Transform(line.Start.X, line.Start.Y, out float x0, out float y0);
                         translator.Transform(line.End.X, line.End.Y, out float x1, out float y1);
                         canvas.Line(x0, y0, x1, y1, translator.TransformL(line.LineWidth), line.Color ?? "black");
-
                     }
                     break;
                 case ReticleCircle circle:
                     {
                         translator.Transform(circle.Center.X, circle.Center.Y, out float x0, out float y0);
                         canvas.Circle(x0, y0, translator.TransformL(circle.Radius), translator.TransformL(circle.LineWidth), circle.Fill ?? false, circle.Color ?? "black");
-
                     }
                     break;
                 case ReticleRectangle rectangle:
@@ -99,9 +100,8 @@ namespace BallisticCalculator.Reticle.Draw
         /// </summary>
         public void DrawReticle()
         {
-            foreach (var element in reticle.Elements) 
+            foreach (var element in reticle.Elements)
                 DrawElement(element);
-
         }
 
         private IEnumerable<ReticleElement> CalculateBdc(ReticleDefinition reticle, IEnumerable<TrajectoryPoint> trajectory, Measurement<DistanceUnit> zero, bool closeBdc, DistanceUnit distanceUnits, string color)
@@ -135,8 +135,6 @@ namespace BallisticCalculator.Reticle.Draw
                                 Text = Math.Round(point.Distance.In(distanceUnits)).ToString(),
                                 Color = color,
                             };
-
-
                         }
                     }
                 }
@@ -167,7 +165,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="targetSize">The size of a side of a rectangular target</param>
         /// <param name="targetDistance">The distance to the target</param>
         /// <param name="color">The color of the target</param>
-        public void DrawTarget(IEnumerable<TrajectoryPoint> trajectory, 
+        public void DrawTarget(IEnumerable<TrajectoryPoint> trajectory,
                                 Measurement<DistanceUnit> targetSize, Measurement<DistanceUnit> targetDistance,
                                 string color)
         {

@@ -8,9 +8,9 @@ namespace BallisticCalculator.Test.Reticle
 {
     public class SvgControllerTest
     {
-        const string SVG_NS = "http://www.w3.org/2000/svg";
+        private const string SVG_NS = "http://www.w3.org/2000/svg";
 
-        private XName Name(string name) => XName.Get(name, SVG_NS);
+        private static XName Name(string name) => XName.Get(name, SVG_NS);
 
         [Fact]
         public void Prefix()
@@ -118,7 +118,6 @@ namespace BallisticCalculator.Test.Reticle
                 path.Close();
                 canvas.Path(path, 0, true, "red");
             }
-
 
             var s = canvas.ToSvg();
             var document = XDocument.Parse(s);

@@ -71,9 +71,9 @@ namespace BallisticCalculator
                     -rifle.Sight.SightHeight,
                     new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
 
-                var velocityVector = new Vector<VelocityUnit>(velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Cos(barrelAzimuth),
-                                                              velocity * MeasurementMath.Sin(barrelElevation),
-                                                              velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Sin(barrelAzimuth));
+                var velocityVector = new Vector<VelocityUnit>(velocity * barrelElevation.Cos() * barrelAzimuth.Cos(),
+                                                              velocity * barrelElevation.Sin(),
+                                                              velocity * barrelElevation.Cos() * barrelAzimuth.Sin());
 
                 Measurement<DistanceUnit> maximumRange = rangeTo;
                 Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000, DistanceUnit.Meter);
@@ -207,9 +207,9 @@ namespace BallisticCalculator
                 -rifle.Sight.SightHeight,
                 new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
 
-            var velocityVector = new Vector<VelocityUnit>(velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Cos(barrelAzimuth),
-                                                          velocity * MeasurementMath.Sin(barrelElevation),
-                                                          velocity * MeasurementMath.Cos(barrelElevation) * MeasurementMath.Sin(barrelAzimuth));
+            var velocityVector = new Vector<VelocityUnit>(velocity * barrelElevation.Cos() * barrelAzimuth.Cos(),
+                                                          velocity * barrelElevation.Sin(),
+                                                          velocity * barrelElevation.Cos() * barrelAzimuth.Sin());
 
             int currentItem = 0;
             Measurement<DistanceUnit> maximumRange = rangeTo + calculationStep;
@@ -318,17 +318,17 @@ namespace BallisticCalculator
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector<VelocityUnit> WindVector(ShotParameters shot, Wind wind, VelocityUnit units)
         {
-            double sightCosine = MeasurementMath.Cos(shot.SightAngle);
-            double sightSine = MeasurementMath.Sin(shot.SightAngle);
-            double cantCosine = MeasurementMath.Cos(shot.CantAngle ?? AngularUnit.Radian.New(0));
-            double cantSine = MeasurementMath.Sin(shot.CantAngle ?? AngularUnit.Radian.New(0));
+            double sightCosine = shot.SightAngle.Cos();
+            double sightSine = shot.SightAngle.Sin();
+            double cantCosine = (shot.CantAngle ?? AngularUnit.Radian.New(0)).Cos();
+            double cantSine = (shot.CantAngle ?? AngularUnit.Radian.New(0)).Sin();
 
             Measurement<VelocityUnit> rangeVelocity, crossComponent;
 
             if (wind != null)
             {
-                rangeVelocity = (wind.Velocity * MeasurementMath.Cos(wind.Direction)).To(units);
-                crossComponent = (wind.Velocity * MeasurementMath.Sin(wind.Direction)).To(units);
+                rangeVelocity = (wind.Velocity * wind.Direction.Cos()).To(units);
+                crossComponent = (wind.Velocity * wind.Direction.Sin()).To(units);
             }
             else
             {
