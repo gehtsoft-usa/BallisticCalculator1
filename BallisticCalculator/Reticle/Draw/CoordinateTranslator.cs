@@ -61,7 +61,7 @@ namespace BallisticCalculator.Reticle.Draw
         public void Transform(float sx, float sy, out float x, out float y)
         {
             x = (sx + mZeroX) * mScaleX;
-            y = (mSourceHeight - (sy + mZeroY)) * mScaleY;
+            y = (mZeroY - sy) * mScaleY;
         }
 
         /// <summary>

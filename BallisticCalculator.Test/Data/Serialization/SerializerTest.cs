@@ -7,7 +7,7 @@ using System.Xml;
 using Xunit;
 
 #pragma warning disable RCS1202 // Avoid NullReferenceException.
-namespace BallisticCalculator.Test
+namespace BallisticCalculator.Test.Data.Serialization
 {
     public class SerializerTest
     {

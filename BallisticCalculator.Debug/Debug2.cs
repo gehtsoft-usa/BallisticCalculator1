@@ -83,6 +83,31 @@ namespace BallisticCalculator.Debug
 
             reticle.Elements.Add(path);
 
+            reticle.Elements.Add(new ReticleLine()
+            {
+                Start = new ReticlePosition(-1, 0, AngularUnit.Mil),
+                End = new ReticlePosition(1, 0, AngularUnit.Mil),
+                LineWidth = AngularUnit.Mil.New(0.1),
+                Color = "blue",
+            });
+
+            reticle.Elements.Add(new ReticleLine()
+            {
+                Start = new ReticlePosition(0, -1, AngularUnit.Mil),
+                End = new ReticlePosition(0, 1, AngularUnit.Mil),
+                LineWidth = AngularUnit.Mil.New(0.1),
+                Color = "blue",
+            });
+
+
+            reticle.Elements.Add(new ReticleText()
+            {
+                Position = new ReticlePosition(0, 0, AngularUnit.Mil),
+                TextHeight = AngularUnit.Mil.New(0.25),
+                Color = "black",
+                Text = "Test Text",
+            });
+
             Draw(reticle, "test");
         }
 

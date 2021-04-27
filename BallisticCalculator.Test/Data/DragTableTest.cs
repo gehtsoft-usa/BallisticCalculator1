@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text.Json;
 using Xunit;
 
-namespace BallisticCalculator.Test
+namespace BallisticCalculator.Test.Data
 {
 
     public class DragTableTest

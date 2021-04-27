@@ -1,0 +1,299 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Intrinsics.X86;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
+using BallisticCalculator.Reticle.Data;
+using BallisticCalculator.Reticle.Draw;
+using FluentAssertions;
+using Gehtsoft.Measurements;
+using Moq;
+using Xunit;
+
+namespace BallisticCalculator.Test.Reticle
+{
+    public class ReticleControllerTest
+    {
+        private Mock<IReticleCanvas> CreateMockCanvas()
+        {
+            var canvas = new Mock<IReticleCanvas>();
+            canvas.Setup(canvas => canvas.Left).Returns(0);
+            canvas.Setup(canvas => canvas.Right).Returns(10000);
+            canvas.Setup(canvas => canvas.Top).Returns(0);
+            canvas.Setup(canvas => canvas.Bottom).Returns(10000);
+
+            canvas.Setup(canvas => canvas.Width).Returns(10000);
+            canvas.Setup(canvas => canvas.Height).Returns(10000);
+
+            return canvas;
+        }
+
+        private ReticleDefinition CreateReticle(double size = 10, double? zeroy = null)
+        {
+            var definition = new ReticleDefinition()
+            {
+                Name = "Test",
+                Size = new ReticlePosition(size, size, AngularUnit.Mil),
+                Zero = new ReticlePosition(size / 2, zeroy ?? (size / 2), AngularUnit.Mil)
+            };
+            return definition;
+
+        }
+
+        private bool Approximately(float x1, float x2, float epsilon) => Math.Abs(x1 - x2) < epsilon;
+        private bool Approximately(float x1, float x2) => Approximately(x1, x2, 1e-2f);
+
+        [Theory]
+        [InlineData(-5, -5, 5, 5, 0.001, "red", 0, 10000, 10000, 0, 1)]
+        [InlineData(4, 4, 0, 0, 1, "blue", 9000, 1000, 5000, 5000, 1000)]
+        public void ReticleElement_Line(
+            double sx0, double sy0, double sx1, double sy1, double sw, string color,
+            float dx0, float dy0, float dx1, float dy1, float dw)
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+            reticle.Elements.Add(new ReticleLine()
+            {
+                Start = new ReticlePosition(sx0, sy0, AngularUnit.Mil),
+                End = new ReticlePosition(sx1, sy1, AngularUnit.Mil),
+                LineWidth = AngularUnit.Mil.New(sw),
+                Color = color,
+            });
+
+            canvas.Setup(canvas => canvas.Line(
+                It.Is<float>(f => Approximately(f, dx0)),
+                It.Is<float>(f => Approximately(f, dy0)),
+                It.Is<float>(f => Approximately(f, dx1)),
+                It.Is<float>(f => Approximately(f, dy1)),
+                It.Is<float>(f => Approximately(f, dw)),
+                It.Is<string>(s => s == color))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawReticle();
+            canvas.Verify();
+        }
+
+        [Theory]
+        [InlineData(-5, 0, 5, 5, 0.001, "red", true, 0, 5000, 5000, 10000, 1)]
+        [InlineData(4, 4, 1, 1, 1, "blue", false, 9000, 1000, 10000, 2000, 1000)]
+        public void ReticleElement_Rectangle(
+           double sx0, double sy0, double sx1, double sy1, double sw, string color, bool fill,
+           float dx0, float dy0, float dx1, float dy1, float dw)
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+            reticle.Elements.Add(new ReticleRectangle()
+            {
+                TopLeft = new ReticlePosition(sx0, sy0, AngularUnit.Mil),
+                Size = new ReticlePosition(sx1, sy1, AngularUnit.Mil),
+                LineWidth = AngularUnit.Mil.New(sw),
+                Color = color,
+                Fill = fill,
+            });
+
+            canvas.Setup(canvas => canvas.Rectangle(
+                It.Is<float>(f => Approximately(f, dx0)),
+                It.Is<float>(f => Approximately(f, dy0)),
+                It.Is<float>(f => Approximately(f, dx1)),
+                It.Is<float>(f => Approximately(f, dy1)),
+                It.Is<float>(f => Approximately(f, dw)),
+                It.Is<bool>(b => b == fill),
+                It.Is<string>(s => s == color))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawReticle();
+            canvas.Verify();
+        }
+
+        [Theory]
+        [InlineData(0, 0, 2, 0.001, "red", true, 5000, 5000, 2000, 1)]
+        [InlineData(1, 1, 2.5, 0.001, "red", true, 6000, 4000, 2500, 1)]
+        [InlineData(-1.5, -1.5, 0.5, 0.1, "blue", false, 3500, 6500, 500, 100)]
+        public void ReticleElement_Circle(
+           double sx0, double sy0, double sr, double sw, string color, bool fill,
+           float dx0, float dy0, float dr, float dw)
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+            reticle.Elements.Add(new ReticleCircle()
+            {
+                Center = new ReticlePosition(sx0, sy0, AngularUnit.Mil),
+                Radius = AngularUnit.Mil.New(sr),
+                LineWidth = AngularUnit.Mil.New(sw),
+                Color = color,
+                Fill = fill,
+            });
+
+            canvas.Setup(canvas => canvas.Circle(
+                It.Is<float>(f => Approximately(f, dx0)),
+                It.Is<float>(f => Approximately(f, dy0)),
+                It.Is<float>(f => Approximately(f, dr)),
+                It.Is<float>(f => Approximately(f, dw)),
+                It.Is<bool>(b => b == fill),
+                It.Is<string>(s => s == color))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawReticle();
+            canvas.Verify();
+        }
+
+        [Theory]
+        [InlineData(0, 0, 0.5, "the text", "cyan", 5000, 5000, 500)]
+        public void ReticleElement_Text(
+           double sx0, double sy0, double sh, string text, string color,
+           float dx0, float dy0, float dh)
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+            reticle.Elements.Add(new ReticleText()
+            {
+                Position = new ReticlePosition(sx0, sy0, AngularUnit.Mil),
+                TextHeight = AngularUnit.Mil.New(sh),
+                Text = text,
+                Color = color,
+            });
+
+            canvas.Setup(canvas => canvas.Text(
+                It.Is<float>(f => Approximately(f, dx0)),
+                It.Is<float>(f => Approximately(f, dy0)),
+                It.Is<float>(f => Approximately(f, dh)),
+                It.Is<string>(s => s == text),
+                It.Is<string>(s => s == color))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawReticle();
+            canvas.Verify();
+        }
+
+        [Fact]
+        public void Path()
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+
+            var reticlePath = new ReticlePath()
+            {
+                Color = "red",
+                Fill = true,
+            };
+
+            reticlePath.Elements.Add(new ReticlePathElementMoveTo()
+            {
+                Position = new ReticlePosition(-2.5, 0, AngularUnit.Mil),
+            });
+
+            reticlePath.Elements.Add(new ReticlePathElementLineTo()
+            {
+                Position = new ReticlePosition(0, 1, AngularUnit.Mil),
+            });
+
+            reticlePath.Elements.Add(new ReticlePathElementLineTo()
+            {
+                Position = new ReticlePosition(2.5, 0, AngularUnit.Mil),
+            });
+
+            reticlePath.Elements.Add(new ReticlePathElementArc()
+            {
+                Position = new ReticlePosition(-2.5, 0, AngularUnit.Mil),
+                ClockwiseDirection = false,
+                MajorArc = true,
+                Radius = AngularUnit.Mil.New(2.5)
+            });
+
+            reticle.Elements.Add(reticlePath);
+
+            int order = 0;
+
+            var canvasPath = new Mock<IReticleCanvasPath>();
+            canvasPath.Setup(
+                path => path.MoveTo(
+                    It.Is<float>(f => Approximately(f, 2500)),
+                    It.Is<float>(f => Approximately(f, 5000))
+                    ))
+                .Callback(() => (order++).Should().Be(1, "Order of adding path items into path failed"))
+                .Verifiable();
+
+            canvasPath.Setup(
+                path => path.LineTo(
+                    It.Is<float>(f => Approximately(f, 5000)),
+                    It.Is<float>(f => Approximately(f, 4000))
+                    ))
+                .Callback(() => (order++).Should().Be(2, "Order of adding path items into path failed"))
+                .Verifiable();
+
+            canvasPath.Setup(
+                path => path.LineTo(
+                    It.Is<float>(f => Approximately(f, 7500)),
+                    It.Is<float>(f => Approximately(f, 5000))
+                    ))
+                .Callback(() => (order++).Should().Be(3, "Order of adding path items into path failed"))
+                .Verifiable();
+
+
+            canvasPath.Setup(
+                path => path.Arc(
+                    It.Is<float>(f => Approximately(f, 2500)),
+                    It.Is<float>(f => Approximately(f, 2500)),
+                    It.Is<float>(f => Approximately(f, 5000)),
+                    It.Is<bool>(f => f),
+                    It.Is<bool>(f => !f)
+                    ))
+                .Callback(() => (order++).Should().Be(4, "Order of adding path items into path failed"))
+                .Verifiable();
+
+            canvas.Setup(
+                canvas => canvas.CreatePath())
+                .Returns(canvasPath.Object)
+                .Callback(() => (order++).Should().Be(0, "Creating a patch must be first action"))
+                .Verifiable();
+
+            canvas.Setup(
+                canvas => canvas.Path(
+                    It.Is<IReticleCanvasPath>(path => path == canvasPath.Object),
+                    It.Is<float>(f => Approximately(f, 1)),
+                    It.Is<bool>(f => f),
+                    It.Is<string>(s => s == "red")))
+                .Callback(() => (order++).Should().Be(5, "Drawing path must be the last action"))
+                .Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawReticle();
+            canvas.Verify();
+            canvasPath.Verify();
+        }
+
+        [Theory]
+        [InlineData(-5, -5, 5, 5, 0.001, "red", 0, 9000, 10000, -1000, 1)]
+        [InlineData(-5, -4, 5, 4, 0.001, "red", 0, 8000, 10000, 0, 1)]
+        [InlineData(4, 3, 0, 0, 1, "blue", 9000, 1000, 5000, 4000, 1000)]
+        [InlineData(-4, -3, 0, 0, 1, "blue", 1000, 7000, 5000, 4000, 1000)]
+        public void ReticleElement_Line_ZeroOffCenter(
+            double sx0, double sy0, double sx1, double sy1, double sw, string color,
+            float dx0, float dy0, float dx1, float dy1, float dw)
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle(10, 4);
+            reticle.Elements.Add(new ReticleLine()
+            {
+                Start = new ReticlePosition(sx0, sy0, AngularUnit.Mil),
+                End = new ReticlePosition(sx1, sy1, AngularUnit.Mil),
+                LineWidth = AngularUnit.Mil.New(sw),
+                Color = color,
+            });
+
+            canvas.Setup(canvas => canvas.Line(
+                It.Is<float>(f => Approximately(f, dx0)),
+                It.Is<float>(f => Approximately(f, dy0)),
+                It.Is<float>(f => Approximately(f, dx1)),
+                It.Is<float>(f => Approximately(f, dy1)),
+                It.Is<float>(f => Approximately(f, dw)),
+                It.Is<string>(s => s == color))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawReticle();
+            canvas.Verify();
+        }
+    }
+}

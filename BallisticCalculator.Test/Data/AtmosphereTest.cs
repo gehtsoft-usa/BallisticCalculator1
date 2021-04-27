@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace BallisticCalculator.Test
+namespace BallisticCalculator.Test.Data
 {
     public class AtmosphereTest
     {

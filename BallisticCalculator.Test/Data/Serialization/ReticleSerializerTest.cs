@@ -3,7 +3,7 @@ using FluentAssertions;
 using Gehtsoft.Measurements;
 using Xunit;
 
-namespace BallisticCalculator.Test
+namespace BallisticCalculator.Test.Data.Serialization
 {
     public class ReticleSerializerTest
     {

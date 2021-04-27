@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace BallisticCalculator.Test
+namespace BallisticCalculator.Test.Calculator
 {
     public class TrajectoryCalculatorTest
     {

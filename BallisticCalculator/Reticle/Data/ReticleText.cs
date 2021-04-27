@@ -10,7 +10,7 @@ namespace BallisticCalculator.Reticle.Data
     public class ReticleText : ReticleElement
     {
         /// <summary>
-        /// Position of the top-left corner of the text
+        /// Position of the bottom-left corner of the text
         /// </summary>
         [BXmlProperty(Name = "position", ChildElement = true, FlattenChild = true)]
         public ReticlePosition Position { get; set; }

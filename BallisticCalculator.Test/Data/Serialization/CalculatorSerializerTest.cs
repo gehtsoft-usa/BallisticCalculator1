@@ -4,7 +4,7 @@ using Gehtsoft.Measurements;
 using System;
 using Xunit;
 
-namespace BallisticCalculator.Test
+namespace BallisticCalculator.Test.Data.Serialization
 {
     public class CalculatorSerializerTest
     {

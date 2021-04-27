@@ -126,7 +126,7 @@ namespace BallisticCalculator.Reticle.Draw
                              point.DropAdjustment >= bdcPoint.Position.Y))
                         {
                             var x = bdcPoint.Position.X + bdcPoint.TextOffset;
-                            var y = bdcPoint.Position.Y + bdcPoint.TextHeight / 2;
+                            var y = bdcPoint.Position.Y - bdcPoint.TextHeight / 2;
 
                             yield return new ReticleText()
                             {
