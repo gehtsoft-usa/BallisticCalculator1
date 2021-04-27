@@ -47,7 +47,8 @@ namespace BallisticCalculator.Reticle.Draw
                 case ReticleRectangle rectangle:
                     {
                         translator.Transform(rectangle.TopLeft.X, rectangle.TopLeft.Y, out float x0, out float y0);
-                        translator.Transform(rectangle.Size.X, rectangle.Size.Y, out float x1, out float y1);
+                        float x1 = translator.TransformL(rectangle.Size.X);
+                        float y1 = translator.TransformL(rectangle.Size.Y);
                         canvas.Rectangle(x0, y0, x0 + x1, y0 + y1, translator.TransformL(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? "black");
                     }
                     break;
