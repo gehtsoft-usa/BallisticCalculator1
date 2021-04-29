@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using BallisticCalculator.Reticle.Data;
 using BallisticCalculator.Reticle.Draw;
+using BallisticCalculator.Test.Calculator;
 using FluentAssertions;
 using Gehtsoft.Measurements;
 using Moq;
@@ -16,7 +17,7 @@ namespace BallisticCalculator.Test.Reticle
 {
     public class ReticleControllerTest
     {
-        private Mock<IReticleCanvas> CreateMockCanvas()
+        private static Mock<IReticleCanvas> CreateMockCanvas()
         {
             var canvas = new Mock<IReticleCanvas>();
             canvas.Setup(canvas => canvas.Left).Returns(0);
@@ -30,7 +31,7 @@ namespace BallisticCalculator.Test.Reticle
             return canvas;
         }
 
-        private ReticleDefinition CreateReticle(double size = 10, double? zeroy = null)
+        private static ReticleDefinition CreateReticle(double size = 10, double? zeroy = null)
         {
             var definition = new ReticleDefinition()
             {
@@ -39,11 +40,10 @@ namespace BallisticCalculator.Test.Reticle
                 Zero = new ReticlePosition(size / 2, zeroy ?? (size / 2), AngularUnit.Mil)
             };
             return definition;
-
         }
 
-        private bool Approximately(float x1, float x2, float epsilon) => Math.Abs(x1 - x2) < epsilon;
-        private bool Approximately(float x1, float x2) => Approximately(x1, x2, 1e-2f);
+        private static bool Approximately(float x1, float x2, float epsilon) => Math.Abs(x1 - x2) < epsilon;
+        private static bool Approximately(float x1, float x2) => Approximately(x1, x2, 1e-2f);
 
         [Theory]
         [InlineData(-5, -5, 5, 5, 0.001, "red", 0, 10000, 10000, 0, 1)]
@@ -168,7 +168,7 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Fact]
-        public void Path()
+        public void ReticleElement_Path()
         {
             var canvas = CreateMockCanvas();
             var reticle = CreateReticle();
@@ -231,7 +231,6 @@ namespace BallisticCalculator.Test.Reticle
                 .Callback(() => (order++).Should().Be(3, "Order of adding path items into path failed"))
                 .Verifiable();
 
-
             canvasPath.Setup(
                 path => path.Arc(
                     It.Is<float>(f => Approximately(f, 2500)),
@@ -293,6 +292,98 @@ namespace BallisticCalculator.Test.Reticle
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawReticle();
+            canvas.Verify();
+        }
+
+        [Fact]
+        public void Reticle_DrawShot()
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+            var trajectory = TableLoader.FromResource("g1_wind");
+
+            // How constants calculated:
+            //     Reticle: 10x10mil
+            //     Canvas: 10000x1000 pixels
+            //     Center of Target @ 250ft (see trajectory -> -3.2moa drop (0.95068 mil), 2.6moa windage (0.75828 mil))
+            //     Map center to target: mil to pixel y: 950, x: 758 against zero @ 5000x5000
+            //     Linear size of the target = atan(8 inches / 250 yards) = 0.905414549 mil => 905 pixels
+            //     c1 = center - size / 2, c2 = center + size / 2
+
+            canvas.Setup(canva => canva.Rectangle(
+                It.Is<float>(f => Approximately(f, 5305, 5)),
+                It.Is<float>(f => Approximately(f, 5497, 5)),
+                It.Is<float>(f => Approximately(f, 6210, 5)),
+                It.Is<float>(f => Approximately(f, 6403, 5)),
+                It.Is<float>(f => Approximately(f, 1, 0.1f)),
+                It.Is<bool>(b => !b),
+                It.Is<string>(s => s == "zecolor"))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawTarget(trajectory.Trajectory, DistanceUnit.Inch.New(8), DistanceUnit.Yard.New(250), "zecolor");
+
+            canvas.Verify();
+        }
+
+        [Fact]
+        public void BDC_LongRange()
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();
+            var trajectory = TableLoader.FromResource("g1_nowind");
+            
+            //we need detailed trajectory to calculate BDC
+            var calc = new TrajectoryCalculator();
+            trajectory.ShotParameters.SightAngle = calc.SightAngle(trajectory.Ammunition, trajectory.Rifle, trajectory.Atmosphere);
+            trajectory.ShotParameters.Step = DistanceUnit.Yard.New(10);
+            trajectory.ShotParameters.MaximumDistance = DistanceUnit.Yard.New(500);
+            var trajectory1 = calc.Calculate(trajectory.Ammunition, trajectory.Rifle, trajectory.Atmosphere, trajectory.ShotParameters, new[] { trajectory.Wind });
+
+            reticle.BulletDropCompensator.Add(new ReticleBulletDropCompensatorPoint()
+            {
+                Position = new ReticlePosition(AngularUnit.Mil.New(0), AngularUnit.Mil.New(-0.5)),
+                TextHeight = AngularUnit.Mil.New(0.5),
+                TextOffset = AngularUnit.Mil.New(0),
+            });
+
+            reticle.BulletDropCompensator.Add(new ReticleBulletDropCompensatorPoint()
+            {
+                Position = new ReticlePosition(AngularUnit.Mil.New(0), AngularUnit.Mil.New(-1)),
+                TextHeight = AngularUnit.Mil.New(0.5),
+                TextOffset = AngularUnit.Mil.New(1),
+            });
+
+            reticle.BulletDropCompensator.Add(new ReticleBulletDropCompensatorPoint()
+            {
+                Position = new ReticlePosition(AngularUnit.Mil.New(0), AngularUnit.Mil.New(-2)),
+                TextHeight = AngularUnit.Mil.New(0.5),
+                TextOffset = AngularUnit.Mil.New(-1),
+            });
+
+            canvas.Setup(canvas => canvas.Text(
+                It.Is<float>(f => Approximately(f, 5000)),                          //x == center
+                It.Is<float>(f => Approximately(f, 5750)),                          //x - 0.5mil(dot) + 0.5mil(text height) / 2
+                It.Is<float>(f => Approximately(f, 500)),
+                It.Is<string>(s => Approximately(float.Parse(s), 195, 10f)),        //~195 yards on the trajectory of test
+                It.Is<string>(s => s == "black"))).Verifiable();
+
+            canvas.Setup(canvas => canvas.Text(
+                It.Is<float>(f => Approximately(f, 6000)),                          //x == center + 1 mil
+                It.Is<float>(f => Approximately(f, 6250)),                          //x - 1mil(dot) + 0.5mil(text height) / 2
+                It.Is<float>(f => Approximately(f, 500)),
+                It.Is<string>(s => Approximately(float.Parse(s), 257, 10f)),        //~257 yards on the trajectory of test
+                It.Is<string>(s => s == "black"))).Verifiable();
+
+            canvas.Setup(canvas => canvas.Text(
+                It.Is<float>(f => Approximately(f, 4000)),                          //x == center - 1 mil
+                It.Is<float>(f => Approximately(f, 7250)),                          //x - 2mil(dot) + 0.5mil(text height) / 2
+                It.Is<float>(f => Approximately(f, 500)),
+                It.Is<string>(s => Approximately(float.Parse(s), 356, 10f)),        //~356 yards on the trajectory of test
+                It.Is<string>(s => s == "black"))).Verifiable();
+
+            ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
+            controller.DrawBulletDropCompensator(trajectory1, trajectory.Rifle.Zero.Distance, false, DistanceUnit.Yard, "black");
+
             canvas.Verify();
         }
     }

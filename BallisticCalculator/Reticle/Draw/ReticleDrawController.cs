@@ -145,6 +145,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// <summary>
         /// <para>BDC on the specified canvas</para>
         /// <para>Call this method after drawing the reticle</para>
+        /// <para>NOTE: BDC puts the distance at the next trajectory point after the trajectory crossed the BDC level. So, for acceptable precision, the trajectory step must be equal or less than 25 yards.</para>
         /// </summary>
         /// <param name="trajectory">The trajectory to get the BDC parameters</param>
         /// <param name="zero">The Zero distance</param>
@@ -176,7 +177,7 @@ namespace BallisticCalculator.Reticle.Draw
                 var centerY = trajectoryPoint.DropAdjustment;
                 var centerX = trajectoryPoint.WindageAdjustment;
                 var x0 = centerX - angularTargetSize / 2;
-                var y0 = centerY - angularTargetSize / 2;
+                var y0 = centerY + angularTargetSize / 2;
 
                 DrawElement(new ReticleRectangle()
                     {
