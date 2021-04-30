@@ -2,9 +2,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
   <TargetFramework>netstandard2.0</TargetFramework>
+  <DocGenVersion>0.1.18</DocGenVersion>
  </PropertyGroup>
  <ItemGroup>
-  <PackageReference Include="Gehtsoft.Build.DocGen" Version="0.1.16" IncludeAssets="build" />
+  <PackageReference Include="Gehtsoft.Build.DocGen" Version="$(DocGenVersion)" IncludeAssets="build" />
   <PackageReference Include="Gehtsoft.Build.ContentDelivery" Version="0.1.10" IncludeAssets="build" />
  </ItemGroup>
  <PropertyGroup>
@@ -26,10 +27,10 @@
   <DocGen Project="project.xml" />
   <Copy SourceFiles="@(CustomFile)" DestinationFolder="$(DocTargetDir)" />
   <Copy SourceFiles="@(ContractFile)" DestinationFolder="$(PdfSampleDir)" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/res" Version="0.1.16" Destination="$(DocTargetDir)/res" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/highlighter" Version="0.1.16" Destination="$(DocTargetDir)/highlighter" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/menu" Version="0.1.16" Destination="$(DocTargetDir)/menu" />
-  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/pageImages" Version="0.1.16" Destination="$(DocTargetDir)/pageImages" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/res" Version="$(DocGenVersion)" Destination="$(DocTargetDir)/res" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/highlighter" Version="$(DocGenVersion)" Destination="$(DocTargetDir)/highlighter" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/menu" Version="$(DocGenVersion)" Destination="$(DocTargetDir)/menu" />
+  <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/pageImages" Version="$(DocGenVersion)" Destination="$(DocTargetDir)/pageImages" />
  </Target>
  <ItemGroup>
   <DocSource Include="$(MSBuildProjectDirectory)/../BallisticCalculator/bin/Debug/netstandard2.0/BallisticCalculator.dll" />

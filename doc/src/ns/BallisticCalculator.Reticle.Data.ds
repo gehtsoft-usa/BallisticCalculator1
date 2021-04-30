@@ -1,0 +1,52 @@
+﻿@group
+    @title=Namespace BallisticCalculator.Reticle.Data
+    @key=BallisticCalculator.Reticle.Data
+    @ingroup=main
+    @brief=The classes used to define the reticle image.
+
+    [b]Key elements of the reticle definition[/b]
+
+    The main class that contains the reticle definition 
+    is [clink=BallisticCalculator.Reticle.Data.ReticleDefinition]ReticleDefinition[/clink].
+
+    The reticle image is defined by adding 
+    [clink=BallisticCalculator.Reticle.Data.ReticleElement]ReticleElement[/clink]s
+    to [clink=BallisticCalculator.Reticle.Data.ReticleDefinition.Elements.IVA]ReticleDefinition.Elements[/clink]
+    collection.
+
+    You can also define [link=BallisticCalculator.Reticle.Data.ReticleBulletDropCompensatorPoint]BDC[/link] (bullet drop compensator) 
+    point to display the distances that matches the specified mark on the reticle. 
+    Add BDC points to
+    [clink=BallisticCalculator.Reticle.Data.ReticleDefinition.BulletDropCompensator.fd7]ReticleDefinition.BulletDropCompensator[/clink].
+
+    [b]Coordinate System[/b]
+
+    The reticle uses angular coordinate system, i.e. position and
+    size of each element is defined in mils, minutes of angle or 
+    other angular units. 
+
+    You define two parameters for the reticle: the size (which is, in other words, 
+    the field of view) and the offset of zero point from top-left corner of the retcile. 
+
+    The zero point will have coordinates (0, 0).
+
+    X coordiante is for windage (i.e. drifting the projectile left or right
+    from the line of sight due to wind or precession). A negative value
+    means drift to left, a positive value means drift to right. 
+
+    Y coordinate is for projectile drop (i.e. moving the projectile via
+    ballistic trajectory). Positive value means that the projectile is 
+    above the line of sight and the negative value means that the 
+    projectile is below the line of sight. 
+
+    Refer to image below for visualization of the reticle coordinate system
+
+    [img=reticle.png]
+
+
+    See also the definition of MilDot reticle for 10x scope
+    in the library sources
+
+    [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1/blob/main/BallisticCalculator/Reticle/MilDotReticle.cs]`MilDotReticle.cs`[/eurl].
+@end
+    

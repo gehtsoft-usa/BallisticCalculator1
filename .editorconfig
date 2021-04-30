@@ -15,3 +15,9 @@ dotnet_diagnostic.IDE0090.severity = none
 
 # S1199: Nested code blocks should not be used
 dotnet_diagnostic.S1199.severity = none
+
+# RCS1003: Add braces to if-else (when expression spans over multiple lines).
+dotnet_diagnostic.RCS1003.severity = none
+
+# RCS1003: Add braces to if-else (when statement spans over multiple lines).
+dotnet_diagnostic.RCS1001.severity = none

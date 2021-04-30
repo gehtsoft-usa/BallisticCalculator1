@@ -1,0 +1,14 @@
+﻿@group
+    @title=Namespace BallisticCalculator.Reticle.Draw
+    @key=BallisticCalculator.Reticle.Draw
+    @ingroup=main
+    @brief=The classes to draw a reticle and trajectory parameters as SVG image. 
+
+    If you need to draw a reticle on a Graphics, please
+    use [eurl=https://www.nuget.org/packages/Svg/]SVG draw library[/eurl]
+    or implement [clink=BallisticCalculator.Reticle.Draw.IReticleCanvas]IReticleCanvas[/clink]
+    for Graphics. 
+
+    The example of such implementation is avaiable in 
+    [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]git repository[/eurl]. 
+@end

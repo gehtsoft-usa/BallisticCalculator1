@@ -50,7 +50,7 @@
     @title=License Information
     @brief=The information about the license
     @transform=yes
-    @ingroup=index
+    @ingroup=main
     @key=license
 
     The code is distributed under LGPL 2.1 license.
@@ -70,7 +70,7 @@
     @title=Risk Notice
     @brief=The explanation of the risks associated with using 3DF algorithms
     @transform=yes
-    @ingroup=index
+    @ingroup=main
     @key=risknotice
 
     The library performs very limited simulation of a complex physical process and so it performs a lot
@@ -84,7 +84,7 @@
     @title=No Warranty Notice
     @brief=The explanation that no warranties of any kind is associated with this code
     @transform=yes
-    @ingroup=index
+    @ingroup=main
     @key=no_warranties
     THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -96,7 +96,7 @@
     @title=Usage example
     @brief=The example of library use
     @transform=yes
-    @ingroup=index
+    @ingroup=main
     @key=example
 
     @example

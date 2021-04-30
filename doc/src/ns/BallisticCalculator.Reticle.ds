@@ -1,0 +1,28 @@
+﻿@group
+    @title=Namespace BallisticCalculator.Reticle
+    @key=BallisticCalculator.Reticle
+    @ingroup=main
+    @brief=The classes to define and draw reticles. 
+
+    A reticle is a pattern of fine lines built in into eyepiece of
+    an optical (sometime prismatic or holographic) sight or scope 
+    and is used to aim or measure distances to the target. 
+
+    The library offers rich set of functionality to:
+    * Define a reticle
+
+    * Draw a reticle, mark bullet drop compensator marks with 
+      appropriate distance for the projectile selected and 
+      to show an aim point for a square target at the 
+      distance specified. 
+
+    To define a reticle programmatically use 
+    classes in [clink=BallisticCalculator.Reticle.Data]BallisticCalculator.Reticle.Data[/clink]
+    namespace. 
+
+    To draw a reticle, BDC marks and a target use
+    [clink=BallisticCalculator.Reticle.Draw.ReticleDrawController]ReticleDrawController[/clink]
+    class in [clink=BallisticCalculator.Reticle.Draw]BallisticCalculator.Reticle.Draw[/clink] 
+    namespace.
+@end
+    

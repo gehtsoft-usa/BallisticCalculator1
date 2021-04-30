@@ -9,6 +9,7 @@ using System.Xml;
 using BallisticCalculator.Reticle;
 using BallisticCalculator.Reticle.Data;
 using BallisticCalculator.Reticle.Draw;
+using BallisticCalculator.Reticle.Graphics;
 using Gehtsoft.Measurements;
 using Svg;
 
@@ -35,10 +36,21 @@ namespace BallisticCalculator.Debug
             xmlDocument.Save($"{baseName}.svg");
         }
 
+        private static void DrawGraphics(ReticleDefinition reticle, string baseName)
+        {
+            var bm1 = new Bitmap(1024, 1024);
+            var canvas = GraphicsCanvas.FromImage(bm1, Color.White);
+            canvas.Clear();
+            var controller = new ReticleDrawController(reticle, canvas);
+            controller.DrawReticle();
+            bm1.Save($"{baseName}-a.png", ImageFormat.Png);
+        }
+
         private static void Mildot()
         {
             var reticle = new MilDotReticle();
             Draw(reticle, "mildot");
+            DrawGraphics(reticle, "mildot");
         }
 
         private static void TestShapes()

@@ -1,0 +1,18 @@
+﻿@group
+    @title=Namespace BallisticCalculator
+    @key=BallisticCalculator
+    @ingroup=main
+    @brief=The classes related to calculate a projectile trajectory. 
+
+    The main class used to calculate a trajectory 
+    is [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].
+
+    The calculation result is returned as an array of trajectory points
+    represented by [clink=BallisticCalculator.TrajectoryPoint]TrajectoryPoint[/clink].
+
+    The rest of classes is used to define various parameters required
+    to calculate a trajectory. 
+
+    Please also refer to the [link=example]example of trajectory claculator usage[/link].
+@end
+    

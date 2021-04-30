@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+  </PropertyGroup>
+
+
+ <ItemGroup>
+  <PackageReference Include="Gehtsoft.Build.Nuget" Version="0.1.5" PrivateAssets="All" />
+ </ItemGroup>
+
+ <Target Name="Prepare">
+  <Exec Command="nuget restore nuget.proj" />
+ </Target>
+
+ <Target Name="NuSpec">
+  <GenerateNuspec NugetConfig="config.xml" />
+ </Target>
+
+ <Target Name="NuPack">
+   <ItemGroup>
+    <FilesToPack Include="*.nuspec" />
+   </ItemGroup>
+   <Exec Command="nuget pack %(FilesToPack.Identity)" />
+ </Target>
+
+ <Target Name="NuPush">
+   <ItemGroup>
+    <FilesToPush Include="*.nupkg" />
+   </ItemGroup>
+   <Exec Command="nuget push %(FilesToPush.Identity) -ApiKey $(gs-nuget-key) -Source $(gs-nuget)/v3/index.json" />
+ </Target>
+
+ <Target Name="NuClean">
+  <ItemGroup>
+   <FilesToDelete Include="*.nuspec" />
+   <FilesToDelete Include="*.nupkg" />
+   <FilesToDelete Include="bin/**/*" />
+   <FilesToDelete Include="obj/**/*" />
+  </ItemGroup>
+  <Delete Files="@(FilesToDelete)" />
+  <RemoveDir Directories="bin"/>
+  <RemoveDir Directories="obj"/>
+ </Target>
+
+ <Target Name="NuCopy">
+  <ItemGroup>
+   <FilesToCopy Include="*.nupkg" />
+  </ItemGroup>
+  <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="../../.nuget" />
+ </Target>
+</Project>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<nuget xmlns="http://www.gehtsoft.com/build/nuget">
+ <!-- versions. the FIRST version is the current -->
+ <versions>
+  <version id="1.1.0.1">Initial version of trajectory calculator and reticle drawer.</version>
+ </versions>
+ <properties>
+  <owner>Gehtsoft</owner>
+  <projectUrl>https://github.com/gehtsoft-usa/BallisticCalculator1</projectUrl>
+  <license type="expression">LGPL-2.1-or-later</license>
+  <copyright>Gehtsoft USA LLC 2016-2021</copyright>
+ </properties>
+ <projects>
+   <project id="BallisticCalculator">
+    <description>Ballistic Calculator</description>
+   </project>
+ </projects>
+</nuget>

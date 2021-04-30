@@ -1,0 +1,22 @@
+﻿@group
+    @title=Namespace BallisticCalculator.Serialization
+    @key=BallisticCalculator.Serialization
+    @ingroup=main
+    @brief=The classes related to serialization of the library data.
+
+    You can serialize and deserialize data classes:
+    [clink=BallisticCalculator.Ammunition]Ammunition[/clink],
+    [clink=BallisticCalculator.BallisticCalculator.Atmosphere]Atmosphere[/clink],
+    [clink=BallisticCalculator.ZeroingParameters]ZeroingParameters[/clink],
+    [clink=BallisticCalculator.Rifling]Rifling[/clink],
+    [clink=BallisticCalculator.Rifle]Rifle[/clink],
+    [clink=BallisticCalculator.Wind]Wind[/clink],
+    [clink=BallisticCalculator.BallisticCalculator.ShotParameters]ShotParameters[/clink],
+    [clink=BallisticCalculator.TrajectoryPoint]TrajectoryPoint[/clink], and
+    [clink=BallisticCalculator.Reticle.Data.ReticleDefinition]ReticleDefinition[/clink].
+
+    To serialize the object use 
+    [clink=]
+
+@end
+    
