@@ -20,7 +20,7 @@ Changes made since porting original C sources:
 
 * Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern calculators.
 
-Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/web-content.html#index.html)
+Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)
 
 The library is also available in Go: https://github.com/gehtsoft-usa/go_ballisticcalc
 
