@@ -16,7 +16,24 @@
     [clink=BallisticCalculator.Reticle.Data.ReticleDefinition]ReticleDefinition[/clink].
 
     To serialize the object use 
-    [clink=]
+    [clink=BallisticCalculator.Serialization.BallisticXmlSerializer]BallisticXmlSerializer[/clink].
 
+    Example: How to serialize a reticle definition.
+    ```cs
+    xmlDocument = new XmlDocument();
+    BallisticXmlSerializer serializer = new BallisticXmlSerializer(xmlDocument);
+    xmlDocument.AppendChild(serializer.Serialize(reticle));
+    xmlDocument.Save("mildot.reticle");
+    ```
+
+    To deserialize the object use 
+    [clink=BallisticCalculator.Serialization.BallisticXmlDeserializer]BallisticXmlDeserializer[/clink].
+    Example: How to read and deserialize a reticle definition
+    ```cs
+    xmlDocument = new XmlDocument();
+    xmlDocument.Load("mildot.reticle");
+    BallisticXmlDeserializer deserializer = new BallisticXmlDeserializer();
+    var reticle1 = deserializer.Deserialize<ReticleDefinition>(xmlDocument.DocumentElement);
+    ```
 @end
     

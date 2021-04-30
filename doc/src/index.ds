@@ -44,6 +44,12 @@
 
     Recommended books:
     [eurl=https://www.amazon.com/Applied-Ballistics-Long-Range-Shooting/dp/0990920615]Applied Ballistics For Long Range Shooting 3rd Edition[/eurl] by Bryan Litz
+
+    Most of variables and parameters in the library are 
+    defined using special data type [eurl=http://docs.gehtsoftusa.com/Gehtsoft.Measurements/web-content.html#Gehtsoft.Measurements.Measurement.html]`Measurement`[/eurl],
+    defined in [eurl=https://www.nuget.org/packages/Gehtsoft.Measurements/]`Gehtsoft.Measurement`[/eurl]
+    package. This allows you to seamlessly switch between metric and 
+    US system or even use them both in the same calculation.
 @end
 
 @article

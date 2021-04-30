@@ -24,6 +24,15 @@ namespace BallisticCalculator.Serialization
         }
 
         /// <summary>
+        /// <para>Deserialize the element as the object of the specified type. </para>
+        /// <para>The method returns `null` if the object has a type other than `T`. </para>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public T Deserialize<T>(XmlElement element) where T : class => Deserialize(element) as T;
+
+        /// <summary>
         /// Deserialize object from the element detecting the type by its name
         /// </summary>
         /// <param name="element"></param>

@@ -20,6 +20,9 @@
     classes in [clink=BallisticCalculator.Reticle.Data]BallisticCalculator.Reticle.Data[/clink]
     namespace. 
 
+    To deserialize [link=reticleXmlFile]reticle definition file[/link] use
+    [clink=BallisticCalculator.Serialization]Serialization[/clink] namespace. 
+
     To draw a reticle, BDC marks and a target use
     [clink=BallisticCalculator.Reticle.Draw.ReticleDrawController]ReticleDrawController[/clink]
     class in [clink=BallisticCalculator.Reticle.Draw]BallisticCalculator.Reticle.Draw[/clink] 

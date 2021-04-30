@@ -10,6 +10,7 @@ using BallisticCalculator.Reticle;
 using BallisticCalculator.Reticle.Data;
 using BallisticCalculator.Reticle.Draw;
 using BallisticCalculator.Reticle.Graphics;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 using Svg;
 
@@ -34,6 +35,17 @@ namespace BallisticCalculator.Debug
             g.DrawImage(bm, 0, 0);
             bm1.Save($"{baseName}.png", ImageFormat.Png);
             xmlDocument.Save($"{baseName}.svg");
+
+            xmlDocument = new XmlDocument();
+            BallisticXmlSerializer serializer = new BallisticXmlSerializer(xmlDocument);
+            xmlDocument.AppendChild(serializer.Serialize(reticle));
+            xmlDocument.Save($"{baseName}.reticle");
+
+            xmlDocument = new XmlDocument();
+            xmlDocument.Load($"{baseName}.reticle");
+            BallisticXmlDeserializer deserializer = new BallisticXmlDeserializer();
+            var reticle1 = deserializer.Deserialize<ReticleDefinition>(xmlDocument.DocumentElement);
+            ;
         }
 
         private static void DrawGraphics(ReticleDefinition reticle, string baseName)

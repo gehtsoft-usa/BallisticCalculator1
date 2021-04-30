@@ -4,11 +4,43 @@
     @ingroup=main
     @brief=The classes to draw a reticle and trajectory parameters as SVG image. 
 
-    If you need to draw a reticle on a Graphics, please
-    use [eurl=https://www.nuget.org/packages/Svg/]SVG draw library[/eurl]
-    or implement [clink=BallisticCalculator.Reticle.Draw.IReticleCanvas]IReticleCanvas[/clink]
-    for Graphics. 
+    To draw a reticle use [clink=BallisticCalculator.Reticle.Draw.ReticleDrawController]ReticleDrawController[/clink].
 
-    The example of such implementation is avaiable in 
-    [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]git repository[/eurl]. 
+    Example:
+    ```cs
+        using BallisticCalculator.Reticle;
+        using BallisticCalculator.Reticle.Data;
+        using BallisticCalculator.Reticle.Draw;
+        ...
+        var reticle = new MilDotReticle();
+        var canvas = SvgCanvasFactory.Create("reticle", "2in", "2in");
+        var controller = new ReticleDrawController(reticle, canvas);
+        controller.DrawReticle();
+        string svg = SvgCanvasFactory.ToSvg(canvas);
+    ```
+
+    If you need to draw a reticle on a Graphics, please
+    use [eurl=https://www.nuget.org/packages/Svg/]SVG draw library[/eurl].
+
+    Example
+    ```cs
+        using BallisticCalculator.Reticle;
+        using BallisticCalculator.Reticle.Data;
+        using BallisticCalculator.Reticle.Draw;
+        using System.Drawing;
+        using System.Drawing.Imaging;
+        using System.Xml;
+        using Svg;
+
+        ...
+        var svg = SvgCanvasFactory.ToSvg(canvas);
+        XmlDocument xmlDocument = new XmlDocument();
+        xmlDocument.LoadXml(svg);
+        var svgDocument = SvgDocument.Open(xmlDocument);
+        var bm = svgDocument.Draw(1024, 1024);
+    ```
+    
+    You can also implement [clink=BallisticCalculator.Reticle.Draw.IReticleCanvas]IReticleCanvas[/clink]
+    for Graphics. The example of such implementation is avaiable in 
+    [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1/tree/main/BallisticCalculator.Debug/GraphicsCanvas]git repository[/eurl]. 
 @end

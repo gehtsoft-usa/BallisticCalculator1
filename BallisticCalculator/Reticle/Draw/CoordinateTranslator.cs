@@ -5,13 +5,12 @@ using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Draw
 {
-
     /// <summary>
     /// Translator for reticle coordinates.
     /// </summary>
     internal class CoordinateTranslator
     {
-        private readonly float mScaleX, mScaleY, mZeroX, mZeroY, mSourceHeight;
+        private readonly float mScaleX, mScaleY, mZeroX, mZeroY;
 
         /// <summary>
         /// Constructor (real numbers)
@@ -22,11 +21,9 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="sourceZeroY">The y offset of the zero from top-left corer on the source image</param>
         /// <param name="destinationWidth">The width of the destination image</param>
         /// <param name="destinationHeight">The height of the destination image</param>
-
         public CoordinateTranslator(float sourceWidth, float sourceHeight, float sourceZeroX, float sourceZeroY,
                                     float destinationWidth, float destinationHeight)
         {
-            mSourceHeight = sourceHeight;
             mScaleX = destinationWidth / sourceWidth;
             mScaleY = destinationHeight / sourceHeight;
             mZeroX = sourceZeroX;
@@ -48,7 +45,6 @@ namespace BallisticCalculator.Reticle.Draw
                    (float)sourceZeroX.In(AngularUnit.Mil), (float)sourceZeroY.In(AngularUnit.Mil),
                    destinationWidth, destinationHeight)
         {
-
         }
 
         /// <summary>

@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace BallisticCalculator.Reticle.Data
 {
     /// <summary>
-    /// Collection of <see cref="ReticleBulletDropCompensatorPoint">bullet drop compensator points</see>
+    /// <para>Collection of ReticleBulletDropCompensatorPoint</para>
+    /// <para>See also <see cref="ReticleBulletDropCompensatorPoint">ReticleBulletDropCompensatorPoint</see></para>
     /// </summary>
     public class ReticleBulletDropCompensatorPointCollection : ReticleCollectionBase<ReticleBulletDropCompensatorPoint>
     {
