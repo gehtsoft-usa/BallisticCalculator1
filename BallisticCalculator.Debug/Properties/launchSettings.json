@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BallisticCalculator.Debug": {
+      "commandName": "Project",
+      "commandLineArgs": "segmented"
+    }
+  }
+}

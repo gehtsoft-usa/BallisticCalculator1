@@ -1,0 +1,102 @@
+<reticle name="Segmented Center Reticle" size-x="170moa" size-y="170moa" zero-x="85moa" zero-y="85moa">
+  <elements>
+    <reticle-circle center-x="0mil" center-y="0mil" radius="85moa" line-width="0.4moa" color="black" />
+
+    <reticle-line start-x="0moa" start-y="85moa" end-x="0moa" end-y="52moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="0moa" start-y="-85moa" end-x="0moa" end-y="-52moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-line start-x="-85moa" start-y="0moa" end-x="-17.3moa" end-y="0moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="85moa" start-y="0moa" end-x="17.3moa" end-y="0moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-line start-x="17.3moa" start-y="-1.3moa" end-x="17.3moa" end-y="1.3moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="34.2moa" start-y="-2.4moa" end-x="34.2moa" end-y="2.4moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="51.1moa" start-y="-1.3moa" end-x="51.1moa" end-y="1.3moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="68moa" start-y="-2.5moa" end-x="68moa" end-y="2.5moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-line start-x="-17.3moa" start-y="-1.3moa" end-x="-17.3moa" end-y="1.3moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="-34.2moa" start-y="-2.4moa" end-x="-34.2moa" end-y="2.4moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="-51.1moa" start-y="-1.3moa" end-x="-51.1moa" end-y="1.3moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="-68moa" start-y="-2.5moa" end-x="-68moa" end-y="2.5moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-line start-x="-8.5moa" start-y="0moa" end-x="8.5moa" end-y="0moa" line-width="0.4moa" line-color="green" />
+    <reticle-line start-x="0moa" start-y="3.8moa" end-x="0moa" end-y="-3.8moa" line-width="0.4moa" line-color="green" />
+
+    <reticle-line start-x="0moa" start-y="-7.8moa" end-x="0moa" end-y="-34.5moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-path fill="true" color="black">
+      <elements>
+        <reticle-path-move-to position-x="-2.7moa" position-y="-9moa" />
+        <reticle-path-line-to position-x="0moa" position-y="-7.4moa" />
+        <reticle-path-line-to position-x="2.7moa" position-y="-9moa" />
+      </elements>
+    </reticle-path>
+
+    <reticle-path fill="true" color="black">
+      <elements>
+        <reticle-path-move-to position-x="-2.2moa" position-y="-15.5moa" />
+        <reticle-path-line-to position-x="0moa" position-y="-14moa" />
+        <reticle-path-line-to position-x="2.2moa" position-y="-15.5moa" />
+      </elements>
+    </reticle-path>
+
+    <reticle-path fill="true" color="black">
+      <elements>
+        <reticle-path-move-to position-x="-1.5moa" position-y="-24.3moa" />
+        <reticle-path-line-to position-x="0moa" position-y="-23.1moa" />
+        <reticle-path-line-to position-x="1.5moa" position-y="-24.3moa" />
+      </elements>
+    </reticle-path>
+
+    <reticle-line start-x="-1.3moa" start-y="-34moa" end-x="1.3moa" end-y="-34moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-path fill="true" color="green">
+        <elements>
+            <reticle-path-move-to position-x="28moa" position-y="12.5moa" />
+            <reticle-path-line-to position-x="32moa" position-y="12.5moa" />
+            <reticle-path-arc radius="33.9moa" clockwise="false" major-arc="false" position-x="12.5moa" position-y="32moa" />
+            <reticle-path-line-to position-x="12.5moa" position-y="28moa" />
+            <reticle-path-arc radius="31.1moa" clockwise="true" major-arc="false" position-x="28moa" position-y="12.5moa" />
+        </elements>
+    </reticle-path>
+
+    <reticle-path fill="true" color="green">
+        <elements>
+            <reticle-path-move-to position-x="-28moa" position-y="-12.5moa" />
+            <reticle-path-line-to position-x="-32moa" position-y="-12.5moa" />
+            <reticle-path-arc radius="33.9moa" clockwise="false" major-arc="false" position-x="-12.5moa" position-y="-32moa" />
+            <reticle-path-line-to position-x="-12.5moa" position-y="-28moa" />
+            <reticle-path-arc radius="31.1moa" clockwise="true" major-arc="false" position-x="-28moa" position-y="-12.5moa" />
+        </elements>
+    </reticle-path>
+
+    <reticle-path fill="true" color="green">
+        <elements>
+            <reticle-path-move-to position-x="28moa" position-y="-12.5moa" />
+            <reticle-path-line-to position-x="32moa" position-y="-12.5moa" />
+            <reticle-path-arc radius="33.9moa" clockwise="true" major-arc="false" position-x="12.5moa" position-y="-32moa" />
+            <reticle-path-line-to position-x="12.5moa" position-y="-28moa" />
+            <reticle-path-arc radius="31.1moa" clockwise="false" major-arc="false" position-x="28moa" position-y="-12.5moa" />
+        </elements>
+    </reticle-path>
+
+    <reticle-path fill="true" color="green">
+        <elements>
+            <reticle-path-move-to position-x="-28moa" position-y="12.5moa" />
+            <reticle-path-line-to position-x="-32moa" position-y="12.5moa" />
+            <reticle-path-arc radius="33.9moa" clockwise="true" major-arc="false" position-x="-12.5moa" position-y="32moa" />
+            <reticle-path-line-to position-x="-12.5moa" position-y="28moa" />
+            <reticle-path-arc radius="31.1moa" clockwise="false" major-arc="false" position-x="-28moa" position-y="12.5moa" />
+        </elements>
+    </reticle-path>
+
+    <reticle-text position-x="3.5moa" position-y="-16.6moa" text-height="4.0moa" text="4" text-color="black" />
+    <reticle-text position-x="3.5moa" position-y="-35.2moa" text-height="4.0moa" text="6" text-color="black" />
+  </elements>
+  <bdc>
+    <bdc position-x="0moa" position-y="-3.8moa" text-offset="8moa" text-height="3moa" />
+    <bdc position-x="0moa" position-y="-7.4moa" text-offset="8moa" text-height="3moa" />
+    <bdc position-x="0moa" position-y="-14moa" text-offset="8moa" text-height="3moa" />
+    <bdc position-x="0moa" position-y="-23.1moa" text-offset="8moa" text-height="3moa" />
+    <bdc position-x="0moa" position-y="-34moa" text-offset="8moa" text-height="3moa" />
+  </bdc>
+</reticle>

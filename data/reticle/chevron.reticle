@@ -1,0 +1,34 @@
+<reticle name="Chevron Reticle" size-x="14mil" size-y="20mil" zero-x="7mil" zero-y="7mil">
+  <elements>
+    <reticle-line start-x="0mil" start-y="-4.1moa" end-x="0mil" end-y="-12.6moa" line-width="0.4moa" line-color="red" />
+    <reticle-line start-x="0moa" start-y="-12.6moa" end-x="0moa" end-y="-18.7moa" line-width="0.4moa" line-color="darkred" />
+    <reticle-line start-x="0moa" start-y="-18.7moa" end-x="0moa" end-y="-35.8moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-line start-x="-2.1moa" start-y="-7.8moa" end-x="2.1moa" end-y="-7.8moa" line-width="0.4moa" line-color="red" />
+    <reticle-line start-x="-1.65moa" start-y="-12.6moa" end-x="1.65moa" end-y="-12.6moa" line-width="0.4moa" line-color="darkred" />
+    <reticle-line start-x="-1.4moa" start-y="-18.7moa" end-x="1.4moa" end-y="-18.7moa" line-width="0.4moa" line-color="darkred" />
+    <reticle-line start-x="-1.2moa" start-y="-26.4moa" end-x="1.2moa" end-y="-26.4moa" line-width="0.4moa" line-color="black" />
+    <reticle-line start-x="-1.05moa" start-y="-35.8moa" end-x="1.05moa" end-y="-35.8moa" line-width="0.4moa" line-color="black" />
+
+    <reticle-text position-x="2.5moa" position-y="-8.6moa" text-height="1.4moa" text="4" text-color="red" />
+    <reticle-text position-x="2.5moa" position-y="-19.5moa" text-height="1.4moa" text="6" text-color="darkred" />
+
+    <reticle-path fill="true" color="red">
+      <elements>
+        <reticle-path-move-to position-x="-1.4moa" position-y="-4.1moa" />
+        <reticle-path-line-to position-x="-2.75moa" position-y="-4.1moa" />
+        <reticle-path-line-to position-x="0moa" position-y="0moa" />
+        <reticle-path-line-to position-x="2.75moa" position-y="-4.1moa" />
+        <reticle-path-line-to position-x="1.4moa" position-y="-4.1moa" />
+        <reticle-path-line-to position-x="0moa" position-y="-2.0moa" />
+      </elements>
+    </reticle-path>
+  </elements>
+  <bdc>
+    <bdc position-x="0moa" position-y="-4.1moa" text-offset="3.5moa" text-height="1.4moa" />
+    <bdc position-x="0moa" position-y="-7.8moa" text-offset="3.5moa" text-height="1.4moa" />
+    <bdc position-x="0moa" position-y="-12.6moa" text-offset="3.5moa" text-height="1.4moa" />
+    <bdc position-x="0moa" position-y="-18.7moa" text-offset="3.5moa" text-height="1.4moa" />
+    <bdc position-x="0moa" position-y="-26.4moa" text-offset="3.5moa" text-height="1.4moa" />
+  </bdc>
+</reticle>

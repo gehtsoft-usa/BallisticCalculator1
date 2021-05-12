@@ -1,0 +1,33 @@
+<reticle name="Mil-Dot Reticle" size-x="12mil" size-y="12mil" zero-x="6mil" zero-y="6mil">
+  <elements>
+    <reticle-circle center-x="0mil" center-y="0mil" radius="6mil" line-width="0.01mil" color="black" />
+    <reticle-line start-x="-5mil" start-y="0mil" end-x="5mil" end-y="0mil" line-width="0.01mil" line-color="black" />
+    <reticle-line start-x="0mil" start-y="-5mil" end-x="0mil" end-y="5mil" line-width="0.01mil" line-color="black" />
+    <reticle-line start-x="-5mil" start-y="0mil" end-x="-6mil" end-y="0mil" line-width="0.2mil" line-color="black" />
+    <reticle-line start-x="5mil" start-y="0mil" end-x="6mil" end-y="0mil" line-width="0.2mil" line-color="black" />
+    <reticle-line start-x="0mil" start-y="-5mil" end-x="0mil" end-y="-6mil" line-width="0.2mil" line-color="black" />
+    <reticle-line start-x="0mil" start-y="5mil" end-x="0mil" end-y="6mil" line-width="0.2mil" line-color="black" />
+    <reticle-circle center-x="-4mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="-4mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="-3mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="-3mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="-2mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="-2mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="-1mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="-1mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="1mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="1mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="2mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="2mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="3mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="3mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="4mil" center-y="0mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+    <reticle-circle center-x="0mil" center-y="4mil" radius="0.1mil" fill="true" line-width="0.01mil" color="black" />
+  </elements>
+  <bdc>
+    <bdc position-x="0mil" position-y="-1mil" text-offset="1mil" text-height="0.3mil" />
+    <bdc position-x="0mil" position-y="-2mil" text-offset="1mil" text-height="0.3mil" />
+    <bdc position-x="0mil" position-y="-3mil" text-offset="1mil" text-height="0.3mil" />
+    <bdc position-x="0mil" position-y="-4mil" text-offset="1mil" text-height="0.3mil" />
+  </bdc>
+</reticle>
