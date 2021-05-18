@@ -30,7 +30,7 @@ namespace BallisticCalculator.Reticle.Graphics
 
         public static GraphicsCanvas FromImage(Image image, Color? background = null)
         {
-            Rectangle area = new Rectangle(0, 0, image.Height, image.Width);
+            Rectangle area = new Rectangle(0, 0, image.Width, image.Height);
             System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(image);
             return new GraphicsCanvas(g, area, background);
         }

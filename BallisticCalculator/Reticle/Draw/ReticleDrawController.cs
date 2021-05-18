@@ -28,7 +28,12 @@ namespace BallisticCalculator.Reticle.Draw
             translator = new CoordinateTranslator(reticle.Size.X, reticle.Size.Y, reticle.Zero.X, reticle.Zero.Y, canvas.Width, canvas.Height);
         }
 
-        private void DrawElement(ReticleElement element)
+        /// <summary>
+        /// <para>Draw individual element.</para>
+        /// <para>The method may be used to implement additional visualization.</para>
+        /// </summary>
+        /// <param name="element"></param>
+        public void DrawElement(ReticleElement element)
         {
             switch (element)
             {

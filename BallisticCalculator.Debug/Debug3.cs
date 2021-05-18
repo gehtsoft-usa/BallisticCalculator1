@@ -50,6 +50,13 @@ namespace BallisticCalculator.Debug
 
         public static void Do(string[] args)
         {
+            if (args.Length == 0)
+            {
+                Console.WriteLine("usage: reticlename (for M855)");
+                Console.WriteLine("       reticlename 55 (for M193)");
+                return;
+            }
+
             XmlDocument document = new XmlDocument();
             document.Load($@"..\..\..\..\data\reticle\{args[0]}.reticle");
             BallisticXmlDeserializer ds = new BallisticXmlDeserializer();
