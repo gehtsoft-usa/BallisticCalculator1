@@ -56,7 +56,6 @@ namespace BallisticCalculator.Test.Reticle
             x.Should().BeApproximately(dx, 1e-5f);
             y.Should().BeApproximately(dy, 1e-5f);
         }
-
     }
 }
 

@@ -1,7 +1,9 @@
 ﻿using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace BallisticCalculator.Reticle.Data
 {
@@ -45,6 +47,75 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticlePath() : base(ReticleElementType.Path)
         {
+        }
+
+        /// <summary>
+        /// Checks whether the element equals to another elements
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        protected override bool EqualsInternal(ReticleElement other)
+        {
+            if (other is ReticlePath path)
+            {
+                if (!object.Equals(LineWidth, path.LineWidth) ||
+                    !object.Equals(Color, path.Color) ||
+                    !object.Equals(Fill, path.Fill))
+                    return false;
+
+                if (Elements.Count != path.Elements.Count)
+                    return false;
+
+                for (int i = 0; i < Elements.Count; i++)
+                    if (!object.Equals(Elements[i], path.Elements[i]))
+                        return false;
+                
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Converts object to the string of the format specified.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        protected override string ToStringInternal(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("Path(")
+               .Append("w=")
+               .Append(LineWidth?.ToString(format, formatProvider) ?? "null")
+               .Append(",c=")
+               .Append(Color ?? "null")
+               .Append(",f=")
+               .Append(Fill?.ToString(formatProvider).ToLower() ?? "null");
+
+            if (Elements.Count > 0)
+            {
+                sb.Append(",[");
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(',');
+                    sb.Append(Elements[i].ToString());
+                }
+                sb.Append("]");
+            }
+            sb.Append(')');
+            return sb.ToString();
+        }
+
+        /// <summary>Serves as the default hash function.</summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            int c = HashUtil.HashCombine(LineWidth, Color, Fill);
+            foreach (var element in Elements)
+                c = HashUtil.CodeCombine(c, element.GetHashCode());
+            return c;
         }
     }
 }

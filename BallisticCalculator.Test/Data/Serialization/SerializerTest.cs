@@ -3,6 +3,7 @@ using FluentAssertions;
 using Gehtsoft.Measurements;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using Xunit;
 
@@ -382,6 +383,71 @@ namespace BallisticCalculator.Test.Data.Serialization
             var container2 = serializer.Deserialize<FlatteningContainer>(xml);
             container2.Value1.Name.Should().Be("123");
             container2.Value2.ID.Should().Be(456);
+        }
+
+        [Fact]
+        public void SerializeStream1()
+        {
+            FlatteningContainer container = new FlatteningContainer()
+            {
+                Value1 = new Implementation1() { Name = "123" },
+                Value2 = new Implementation2() { ID = 456 },
+            };
+
+            using MemoryStream ms = new MemoryStream();
+            BallisticXmlSerializer.SerializeToStream(container, ms);
+
+            using MemoryStream ms1 = new MemoryStream(ms.ToArray());
+            var container1 = BallisticXmlDeserializer.ReadFromStream<FlatteningContainer>(ms1);
+
+            container1.Value1?.Name.Should().Be("123");
+            container1.Value2?.ID.Should().Be(456);
+        }
+
+        [Fact]
+        public void SerializeStream2()
+        {
+            FlatteningContainer container = new FlatteningContainer()
+            {
+                Value1 = new Implementation1() { Name = "123" },
+                Value2 = new Implementation2() { ID = 456 },
+            };
+
+            using MemoryStream ms = new MemoryStream();
+            container.BallisticXmlSerialize(ms);
+
+            using MemoryStream ms1 = new MemoryStream(ms.ToArray());
+            var container1 = ms1.BallisticXmlDeserialize<FlatteningContainer>();
+
+            container1.Value1?.Name.Should().Be("123");
+            container1.Value2?.ID.Should().Be(456);
+        }
+
+        [Fact]
+        public void SerializeToFile()
+        {
+            var tempFileName = Path.GetTempFileName();
+            try
+            {
+                FlatteningContainer container = new FlatteningContainer()
+                {
+                    Value1 = new Implementation1() { Name = "123" },
+                    Value2 = new Implementation2() { ID = 456 },
+                };
+                BallisticXmlSerializer.SerializeToFile(container, tempFileName);
+
+                File.Exists(tempFileName).Should().BeTrue();
+
+                var container1 = BallisticXmlDeserializer.ReadFromFile<FlatteningContainer>(tempFileName);
+                container1.Value1?.Name.Should().Be("123");
+                container1.Value2?.ID.Should().Be(456);
+            }
+            finally
+            {
+                if (File.Exists(tempFileName))
+                    File.Delete(tempFileName);
+                File.Exists(tempFileName).Should().BeFalse();
+            }
         }
     }
 }

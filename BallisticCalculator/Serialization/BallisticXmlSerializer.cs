@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Xml;
@@ -204,6 +205,31 @@ namespace BallisticCalculator.Serialization
             var attribute = Document.CreateAttribute(name);
             attribute.Value = value;
             element.Attributes.Append(attribute);
+        }
+
+        /// <summary>
+        /// Serializes the object to a stream
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="stream"></param>
+        public static void SerializeToStream<T>(T value, Stream stream)
+        {
+            var xmlSeralizer = new BallisticXmlSerializer();
+            xmlSeralizer.Document.AppendChild(xmlSeralizer.Serialize(value));
+            xmlSeralizer.Document.Save(stream);
+        }
+
+        /// <summary>
+        /// Serializes the object to the specified file
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="fileName"></param>
+        public static void SerializeToFile<T>(T value, string fileName)
+        {
+            using var file = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+            SerializeToStream<T>(value, file);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using BallisticCalculator.Serialization;
+﻿using System;
+using System.Text;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Data
@@ -32,6 +34,51 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticlePathElementArc() : base(ReticlePathElementType.Arc)
         {
+        }
+
+        /// <summary>
+        /// Checks whether the element equals to another elements
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        protected override bool EqualsInternal(ReticlePathElement other)
+        {
+            if (other is ReticlePathElementArc arc)
+                return Equals(Position, arc.Position) &&
+                    Equals(Radius, arc.Radius) &&
+                    Equals(MajorArc, arc.MajorArc) &&
+                    Equals(ClockwiseDirection, arc.ClockwiseDirection);
+            return false;
+
+        }
+
+        /// <summary>
+        /// Converts the object to the string of the format specified
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        protected override string ToStringInternal(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("A(")
+                .Append(Position.ToString(format, formatProvider))
+                .Append(',')
+                .Append(Radius.ToString(format, formatProvider))
+                .Append(',')
+                .Append(MajorArc ? "maj" : "min")
+                .Append(',')
+                .Append(ClockwiseDirection ? "cw" : "ccw")
+                .Append(')');
+            return sb.ToString();
+
+        }
+
+        /// <summary>Serves as the default hash function.</summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            return HashUtil.HashCombine(Position, Radius, MajorArc, ClockwiseDirection);
         }
     }
 }

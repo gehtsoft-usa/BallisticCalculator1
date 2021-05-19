@@ -1,4 +1,6 @@
-﻿using BallisticCalculator.Serialization;
+﻿using System;
+using System.Text;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Data
@@ -43,12 +45,60 @@ namespace BallisticCalculator.Reticle.Data
         [BXmlProperty(Name = "color", Optional = true)]
         public string Color { get; set; }
 
-
         /// <summary>
         /// Constructor
         /// </summary>
         public ReticleCircle() : base(ReticleElementType.Circle)
         {
+        }
+
+        /// <summary>
+        /// Checks whether the element equals to another elements
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        protected override bool EqualsInternal(ReticleElement other)
+        {
+            if (other is ReticleCircle circle)
+                return Equals(Center, circle.Center) &&
+                    Equals(Radius, circle.Radius) &&
+                    Equals(LineWidth, circle.LineWidth) &&
+                    Equals(Fill, circle.Fill) &&
+                    Equals(Color, circle.Color);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Converts object to the string of the format specified.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        protected override string ToStringInternal(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Circle(")
+                .Append("p=")
+                .Append(Center.ToString(format, formatProvider))
+                .Append(",r=")
+                .Append(Radius.ToString(format, formatProvider))
+                .Append(",w=")
+                .Append(LineWidth?.ToString(format, formatProvider) ?? "null")
+                .Append(",c=")
+                .Append(Color ?? "null")
+                .Append(",f=")
+                .Append(Fill?.ToString(formatProvider).ToLower() ?? "null")
+                .Append(')');
+            
+            return sb.ToString();
+        }
+
+        /// <summary>Serves as the default hash function.</summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            return HashUtil.HashCombine(Center, Radius, Fill, LineWidth, Color);
         }
     }
 }

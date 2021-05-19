@@ -1,4 +1,6 @@
-﻿using BallisticCalculator.Serialization;
+﻿using System;
+using System.Text;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Data
@@ -41,6 +43,52 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticleLine() : base(ReticleElementType.Line)
         {
+        }
+
+        /// <summary>
+        /// Checks whether the element equals to another elements
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        protected override bool EqualsInternal(ReticleElement other)
+        {
+            if (other is ReticleLine line)
+                return object.Equals(Start, line.Start) &&
+                    object.Equals(End, line.End) &&
+                    object.Equals(LineWidth, line.LineWidth) &&
+                    object.Equals(Color, line.Color);
+
+            return false;
+
+        }
+
+        /// <summary>
+        /// Converts object to the string of the format specified.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        protected override string ToStringInternal(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Line(")
+                .Append("s=")
+                .Append(Start.ToString(format, formatProvider))
+                .Append(",e=")
+                .Append(End.ToString(format, formatProvider))
+                .Append(",w=")
+                .Append(LineWidth?.ToString(format, formatProvider) ?? "null")
+                .Append(",c=")
+                .Append(Color ?? "null")
+                .Append(')');
+            return sb.ToString();
+        }
+
+        /// <summary>Serves as the default hash function.</summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            return HashUtil.HashCombine(Start, End, LineWidth, Color);
         }
     }
 }

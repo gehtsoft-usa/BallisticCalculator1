@@ -1,4 +1,6 @@
-﻿using BallisticCalculator.Serialization;
+﻿using System;
+using System.Text;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Data
@@ -48,6 +50,55 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticleRectangle() : base(ReticleElementType.Rectangle)
         {
+        }
+
+        /// <summary>
+        /// Checks whether the element equals to another elements
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        protected override bool EqualsInternal(ReticleElement other)
+        {
+            if (other is ReticleRectangle rectangle)
+                return Equals(TopLeft, rectangle.TopLeft) &&
+                    Equals(Size, rectangle.Size) &&
+                    Equals(LineWidth, rectangle.LineWidth) &&
+                    Equals(Color, rectangle.Color) &&
+                    Equals(Fill, rectangle.Fill);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Converts object to the string of the format specified.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        protected override string ToStringInternal(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Rectangle(")
+                .Append("p=")
+                .Append(TopLeft.ToString(format, formatProvider))
+                .Append(",s=")
+                .Append(Size.ToString(format, formatProvider))
+                .Append(",w=")
+                .Append(LineWidth?.ToString(format, formatProvider) ?? "null")
+                .Append(",c=")
+                .Append(Color ?? "null")
+                .Append(",f=")
+                .Append(Fill?.ToString(formatProvider).ToLower() ?? "null")
+                .Append(')');
+
+            return sb.ToString();
+        }
+
+        /// <summary>Serves as the default hash function.</summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            return HashUtil.HashCombine(TopLeft, Size, LineWidth, Color, Fill);
         }
     }
 }

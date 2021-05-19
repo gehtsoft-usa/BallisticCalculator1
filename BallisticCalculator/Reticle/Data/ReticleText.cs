@@ -1,4 +1,6 @@
-﻿using BallisticCalculator.Serialization;
+﻿using System;
+using System.Text;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Data
@@ -40,6 +42,52 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         public ReticleText() : base(ReticleElementType.Text)
         {
+        }
+
+        /// <summary>
+        /// Checks whether the element equals to another elements
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        protected override bool EqualsInternal(ReticleElement other)
+        {
+            if (other is ReticleText text)
+                return Equals(Position, text.Position) &&
+                    Equals(TextHeight, text.Text) &&
+                    Equals(Text, text.Text) &&
+                    Equals(Color, text.Color);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Converts object to the string of the format specified.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        protected override string ToStringInternal(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Text(")
+                .Append("p=")
+                .Append(Position.ToString(format, formatProvider))
+                .Append(",h=")
+                .Append(TextHeight.ToString(format, formatProvider))
+                .Append(",t=")
+                .Append(Text)
+                .Append(",c=")
+                .Append(Color ?? "null")
+                .Append(')');
+
+            return sb.ToString();
+        }
+
+        /// <summary>Serves as the default hash function.</summary>
+        /// <returns>A hash code for the current object.</returns>
+        public override int GetHashCode()
+        {
+            return HashUtil.HashCombine(Position, TextHeight, Text, Color);
         }
     }
 }

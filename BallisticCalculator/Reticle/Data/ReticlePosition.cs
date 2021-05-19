@@ -1,4 +1,8 @@
-﻿using BallisticCalculator.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using BallisticCalculator.Serialization;
 using Gehtsoft.Measurements;
 
 namespace BallisticCalculator.Reticle.Data
@@ -7,7 +11,7 @@ namespace BallisticCalculator.Reticle.Data
     /// A position on the reticle
     /// </summary>
     [BXmlElement("position")]
-    public class ReticlePosition
+    public sealed class ReticlePosition : IEquatable<ReticlePosition>, IFormattable
     {
         /// <summary>
         /// X-coordinate
@@ -49,6 +53,59 @@ namespace BallisticCalculator.Reticle.Data
         {
             X = x;
             Y = y;
+        }
+
+        /// <summary>
+        /// Checks whether the class equals to another class
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(ReticlePosition other)
+        {
+            if (other == null)
+                return false;
+            return X == other.X && Y == other.Y;
+        }
+
+        /// <summary>
+        /// Checks whether the class equals to another class
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is ReticlePosition t)
+                return Equals(t);
+            return object.ReferenceEquals(obj, this);
+        }
+
+        /// <summary>
+        /// Returns hash code of the object
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode() => HashUtil.HashCombine(X, Y);
+
+        /// <summary>
+        /// Converts the object to string representation
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() => ToString("NF", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Converts the object to string representation with the format and culture specified
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
+        public string ToString(string format, IFormatProvider formatProvider)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append('(')
+                .Append(X.ToString(format, formatProvider))
+                .Append(':')
+                .Append(Y.ToString(format, formatProvider))
+                .Append(')');
+            return sb.ToString();
         }
     }
 }

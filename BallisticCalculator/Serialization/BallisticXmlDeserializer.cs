@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using Gehtsoft.Measurements;
 using System.Globalization;
+using System.IO;
 
 namespace BallisticCalculator.Serialization
 {
@@ -527,6 +528,55 @@ namespace BallisticCalculator.Serialization
             var document = new XmlDocument();
             document.LoadXml(rawLegacyEntry);
             return ReadLegacyAmmunitionLibraryEntry(document.DocumentElement);
+        }
+
+        /// <summary>
+        /// Reads raw legacy entry from the stream
+        /// </summary>
+        /// <param name="rawLegacyEntry"></param>
+        /// <returns></returns>
+        public static AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntryFromStream(Stream rawLegacyEntry)
+        {
+            var document = new XmlDocument();
+            document.Load(rawLegacyEntry);
+            return ReadLegacyAmmunitionLibraryEntry(document.DocumentElement);
+        }
+
+        /// <summary>
+        /// Reads raw legacy entry from the file
+        /// </summary>
+        /// <param name="rawLegacyEntry"></param>
+        /// <returns></returns>
+        public static AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntryFromFile(string rawLegacyEntry)
+        {
+            using var file = new FileStream(rawLegacyEntry, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return ReadLegacyAmmunitionLibraryEntryFromStream(file);
+        }
+
+        /// <summary>
+        /// Reads the object of type t from stream
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static T ReadFromStream<T>(Stream stream)
+            where T : class
+        {
+            XmlDocument document = new XmlDocument();
+            document.Load(stream);
+            var xmlDeseralizer = new BallisticXmlDeserializer();
+            return xmlDeseralizer.Deserialize<T>(document.DocumentElement);
+        }
+
+        /// <summary>
+        /// Reads the object of type t from the file
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static T ReadFromFile<T>(string fileName)
+            where T : class
+        {
+            using var file = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return ReadFromStream<T>(file);
         }
     }
 }

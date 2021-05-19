@@ -21,3 +21,12 @@ dotnet_diagnostic.RCS1003.severity = none
 
 # RCS1003: Add braces to if-else (when statement spans over multiple lines).
 dotnet_diagnostic.RCS1001.severity = none
+
+# S4035: Classes implementing "IEquatable<T>" should be sealed
+dotnet_diagnostic.S4035.severity = none
+
+# S4136: Method overloads should be grouped together
+dotnet_diagnostic.S4136.severity = none
+
+# S1206: "Equals(Object)" and "GetHashCode()" should be overridden in pairs
+dotnet_diagnostic.S1206.severity = none
