@@ -6,41 +6,41 @@
 
     [b]Key elements of the reticle definition[/b]
 
-    The main class that contains the reticle definition 
+    The main class that contains the reticle definition
     is [clink=BallisticCalculator.Reticle.Data.ReticleDefinition]ReticleDefinition[/clink].
 
-    You can either create the reticle programmatically or load it 
+    You can either create the reticle programmatically or load it
     from the [link=reticleXmlFile]reticle definition file[/link].
 
-    The reticle image is defined by adding 
+    The reticle image is defined by adding
     [clink=BallisticCalculator.Reticle.Data.ReticleElement]ReticleElement[/clink]s
     to [clink=BallisticCalculator.Reticle.Data.ReticleDefinition.Elements.IVA]ReticleDefinition.Elements[/clink]
     collection.
 
-    You can also define [link=BallisticCalculator.Reticle.Data.ReticleBulletDropCompensatorPoint]BDC[/link] (bullet drop compensator) 
-    point to display the distances that matches the specified mark on the reticle. 
+    You can also define [link=BallisticCalculator.Reticle.Data.ReticleBulletDropCompensatorPoint]BDC[/link] (bullet drop compensator)
+    point to display the distances that matches the specified mark on the reticle.
     Add BDC points to
     [clink=BallisticCalculator.Reticle.Data.ReticleDefinition.BulletDropCompensator.fd7]ReticleDefinition.BulletDropCompensator[/clink].
 
     [b]Coordinate System[/b]
 
     The reticle uses angular coordinate system, i.e. position and
-    size of each element is defined in mils, minutes of angle or 
-    other angular units. 
+    size of each element is defined in mils, minutes of angle or
+    other angular units.
 
-    You define two parameters for the reticle: the size (which is, in other words, 
-    the field of view) and the offset of zero point from top-left corner of the retcile. 
+    You define two parameters for the reticle: the size (which is, in other words,
+    the field of view) and the offset of zero point from top-left corner of the retcile.
 
     The zero point will have coordinates (0, 0).
 
     X coordiante is for windage (i.e. drifting the projectile left or right
     from the line of sight due to wind or precession). A negative value
-    means drift to left, a positive value means drift to right. 
+    means drift to left, a positive value means drift to right.
 
     Y coordinate is for projectile drop (i.e. moving the projectile via
-    ballistic trajectory). Positive value means that the projectile is 
-    above the line of sight and the negative value means that the 
-    projectile is below the line of sight. 
+    ballistic trajectory). Positive value means that the projectile is
+    above the line of sight and the negative value means that the
+    projectile is below the line of sight.
 
     Refer to image below for visualization of the reticle coordinate system
 
@@ -51,7 +51,7 @@
 
     [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1/blob/main/BallisticCalculator/Reticle/MilDotReticle.cs]`MilDotReticle.cs`[/eurl].
 @end
-    
+
 
 @class
     @name=Reticle definition file format
@@ -65,19 +65,19 @@
 
     Note: all coordinates, dimensions and sizes are defined
     in angular units. The angular unit format is a number
-    followed by the unit name. Most used unit names for reticles 
-    are `mil` (mildot), `mrad` (milliradian) and `moa` (minutes of angle). 
-    For Wasrshaw Pact reticles, `ths`, e.g. "a thousdand" (1/3000 of full circle) 
-    may also be useful. 
+    followed by the unit name. Most used unit names for reticles
+    are `mil` (mildot), `mrad` (milliradian) and `moa` (minutes of angle).
+    For Wasrshaw Pact reticles, `ths`, e.g. "a thousdand" (1/3000 of full circle)
+    may also be useful.
 
-    Examples: `1mil`, `-5.5moa`, `1.7mrad`. 
+    Examples: `1mil`, `-5.5moa`, `1.7mrad`.
 
-    For complete list of the supported units please refer to 
+    For complete list of the supported units please refer to
     Measurement library source: [eurl=https://github.com/gehtsoft-usa/Gehtsoft.Measurements/blob/main/Gehtsoft.Measurements/AngularUnit.cs]`AngularUnit.cs`[/eurl].
 
-    Note: colors are set by SVG/HTML/CSS color names. 
-    For the complete list of the possible values please 
-    refer to 
+    Note: colors are set by SVG/HTML/CSS color names.
+    For the complete list of the possible values please
+    refer to
     [eurl=https://developer.mozilla.org/en-US/docs/Web/CSS/color_value]CSS documentation[/eurl].
 
     Open example below for mildot reticle definition
@@ -127,15 +127,15 @@
             @params=name="[i]string[/i]" size-x="[i]angular[/i]" size-y="[i]angular[/i]" zero-x="[i]angular[/i]" zero-y="[i]angular[/i]"
         @end
 
-        The element contains obligatory 
-        [clink=reticleXmlFile.elements]elements[/clink] element 
-        with 
+        The element contains obligatory
+        [clink=reticleXmlFile.elements]elements[/clink] element
+        with
         [clink=reticleXmlFile.reticle-line]reticle-line[/clink],
         [clink=reticleXmlFile.reticle-circle]reticle-circle[/clink],
         [clink=reticleXmlFile.reticle-rectangle]reticle-rectangle[/clink], and
-        [clink=reticleXmlFile.reticle-path]reticle-path[/clink] elements inside. 
+        [clink=reticleXmlFile.reticle-path]reticle-path[/clink] elements inside.
 
-        It also may contain optional [clink=bdc1]bdc[/clink] tag.
+        It also may contain optional [clink=reticleXmlFile.bdc1]bdc[/clink] tag.
     @end
 
     @member
@@ -148,7 +148,7 @@
             @params=
         @end
 
-        The tag may be used in 
+        The tag may be used in
         [clink=reticleXmlFile.reticle]reticle[/clink] and
         [clink=reticleXmlFile.reticle-path]reticle-path[/clink] elements.
     @end
@@ -164,17 +164,17 @@
             @params=
         @end
 
-        The element may be used in [clink=reticleXmlFile.reticle]reticle[/clink] element. 
+        The element may be used in [clink=reticleXmlFile.reticle]reticle[/clink] element.
 
         The element may contains one or more [clink=reticleXmlFile.bdc2]bdc[/clink] elements
-        with points definitions. 
+        with points definitions.
     @end
 
     @member
         @type=property
         @name=bdc
         @key=bdc2
-        @brief=The bullet drop compensator point definition. 
+        @brief=The bullet drop compensator point definition.
         @custom=xml-tag
         @declaration
             @language=xml
@@ -182,7 +182,7 @@
         @end
 
         The element may be used inside [clink=reticleXmlFile.bdc1]bdc[/clink]
-        element. 
+        element.
     @end
 
     @member
@@ -197,7 +197,7 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle]reticle[/clink] element. 
+        of a [clink=reticleXmlFile.reticle]reticle[/clink] element.
     @end
 
     @member
@@ -212,9 +212,9 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle]reticle[/clink] element. 
+        of a [clink=reticleXmlFile.reticle]reticle[/clink] element.
     @end
-    
+
     @member
         @type=property
         @name=reticle-rectangle
@@ -227,7 +227,7 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle]reticle[/clink] element. 
+        of a [clink=reticleXmlFile.reticle]reticle[/clink] element.
     @end
 
     @member
@@ -243,14 +243,14 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle]reticle[/clink] element. 
+        of a [clink=reticleXmlFile.reticle]reticle[/clink] element.
 
         The element may contain [clink=reticleXmlFile.elements]elements[/clink]
-        element with 
+        element with
         [clink=reticleXmlFile.reticle-path-move-to]reticle-path-move-to[/clink],
         [clink=reticleXmlFile.reticle-path-line-to]reticle-path-line-to[/clink],
-        and [clink=reticleXmlFile.reticle-path-arc]reticle-path-arc[/clink] 
-        elements inside. 
+        and [clink=reticleXmlFile.reticle-path-arc]reticle-path-arc[/clink]
+        elements inside.
     @end
 
     @member
@@ -265,7 +265,7 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle-path]reticle-path[/clink] element. 
+        of a [clink=reticleXmlFile.reticle-path]reticle-path[/clink] element.
 
     @end
 
@@ -281,13 +281,13 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle-path]reticle-path[/clink] element. 
+        of a [clink=reticleXmlFile.reticle-path]reticle-path[/clink] element.
     @end
 
     @member
         @type=property
         @name=reticle-path-arc
-        @brief=Path element: draw an arc to the specified position. 
+        @brief=Path element: draw an arc to the specified position.
         @custom=xml-tag
         @declaration
             @language=xml
@@ -296,6 +296,6 @@
 
         The element may be used inside
         [clink=reticleXmlFile.elements]elements[/clink] element
-        of a [clink=reticleXmlFile.reticle-path]reticle-path[/clink] element. 
+        of a [clink=reticleXmlFile.reticle-path]reticle-path[/clink] element.
     @end
 @end

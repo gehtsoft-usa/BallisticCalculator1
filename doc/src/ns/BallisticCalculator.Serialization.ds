@@ -6,16 +6,16 @@
 
     You can serialize and deserialize data classes:
     [clink=BallisticCalculator.Ammunition]Ammunition[/clink],
-    [clink=BallisticCalculator.BallisticCalculator.Atmosphere]Atmosphere[/clink],
+    [clink=BallisticCalculator.Atmosphere]Atmosphere[/clink],
     [clink=BallisticCalculator.ZeroingParameters]ZeroingParameters[/clink],
     [clink=BallisticCalculator.Rifling]Rifling[/clink],
     [clink=BallisticCalculator.Rifle]Rifle[/clink],
     [clink=BallisticCalculator.Wind]Wind[/clink],
-    [clink=BallisticCalculator.BallisticCalculator.ShotParameters]ShotParameters[/clink],
+    [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink],
     [clink=BallisticCalculator.TrajectoryPoint]TrajectoryPoint[/clink], and
     [clink=BallisticCalculator.Reticle.Data.ReticleDefinition]ReticleDefinition[/clink].
 
-    To serialize the object use 
+    To serialize the object use
     [clink=BallisticCalculator.Serialization.BallisticXmlSerializer]BallisticXmlSerializer[/clink].
 
     Example: How to serialize a reticle definition.
@@ -26,7 +26,7 @@
     xmlDocument.Save("mildot.reticle");
     ```
 
-    To deserialize the object use 
+    To deserialize the object use
     [clink=BallisticCalculator.Serialization.BallisticXmlDeserializer]BallisticXmlDeserializer[/clink].
     Example: How to read and deserialize a reticle definition
     ```cs
@@ -36,4 +36,3 @@
     var reticle1 = deserializer.Deserialize<ReticleDefinition>(xmlDocument.DocumentElement);
     ```
 @end
-    
