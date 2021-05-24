@@ -14,7 +14,7 @@ namespace BallisticCalculator.Reticle.Data
     /// </para>
     /// </summary>
     [BXmlElement("bdc")]
-    public sealed class ReticleBulletDropCompensatorPoint : IEquatable<ReticleBulletDropCompensatorPoint>, IFormattable
+    public sealed class ReticleBulletDropCompensatorPoint : IEquatable<ReticleBulletDropCompensatorPoint>, IFormattable, ICloneable
     {
         /// <summary>
         /// Position of the BDC point at reticle
@@ -92,6 +92,22 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(TextHeight.ToString(format, formatProvider))
                 .Append(')');
             return sb.ToString();
+        }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        object ICloneable.Clone() => Clone();
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public ReticleBulletDropCompensatorPoint Clone()
+        {
+            return new ReticleBulletDropCompensatorPoint()
+            {
+                Position = this.Position,
+                TextHeight = this.TextHeight,
+                TextOffset = this.TextOffset
+            };
         }
     }
 }

@@ -3,6 +3,7 @@ using Gehtsoft.Measurements;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BallisticCalculator.Reticle.Data
@@ -69,7 +70,7 @@ namespace BallisticCalculator.Reticle.Data
                 for (int i = 0; i < Elements.Count; i++)
                     if (!object.Equals(Elements[i], path.Elements[i]))
                         return false;
-                
+
                 return true;
             }
             return false;
@@ -116,6 +117,23 @@ namespace BallisticCalculator.Reticle.Data
             foreach (var element in Elements)
                 c = HashUtil.CodeCombine(c, element.GetHashCode());
             return c;
+        }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticleElement Clone()
+        {
+            var copy = new ReticlePath()
+            {
+                Color = this.Color,
+                Fill = this.Fill,
+                LineWidth = this.LineWidth,
+            };
+
+            for (int i = 0; i < Elements.Count; i++)
+                copy.Elements.Add(this.Elements[i].Clone());
+
+            return copy;
         }
     }
 }

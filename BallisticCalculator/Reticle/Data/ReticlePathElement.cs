@@ -15,7 +15,7 @@ namespace BallisticCalculator.Reticle.Data
     /// </para>
     /// </summary>
     [BXmlSelect(typeof(ReticlePathElementMoveTo), typeof(ReticlePathElementLineTo), typeof(ReticlePathElementArc))]
-    public abstract class ReticlePathElement : IEquatable<ReticlePathElement>, IEqualityComparer<ReticlePathElement>, IFormattable
+    public abstract class ReticlePathElement : IEquatable<ReticlePathElement>, IEqualityComparer<ReticlePathElement>, IFormattable, ICloneable
     {
         /// <summary>
         /// The position of action
@@ -129,5 +129,13 @@ namespace BallisticCalculator.Reticle.Data
         /// <param name="formatProvider"></param>
         /// <returns></returns>
         protected abstract string ToStringInternal(string format, IFormatProvider formatProvider);
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        object ICloneable.Clone() => Clone();
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public abstract ReticlePathElement Clone();
     }
 }

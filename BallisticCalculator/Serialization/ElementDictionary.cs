@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -11,14 +12,25 @@ namespace BallisticCalculator.Serialization
     {
         public object SyncRoot { get; } = new object();
 
-        private readonly Lazy<Dictionary<string, Type>> mReferences = new Lazy<Dictionary<string, Type>>(SearchAllTypes);
+        private readonly Lazy<ConcurrentDictionary<string, Type>> mReferences = new Lazy<ConcurrentDictionary<string, Type>>(SearchAllTypes);
 
-        private static Dictionary<string, Type> SearchAllTypes()
+        private static ConcurrentDictionary<string, Type> SearchAllTypes()
         {
-            Dictionary<string, Type> dict = new Dictionary<string, Type>();
+            ConcurrentDictionary<string, Type> dict = new ConcurrentDictionary<string, Type>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in assembly.GetTypes())
+
+                Type[] types = null;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException )
+                {
+                    continue;
+                }
+
+                foreach (var type in types)
                 {
                     var attr = type.GetCustomAttribute<BXmlElementAttribute>();
                     if (attr != null)

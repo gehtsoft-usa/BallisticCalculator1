@@ -49,7 +49,6 @@ namespace BallisticCalculator.Reticle.Data
                     Equals(MajorArc, arc.MajorArc) &&
                     Equals(ClockwiseDirection, arc.ClockwiseDirection);
             return false;
-
         }
 
         /// <summary>
@@ -71,7 +70,6 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(ClockwiseDirection ? "cw" : "ccw")
                 .Append(')');
             return sb.ToString();
-
         }
 
         /// <summary>Serves as the default hash function.</summary>
@@ -79,6 +77,19 @@ namespace BallisticCalculator.Reticle.Data
         public override int GetHashCode()
         {
             return HashUtil.HashCombine(Position, Radius, MajorArc, ClockwiseDirection);
+        }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticlePathElement Clone()
+        {
+            return new ReticlePathElementArc()
+            {
+                Position = this.Position,
+                Radius = this.Radius,
+                ClockwiseDirection = this.ClockwiseDirection,
+                MajorArc = this.MajorArc
+            };
         }
     }
 }

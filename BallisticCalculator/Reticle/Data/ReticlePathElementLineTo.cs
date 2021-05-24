@@ -49,5 +49,15 @@ namespace BallisticCalculator.Reticle.Data
         {
             return Position.GetHashCode();
         }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticlePathElement Clone()
+        {
+            return new ReticlePathElementLineTo()
+            {
+                Position = this.Position,
+            };
+        }
     }
 }

@@ -90,7 +90,7 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(",f=")
                 .Append(Fill?.ToString(formatProvider).ToLower() ?? "null")
                 .Append(')');
-            
+
             return sb.ToString();
         }
 
@@ -99,6 +99,20 @@ namespace BallisticCalculator.Reticle.Data
         public override int GetHashCode()
         {
             return HashUtil.HashCombine(Center, Radius, Fill, LineWidth, Color);
+        }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticleElement Clone()
+        {
+            return new ReticleCircle()
+            {
+                Center = this.Center,
+                Color = this.Color,
+                Fill = this.Fill,
+                LineWidth = this.LineWidth,
+                Radius = this.Radius
+            };
         }
     }
 }

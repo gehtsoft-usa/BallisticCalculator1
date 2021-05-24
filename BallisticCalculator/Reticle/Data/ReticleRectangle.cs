@@ -100,5 +100,19 @@ namespace BallisticCalculator.Reticle.Data
         {
             return HashUtil.HashCombine(TopLeft, Size, LineWidth, Color, Fill);
         }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticleElement Clone()
+        {
+            return new ReticleRectangle()
+            {
+                TopLeft = this.TopLeft,
+                Size = this.Size,
+                Color = this.Color,
+                Fill = this.Fill,
+                LineWidth = this.LineWidth,
+            };
+        }
     }
 }

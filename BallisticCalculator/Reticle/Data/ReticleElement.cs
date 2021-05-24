@@ -18,7 +18,7 @@ namespace BallisticCalculator.Reticle.Data
     /// </summary>
     [BXmlSelect(typeof(ReticleCircle), typeof(ReticlePath),
                 typeof(ReticleLine), typeof(ReticleRectangle), typeof(ReticleText))]
-    public abstract class ReticleElement : IEquatable<ReticleElement>, IEqualityComparer<ReticleElement>, IFormattable
+    public abstract class ReticleElement : IEquatable<ReticleElement>, IEqualityComparer<ReticleElement>, IFormattable, ICloneable
     {
         /// <summary>
         /// The type of the element
@@ -126,5 +126,13 @@ namespace BallisticCalculator.Reticle.Data
         /// <param name="formatProvider"></param>
         /// <returns></returns>
         protected abstract string ToStringInternal(string format, IFormatProvider formatProvider);
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        object ICloneable.Clone() => Clone();
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public abstract ReticleElement Clone();
     }
 }

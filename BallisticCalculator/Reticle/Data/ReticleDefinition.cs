@@ -16,7 +16,7 @@ namespace BallisticCalculator.Reticle.Data
     /// <para>The Y coordinate direction is bottom to top , e.g. negative offset is bottom of zero point, and positive offset is top of zero point</para>
     /// </summary>
     [BXmlElement("reticle")]
-    public class ReticleDefinition
+    public class ReticleDefinition : ICloneable
     {
         /// <summary>
         /// The name of the reticle
@@ -48,5 +48,29 @@ namespace BallisticCalculator.Reticle.Data
         /// </summary>
         [BXmlProperty(Name = "bdc", Collection = true, Optional = true)]
         public ReticleBulletDropCompensatorPointCollection BulletDropCompensator { get; } = new ReticleBulletDropCompensatorPointCollection();
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        object ICloneable.Clone() => Clone();
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public ReticleDefinition Clone()
+        {
+            var copy = new ReticleDefinition()
+            {
+                Name = this.Name,
+                Size = this.Size,
+                Zero = this.Zero
+            };
+
+            for (int i = 0; i < Elements.Count; i++)
+                copy.Elements.Add(this.Elements[i].Clone());
+
+            for (int i = 0; i < BulletDropCompensator.Count; i++)
+                copy.BulletDropCompensator.Add(this.BulletDropCompensator[i].Clone());
+
+            return copy;
+        }
     }
 }

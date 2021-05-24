@@ -53,7 +53,7 @@ namespace BallisticCalculator.Reticle.Data
         {
             if (other is ReticleText text)
                 return Equals(Position, text.Position) &&
-                    Equals(TextHeight, text.Text) &&
+                    Equals(TextHeight, text.TextHeight) &&
                     Equals(Text, text.Text) &&
                     Equals(Color, text.Color);
 
@@ -88,6 +88,19 @@ namespace BallisticCalculator.Reticle.Data
         public override int GetHashCode()
         {
             return HashUtil.HashCombine(Position, TextHeight, Text, Color);
+        }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticleElement Clone()
+        {
+            return new ReticleText()
+            {
+                Position = this.Position,
+                TextHeight = this.TextHeight,
+                Text = this.Text,
+                Color = this.Color,
+            };
         }
     }
 }

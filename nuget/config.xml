@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.0.5">Add clone operation.</version>
   <version id="1.1.0.4">Add serialization extensions, add reticle element formatters.</version>
   <version id="1.1.0.3">Make draw element public for reticle editor.</version>
   <version id="1.1.0.2">Fixes.</version>

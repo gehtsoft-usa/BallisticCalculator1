@@ -42,7 +42,6 @@ namespace BallisticCalculator.Test.Reticle
             circle.ToString().Should().Be("Circle(p=(1.2345moa:6.789moa),r=1.234moa,w=null,c=null,f=null)");
         }
 
-
         [Fact]
         public void Line1()
         {
@@ -115,7 +114,6 @@ namespace BallisticCalculator.Test.Reticle
                 Radius = AngularUnit.Mil.New(3.21),
                 MajorArc = true,
                 ClockwiseDirection = true,
-
             };
             m.ToString().Should().Be("A((1.2345mil:6.789mil),3.21mil,maj,cw)");
         }
@@ -129,7 +127,6 @@ namespace BallisticCalculator.Test.Reticle
                 Radius = AngularUnit.Mil.New(3.21),
                 MajorArc = false,
                 ClockwiseDirection = false,
-
             };
             m.ToString().Should().Be("A((1.2345mil:6.789mil),3.21mil,min,ccw)");
         }
@@ -182,7 +179,6 @@ namespace BallisticCalculator.Test.Reticle
 
             pt.ToString().Should().Be("Bdc(p=(0mil:-5mil),o=-0.25mil,h=0.5mil)");
         }
-
     }
 }
 

@@ -59,7 +59,6 @@ namespace BallisticCalculator.Reticle.Data
                     object.Equals(Color, line.Color);
 
             return false;
-
         }
 
         /// <summary>
@@ -89,6 +88,19 @@ namespace BallisticCalculator.Reticle.Data
         public override int GetHashCode()
         {
             return HashUtil.HashCombine(Start, End, LineWidth, Color);
+        }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ReticleElement Clone()
+        {
+            return new ReticleLine()
+            {
+                Start = this.Start,
+                End = this.End,
+                Color = this.Color,
+                LineWidth = this.LineWidth,
+            };
         }
     }
 }
