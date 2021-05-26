@@ -96,7 +96,7 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticleText()
             {
-                Position = this.Position,
+                Position = this.Position.Clone(),
                 TextHeight = this.TextHeight,
                 Text = this.Text,
                 Color = this.Color,

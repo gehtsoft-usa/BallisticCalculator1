@@ -85,7 +85,7 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticlePathElementArc()
             {
-                Position = this.Position,
+                Position = this.Position.Clone(),
                 Radius = this.Radius,
                 ClockwiseDirection = this.ClockwiseDirection,
                 MajorArc = this.MajorArc

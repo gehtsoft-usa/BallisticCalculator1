@@ -107,8 +107,8 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticleRectangle()
             {
-                TopLeft = this.TopLeft,
-                Size = this.Size,
+                TopLeft = this.TopLeft.Clone(),
+                Size = this.Size.Clone(),
                 Color = this.Color,
                 Fill = this.Fill,
                 LineWidth = this.LineWidth,

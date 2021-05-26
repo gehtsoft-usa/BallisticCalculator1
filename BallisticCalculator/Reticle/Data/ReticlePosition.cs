@@ -11,7 +11,7 @@ namespace BallisticCalculator.Reticle.Data
     /// A position on the reticle
     /// </summary>
     [BXmlElement("position")]
-    public sealed class ReticlePosition : IEquatable<ReticlePosition>, IFormattable
+    public sealed class ReticlePosition : IEquatable<ReticlePosition>, IFormattable, ICloneable
     {
         /// <summary>
         /// X-coordinate
@@ -107,5 +107,18 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(')');
             return sb.ToString();
         }
+
+        /// <summary>Creates a new object that is a copy of the current instance.</summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public ReticlePosition Clone()
+        {
+            return new ReticlePosition()
+            {
+                X = this.X,
+                Y = this.Y
+            };
+        }
+
+        object ICloneable.Clone() => Clone();
     }
 }

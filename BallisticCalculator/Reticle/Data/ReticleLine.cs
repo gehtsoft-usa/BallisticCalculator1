@@ -96,8 +96,8 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticleLine()
             {
-                Start = this.Start,
-                End = this.End,
+                Start = this.Start.Clone(),
+                End = this.End.Clone(),
                 Color = this.Color,
                 LineWidth = this.LineWidth,
             };

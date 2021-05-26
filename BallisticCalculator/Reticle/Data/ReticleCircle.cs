@@ -107,7 +107,7 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticleCircle()
             {
-                Center = this.Center,
+                Center = this.Center.Clone(),
                 Color = this.Color,
                 Fill = this.Fill,
                 LineWidth = this.LineWidth,

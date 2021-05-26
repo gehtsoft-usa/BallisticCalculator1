@@ -56,7 +56,7 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticlePathElementLineTo()
             {
-                Position = this.Position,
+                Position = this.Position.Clone(),
             };
         }
     }

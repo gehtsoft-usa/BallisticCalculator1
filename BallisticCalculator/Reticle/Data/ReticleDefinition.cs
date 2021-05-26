@@ -60,8 +60,8 @@ namespace BallisticCalculator.Reticle.Data
             var copy = new ReticleDefinition()
             {
                 Name = this.Name,
-                Size = this.Size,
-                Zero = this.Zero
+                Size = this.Size.Clone(),
+                Zero = this.Zero.Clone()
             };
 
             for (int i = 0; i < Elements.Count; i++)

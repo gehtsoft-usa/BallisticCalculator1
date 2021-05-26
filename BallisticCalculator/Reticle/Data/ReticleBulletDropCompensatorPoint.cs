@@ -104,7 +104,7 @@ namespace BallisticCalculator.Reticle.Data
         {
             return new ReticleBulletDropCompensatorPoint()
             {
-                Position = this.Position,
+                Position = this.Position.Clone(),
                 TextHeight = this.TextHeight,
                 TextOffset = this.TextOffset
             };
