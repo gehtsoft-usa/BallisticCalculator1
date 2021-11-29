@@ -27,8 +27,7 @@ namespace BallisticCalculator.Test.Reticle
         {
             CoordinateTranslator translator = new CoordinateTranslator(5f, 5f, 2.5f, 2.5f, 10f, 10f);
 
-            float x, y;
-            translator.Transform(sx, sy, out x, out y);
+            translator.Transform(sx, sy, out float x, out float y);
             x.Should().BeApproximately(dx, 1e-5f);
             y.Should().BeApproximately(dy, 1e-5f);
         }
@@ -51,8 +50,7 @@ namespace BallisticCalculator.Test.Reticle
         {
             CoordinateTranslator translator = new CoordinateTranslator(5f, 5f, 2.5f, 1.5f, 10f, 10f);
 
-            float x, y;
-            translator.Transform(sx, sy, out x, out y);
+            translator.Transform(sx, sy, out float x, out float y);
             x.Should().BeApproximately(dx, 1e-5f);
             y.Should().BeApproximately(dy, 1e-5f);
         }

@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
   <TargetFramework>netstandard2.0</TargetFramework>
-  <DocGenVersion>0.1.18</DocGenVersion>
+  <DocGenVersion>0.1.27</DocGenVersion>
  </PropertyGroup>
  <ItemGroup>
   <PackageReference Include="Gehtsoft.Build.DocGen" Version="$(DocGenVersion)" IncludeAssets="build" />

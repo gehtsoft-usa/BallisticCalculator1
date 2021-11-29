@@ -19,7 +19,6 @@ namespace BallisticCalculator.Serialization
             ConcurrentDictionary<string, Type> dict = new ConcurrentDictionary<string, Type>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-
                 Type[] types = null;
                 try
                 {

@@ -18,9 +18,8 @@ namespace BallisticCalculator.Debug
     {
         private static void Draw(ReticleDefinition reticle, string baseName, TrajectoryPoint[] trajectory)
         {
-            double svgWidth = 10;
+            const double svgWidth = 10;
             double svgHeight = Math.Round(reticle.Size.Y / reticle.Size.X * svgWidth, 2);
-
 
             var canvas = SvgCanvasFactory.Create("reticle", $"{svgWidth}in", $"{svgHeight}in");
             var controller = new ReticleDrawController(reticle, canvas);
@@ -28,7 +27,7 @@ namespace BallisticCalculator.Debug
             controller.DrawBulletDropCompensator(trajectory, DistanceUnit.Yard.New(100), false, DistanceUnit.Yard, "black");
             var svg = SvgCanvasFactory.ToSvg(canvas);
 
-            int pngWidth = 1024;
+            const int pngWidth = 1024;
             int pngHeight = (int)((reticle.Size.Y / reticle.Size.X) * pngWidth);
 
             XmlDocument xmlDocument = new XmlDocument();

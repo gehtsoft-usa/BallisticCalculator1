@@ -19,10 +19,9 @@ namespace BallisticCalculator.Test.Reticle
             x1.Should().NotBeNull();
             x2.Should().NotBeNull();
             x1.Should().NotBeSameAs(x2);
-            
+
             (x2.GetType().IsInstanceOfType(x1) ||
              x1.GetType().IsInstanceOfType(x2)).Should().BeTrue();
-
 
             var properties = x1.GetType().GetProperties();
             foreach (var property in properties)
@@ -55,7 +54,6 @@ namespace BallisticCalculator.Test.Reticle
 
             ShouldHavePositionsDifferent(r1, r2);
 
-
             r2.Elements.Should().HaveCount(r1.Elements.Count);
 
             for (int i = 0; i < r2.Elements.Count; i++)
@@ -86,7 +84,7 @@ namespace BallisticCalculator.Test.Reticle
             p1.Elements.Add(new ReticlePathElementArc() { Position = new ReticlePosition(5, 6, AngularUnit.Mil), ClockwiseDirection = true, MajorArc = true, Radius = AngularUnit.Mil.New(0.25) });
 
             var p2 = p1.Clone() as ReticlePath;
-            
+
             p2.Should().Be(p1);
 
             for (int i = 0; i < p1.Elements.Count; i++)

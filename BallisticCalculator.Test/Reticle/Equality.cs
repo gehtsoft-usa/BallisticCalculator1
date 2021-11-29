@@ -77,7 +77,6 @@ namespace BallisticCalculator.Test.Reticle
             e2.Equals(e1).Should().Be(equals);
         }
 
-
         [Theory]
         [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
                     1, 2, 3, 4, AngularUnit.Mil, "color", true, true)]
@@ -112,7 +111,7 @@ namespace BallisticCalculator.Test.Reticle
                 Color = color1,
                 Fill = fill1
             };
-            
+
             var e2 = new ReticleCircle()
             {
                 Center = new ReticlePosition(x2, y2, u2),
@@ -121,7 +120,7 @@ namespace BallisticCalculator.Test.Reticle
                 Color = color2,
                 Fill = fill2
             };
-            
+
             e1.Equals(e2).Should().Be(equals);
             e2.Equals(e1).Should().Be(equals);
         }
@@ -152,7 +151,7 @@ namespace BallisticCalculator.Test.Reticle
                 Color = color1,
                 Text = text1,
             };
-            
+
             var e2 = new ReticleText()
             {
                 Position = new ReticlePosition(x2, y2, u2),
@@ -243,7 +242,6 @@ namespace BallisticCalculator.Test.Reticle
                 LineWidth = lw1 == null ? null : u1.New(lw1.Value),
                 Color = color1,
                 Fill = fill1
-
             };
 
             var e2 = new ReticleRectangle()
@@ -293,7 +291,6 @@ namespace BallisticCalculator.Test.Reticle
                 LineWidth = lw1 == null ? null : u1.New(lw1.Value),
                 Color = color1,
                 Fill = fill1
-
             };
             e1.Elements.Add(new ReticlePathElementMoveTo() { Position = new ReticlePosition(x11, y11, u1) });
             e1.Elements.Add(new ReticlePathElementLineTo() { Position = new ReticlePosition(x12, y12, u1) });
@@ -306,7 +303,7 @@ namespace BallisticCalculator.Test.Reticle
             };
             e2.Elements.Add(new ReticlePathElementMoveTo() { Position = new ReticlePosition(x21, y21, u2) });
             e2.Elements.Add(new ReticlePathElementLineTo() { Position = new ReticlePosition(x22, y22, u2) });
-            
+
             e1.Equals(e2).Should().Be(equals);
             e2.Equals(e1).Should().Be(equals);
         }

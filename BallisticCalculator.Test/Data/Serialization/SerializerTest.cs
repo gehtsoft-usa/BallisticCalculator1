@@ -222,7 +222,7 @@ namespace BallisticCalculator.Test.Data.Serialization
 
             element.Should().HaveAttribute("span", "123.456");
             element.Should().HaveAttribute("date", "2010-05-27 11:30:25");
-            element.ChildNodes.Should().BeEmpty();
+            element.ChildNodes.Count.Should().Be(0);
 
             var main1 = serializer.Deserialize<MainClass>(element);
 
@@ -379,7 +379,7 @@ namespace BallisticCalculator.Test.Data.Serialization
             };
             SerializerRoundtrip serializer = new SerializerRoundtrip();
             var xml = serializer.Serialize(container);
-            xml.ChildNodes.Should().BeEmpty();
+            xml.ChildNodes.Count.Should().Be(0);
             var container2 = serializer.Deserialize<FlatteningContainer>(xml);
             container2.Value1.Name.Should().Be("123");
             container2.Value2.ID.Should().Be(456);

@@ -44,8 +44,7 @@ namespace BallisticCalculator.Debug
             xmlDocument = new XmlDocument();
             xmlDocument.Load($"{baseName}.reticle");
             BallisticXmlDeserializer deserializer = new BallisticXmlDeserializer();
-            var reticle1 = deserializer.Deserialize<ReticleDefinition>(xmlDocument.DocumentElement);
-            ;
+            _ = deserializer.Deserialize<ReticleDefinition>(xmlDocument.DocumentElement);
         }
 
         private static void DrawGraphics(ReticleDefinition reticle, string baseName)
