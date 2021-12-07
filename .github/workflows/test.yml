@@ -3,8 +3,8 @@ name: .NET Core Build with Tests
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+ pull_request:
+    branches: [ * ]
   workflow_dispatch:
     branches: [ main ]
 
