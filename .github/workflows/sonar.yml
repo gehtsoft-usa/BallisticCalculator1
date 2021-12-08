@@ -10,6 +10,7 @@ jobs:
     env:
       config: 'Release'
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      gs-nuget: https://www.myget.org/F/gehtsoft-public/api
 
     steps:
     - uses: actions/checkout@v2
