@@ -1,0 +1,44 @@
+name: SonarQube Cloud Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    env:
+      config: 'Release'
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.403
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+         java-version: 1.11
+
+    - name: Install SonarCloud scanner
+      run: |
+         dotnet tool install --global dotnet-sonarscanner
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build and analyze
+      run: |
+        dotnet sonarscanner begin /k:"gehtsoft-usa_BallisticCalculator1" /o:"gehtsoft-usa" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="https://sonarcloud.io"
+        dotnet build --configuration $config --no-restore
+        dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
+
+
+
+
