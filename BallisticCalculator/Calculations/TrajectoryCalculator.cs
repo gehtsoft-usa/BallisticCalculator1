@@ -28,17 +28,38 @@ namespace BallisticCalculator
         public static Measurement<VelocityUnit> MinimumVelocity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new Measurement<VelocityUnit>(50, VelocityUnit.FeetPerSecond);
 
         /// <summary>
+        /// PIR = (PI/8)*(RHO0/144)
+        /// </summary>
+        private const double PIR = 2.08551e-04;
+
+        private static DragTable ValidateDragTable(Ammunition ammunition, DragTable dragTable)
+        {
+            if (ammunition.BallisticCoefficient.Table == DragTableId.GC)
+            {
+                if (dragTable == null)
+                    throw new ArgumentNullException(nameof(dragTable), "The drag table shoudn't be null if the ballistic coefficient is custom");
+            }
+            else
+                dragTable = DragTable.Get(ammunition.BallisticCoefficient.Table);
+
+            return dragTable;
+        }
+
+        /// <summary>
         /// Calculates the sight angle for the specified zero distance
         /// </summary>
         /// <param name="ammunition"></param>
         /// <param name="rifle"></param>
         /// <param name="atmosphere"></param>
+        /// <param name="dragTable">Custom dragTable</param>
         /// <returns></returns>
-        public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere)
+        public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, DragTable dragTable = null)
         {
             Measurement<DistanceUnit> rangeTo = rifle.Zero.Distance * 2;
             Measurement<DistanceUnit> step = rifle.Zero.Distance / 100;
             Measurement<DistanceUnit> calculationStep = GetCalculationStep(step);
+
+            dragTable = ValidateDragTable(ammunition, dragTable);
 
             if (rifle.Zero.Atmosphere != null)
                 atmosphere = rifle.Zero.Atmosphere;
@@ -80,7 +101,9 @@ namespace BallisticCalculator
                 DragTableNode dragTableNode = null;
 
                 double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
-                double ballisicFactor = 2.08551e-04 * adjustBallisticFactorForVelocityUnits / ammunition.BallisticCoefficient.Value;
+                double ballisicFactor = 1 / ammunition.GetBallisticCoefficient();
+                var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisicFactor;
+                
                 var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
@@ -105,13 +128,13 @@ namespace BallisticCalculator
 
                     //find Mach node for the first time
                     if (dragTableNode == null)
-                        dragTableNode = DragTable.Get(ammunition.BallisticCoefficient.Table).Find(currentMach);
+                        dragTableNode = dragTable.Find(currentMach);
 
                     //walk towards the beginning the table as velocity drops
                     while (dragTableNode.Previous.Mach > currentMach)
                         dragTableNode = dragTableNode.Previous;
 
-                    drag = ballisicFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
+                    drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
 
                     velocityVector = new Vector<VelocityUnit>(
                         velocityVector.X - deltaTime.TotalSeconds * drag * velocityVector.X,
@@ -148,8 +171,9 @@ namespace BallisticCalculator
         /// <param name="atmosphere"></param>
         /// <param name="shot"></param>
         /// <param name="wind"></param>
+        /// <param name="dragTable">Custom drag table</param>
         /// <returns></returns>
-        public TrajectoryPoint[] Calculate(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, ShotParameters shot, Wind[] wind)
+        public TrajectoryPoint[] Calculate(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, ShotParameters shot, Wind[] wind = null, DragTable dragTable = null)
         {
             Measurement<DistanceUnit> rangeTo = shot.MaximumDistance;
             Measurement<DistanceUnit> step = shot.Step;
@@ -157,6 +181,8 @@ namespace BallisticCalculator
 
             if (atmosphere == null)
                 atmosphere = new Atmosphere();
+
+            dragTable = ValidateDragTable(ammunition, dragTable);
 
             Measurement<DistanceUnit> alt0 = atmosphere.Altitude;
             Measurement<DistanceUnit> altDelta = new Measurement<DistanceUnit>(1, DistanceUnit.Meter);
@@ -219,9 +245,13 @@ namespace BallisticCalculator
             DragTableNode dragTableNode = null;
 
             double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
-            double ballisicFactor = 2.08551e-04 * adjustBallisticFactorForVelocityUnits / ammunition.BallisticCoefficient.Value;
+            double ballisicFactor = 1 / ammunition.GetBallisticCoefficient();
+            var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisicFactor;
+
             var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
+            
+            
 
             //run all the way down the range
             while (rangeVector.X <= maximumRange)
@@ -277,13 +307,13 @@ namespace BallisticCalculator
 
                 //find Mach node for the first time
                 if (dragTableNode == null)
-                    dragTableNode = DragTable.Get(ammunition.BallisticCoefficient.Table).Find(currentMach);
+                    dragTableNode = dragTable.Find(currentMach);
 
                 //walk towards the beginning the table as velocity drops
                 while (dragTableNode.Mach > currentMach)
                     dragTableNode = dragTableNode.Previous;
 
-                drag = ballisicFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
+                drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
 
                 velocityVector = new Vector<VelocityUnit>(
                     velocityVector.X - deltaTime.TotalSeconds * drag * velocityAdjusted.X,

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="resources\custom.txt" />
     <None Remove="resources\g1_nowind.txt" />
     <None Remove="resources\g1_nowind_up.txt" />
     <None Remove="resources\g1_twist.txt" />
@@ -15,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="resources\custom.txt" />
     <EmbeddedResource Include="resources\g1_nowind_up.txt" />
     <EmbeddedResource Include="resources\g1_twist.txt" />
     <EmbeddedResource Include="resources\g7_nowind.txt" />

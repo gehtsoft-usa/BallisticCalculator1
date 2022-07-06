@@ -34,6 +34,7 @@ namespace BallisticCalculator
                 DragTableId.G7 => gG7 ??= new G7DragTable(),
                 DragTableId.G8 => gG8 ??= new G8DragTable(),
                 DragTableId.GS => gGS ??= new GSDragTable(),
+                DragTableId.GC => throw new ArgumentException("Pass custom drag table directly to the target method", nameof(id)),
 #pragma warning restore S1121 // Assignments should not be made from within sub-expressions
                 _ => throw new ArgumentOutOfRangeException(nameof(id)),
             };
@@ -63,7 +64,7 @@ namespace BallisticCalculator
         /// <para>This class based on original JavaScript solution by Alexandre Trofimov</para>
         /// </summary>
         /// <param name="points">The data points. The points must be pre-sorted in ascending order by Mach field</param>
-        private protected DragTable(DragTableDataPoint[] points)
+        protected DragTable(DragTableDataPoint[] points)
         {
             int numpts = points.Length;
             mNodes = new DragTableNode[numpts];

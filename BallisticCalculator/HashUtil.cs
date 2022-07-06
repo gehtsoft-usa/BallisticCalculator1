@@ -11,7 +11,7 @@
                 hash = hash * 23 + o2;
                 return hash;
             }
-        }
+        }       
 
         public static int HashCombine(object o1, object o2)
         {

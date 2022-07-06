@@ -16,7 +16,7 @@ namespace BallisticCalculator
         /// <summary>
         /// <para>Sight angle</para>
         /// <para>
-        /// Use <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere)">TrajectoryCalculator.SightAngle</see> to calculate
+        /// Use <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere, DragTable)">TrajectoryCalculator.SightAngle</see> to calculate
         /// sight angle by the zero distance
         /// </para>
         /// </summary>
