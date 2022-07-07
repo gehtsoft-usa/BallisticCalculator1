@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Remove="resources\custom.txt" />
+    <None Remove="resources\drg.txt" />
     <None Remove="resources\g1_nowind.txt" />
     <None Remove="resources\g1_nowind_up.txt" />
     <None Remove="resources\g1_twist.txt" />
@@ -24,6 +25,7 @@
     <EmbeddedResource Include="resources\g1_wind_cold.txt" />
     <EmbeddedResource Include="resources\g1_wind_hot.txt" />
     <EmbeddedResource Include="resources\g1_wind.txt" />
+    <EmbeddedResource Include="resources\drg.txt" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BallisticCalculator
 {
@@ -48,14 +46,14 @@ namespace BallisticCalculator
         /// <summary>
         /// Returns the number of drag table nodes
         /// </summary>
-        internal int Count => mNodes.Length;
+        public int Count => mNodes.Length;
 
         /// <summary>
         /// Returns the drag table node by its index
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        internal DragTableNode this[int index] => mNodes[index];
+        public DragTableNode this[int index] => mNodes[index];
 
         private readonly DragTableNode[] mNodes;
 

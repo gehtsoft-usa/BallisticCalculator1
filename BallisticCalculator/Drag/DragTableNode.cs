@@ -8,7 +8,7 @@ namespace BallisticCalculator
     /// <summary>
     /// The range table node
     /// </summary>
-    internal class DragTableNode
+    public class DragTableNode
     {
         /// <summary>
         /// The velocity range start
