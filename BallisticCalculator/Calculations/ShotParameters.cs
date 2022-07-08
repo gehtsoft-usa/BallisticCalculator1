@@ -38,6 +38,13 @@ namespace BallisticCalculator
         public Measurement<AngularUnit>? ShotAngle { get; set; }
 
         /// <summary>
+        /// The azymuth of the shot
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("azimuth-angle", Optional = true)]
+        public Measurement<AngularUnit>? BarrelAzymuth { get; set; }
+
+        /// <summary>
         /// Output table step
         /// </summary>
         [BXmlProperty("step")]

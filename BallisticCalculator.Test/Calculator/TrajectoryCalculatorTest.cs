@@ -191,7 +191,7 @@ namespace BallisticCalculator.Test.Calculator
         }
 
         [Fact]
-        public void Custom()
+        public void Custom1()
         {
             var template = TableLoader.FromResource("custom");
             var table = new MyDrag();
@@ -203,6 +203,47 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Meter),
                 MaximumDistance = new Measurement<DistanceUnit>(500, DistanceUnit.Meter),
+                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere, table),
+                ShotAngle = template.ShotParameters?.ShotAngle,
+                CantAngle = template.ShotParameters?.CantAngle,
+            };
+
+            var winds = template.Wind == null ? null : new Wind[] { template.Wind };
+
+            var trajectory = cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot, winds, table);
+
+            trajectory.Length.Should().Be(template.Trajectory.Count);
+
+            for (int i = 0; i < trajectory.Length; i++)
+            {
+                var point = trajectory[i];
+                var templatePoint = template.Trajectory[i];
+
+                point.Distance.In(templatePoint.Distance.Unit).Should().BeApproximately(templatePoint.Distance.Value, templatePoint.Distance.Value * velocityAccuracyInPercent, $"@{point.Distance:N0}");
+                point.Velocity.In(templatePoint.Velocity.Unit).Should().BeApproximately(templatePoint.Velocity.Value, templatePoint.Velocity.Value * velocityAccuracyInPercent, $"@{point.Distance:N0}");
+                if (i > 0)
+                {
+                    var dropAccuracyInInch = Measurement<AngularUnit>.Convert(dropAccuracyInMOA, AngularUnit.MOA, AngularUnit.InchesPer100Yards) * templatePoint.Distance.In(DistanceUnit.Yard) / 100;
+                    point.Drop.In(DistanceUnit.Inch).Should().BeApproximately(templatePoint.Drop.In(DistanceUnit.Inch), dropAccuracyInInch, $"@{point.Distance:N0}");
+                }
+            }
+        }
+
+        [Fact]
+        public void Custom2()
+        {
+            var template = TableLoader.FromResource("custom2");
+            using var stream = typeof(TrajectoryCalculatorTest).Assembly.GetManifestResourceStream($"BallisticCalculator.Test.resources.drg2.txt");
+            var table = DrgDragTable.Open(stream);
+            
+            const double velocityAccuracyInPercent = 0.015, dropAccuracyInMOA = 0.25;
+
+            var cal = new TrajectoryCalculator();
+
+            ShotParameters shot = new ShotParameters()
+            {
+                Step = new Measurement<DistanceUnit>(100, DistanceUnit.Meter),
+                MaximumDistance = new Measurement<DistanceUnit>(1500, DistanceUnit.Meter),
                 SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere, table),
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,

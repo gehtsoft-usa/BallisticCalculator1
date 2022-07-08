@@ -86,8 +86,8 @@ namespace BallisticCalculator
 
                 mNodes[i] = new DragTableNode(points[i].Mach, points[i].DragCoefficient, a, b, c, mNodes[i - 1]);
             }
-            rate = (points[numpts - 1].DragCoefficient - points[numpts - 2].DragCoefficient) / (points[numpts - 1].Mach - points[numpts - 2].Mach);
-            mNodes[numpts - 1] = new DragTableNode(points[numpts - 1].Mach, points[numpts - 1].DragCoefficient, 0, rate, points[numpts - 1].DragCoefficient - points[numpts - 2].Mach * rate, mNodes[numpts - 1]);
+            //rate = (points[numpts - 1].DragCoefficient - points[numpts - 2].DragCoefficient) / (points[numpts - 1].Mach - points[numpts - 2].Mach);
+            mNodes[numpts - 1] = new DragTableNode(points[numpts - 1].Mach, points[numpts - 1].DragCoefficient, 0, 0, points[numpts - 1].DragCoefficient, mNodes[numpts - 1]);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace BallisticCalculator
             int numpts = mNodes.Length;
 
             int mlo = 0;
-            int mhi = numpts - 2;
+            int mhi = numpts - 1;
             int mid;
 
             while ((mhi - mlo) > 1)

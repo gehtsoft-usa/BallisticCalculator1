@@ -10,7 +10,7 @@ namespace BallisticCalculator.Debug
     {
         public static void Main(string[] args)
         {
-            Debug4.Do(args);
+            Debug5.Do(args);
         }
     }
 }

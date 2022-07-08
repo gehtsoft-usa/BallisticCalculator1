@@ -32,7 +32,7 @@ namespace BallisticCalculator.Test.Data
             for (int i = 0; i < table.Count; i++)
             {
                 var dataPoint = table[i];
-                ((Action)(() => TestDataPoint(dataPoint, table))).Should().NotThrow();
+                TestDataPoint(dataPoint, table);
             }
         }
 

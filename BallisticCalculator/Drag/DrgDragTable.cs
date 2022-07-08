@@ -52,8 +52,8 @@ namespace BallisticCalculator
                     var parts = line.Split(',');
                     if (parts.Length < 4)
                         throw new ArgumentException("The first line of stream must have at least 4 values", nameof(stream));
-                    if (parts[0].Trim() != "CFM")
-                        throw new ArgumentException("Only CFM drg files are supported", nameof(stream));
+                    if (parts[0].Trim() != "CFM" && parts[0].Trim() != "BRL")
+                        throw new ArgumentException("Only CFM or BRL drg files are supported", nameof(stream));
                     ammoName = parts[1].Trim();
                     weight = new Measurement<WeightUnit>(Double.Parse(parts[2], CultureInfo.InvariantCulture), WeightUnit.Kilogram);
                     diameter = new Measurement<DistanceUnit>(Double.Parse(parts[3], CultureInfo.InvariantCulture), DistanceUnit.Meter);

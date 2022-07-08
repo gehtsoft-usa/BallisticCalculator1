@@ -131,7 +131,7 @@ namespace BallisticCalculator
                         dragTableNode = dragTable.Find(currentMach);
 
                     //walk towards the beginning the table as velocity drops
-                    while (dragTableNode.Previous.Mach > currentMach)
+                    while (dragTableNode.Previous != null && dragTableNode.Previous.Mach > currentMach)
                         dragTableNode = dragTableNode.Previous;
 
                     drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
@@ -204,7 +204,7 @@ namespace BallisticCalculator
 
             TrajectoryPoint[] trajectoryPoints = new TrajectoryPoint[(int)(Math.Floor(rangeTo / step)) + 1];
 
-            var barrelAzimuth = new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
+            var barrelAzimuth = shot.BarrelAzymuth ?? new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
             var barrelElevation = shot.SightAngle;
             if (shot.ShotAngle != null)
                 barrelElevation += shot.ShotAngle.Value;
