@@ -47,6 +47,11 @@ namespace BallisticCalculator
         [BXmlProperty("bullet-length", Optional = true)]
         public Measurement<DistanceUnit>? BulletLength { get; set; }
 
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("custom-table", Optional = true)]
+        public string CustomTableFileName { get; set; }
+
         /// <summary>
         /// Default constructor
         /// </summary>

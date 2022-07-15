@@ -40,6 +40,11 @@ namespace BallisticCalculator
         G8,
 
         /// <summary>
+        /// GI
+        /// </summary>
+        GI,
+
+        /// <summary>
         /// GS are sphere
         /// </summary>
         GS,

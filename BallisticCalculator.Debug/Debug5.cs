@@ -67,4 +67,5 @@ namespace BallisticCalculator.Debug
             }
         }
     }
+        
 }

@@ -2,6 +2,8 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.0.8">Small fixes, GI table.</version>
+  <version id="1.1.0.7">Support form factor and custom plt functions.</version>
   <version id="1.1.0.6">Fix position clone.</version>
   <version id="1.1.0.5">Add clone operation.</version>
   <version id="1.1.0.4">Add serialization extensions, add reticle element formatters.</version>
@@ -13,7 +15,7 @@
   <owner>Gehtsoft</owner>
   <projectUrl>https://github.com/gehtsoft-usa/BallisticCalculator1</projectUrl>
   <license type="expression">LGPL-2.1-or-later</license>
-  <copyright>Gehtsoft USA LLC 2016-2021</copyright>
+  <copyright>Gehtsoft USA LLC 2016-2022</copyright>
  </properties>
  <projects>
    <project id="BallisticCalculator">

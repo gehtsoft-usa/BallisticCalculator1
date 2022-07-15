@@ -13,6 +13,7 @@ namespace BallisticCalculator
         private static DragTable gG6;
         private static DragTable gG7;
         private static DragTable gG8;
+        private static DragTable gGI;
         private static DragTable gGS;
 
         /// <summary>
@@ -31,6 +32,7 @@ namespace BallisticCalculator
                 DragTableId.G6 => gG6 ??= new G6DragTable(),
                 DragTableId.G7 => gG7 ??= new G7DragTable(),
                 DragTableId.G8 => gG8 ??= new G8DragTable(),
+                DragTableId.GI => gGI ??= new GIDragTable(),
                 DragTableId.GS => gGS ??= new GSDragTable(),
                 DragTableId.GC => throw new ArgumentException("Pass custom drag table directly to the target method", nameof(id)),
 #pragma warning restore S1121 // Assignments should not be made from within sub-expressions
@@ -86,7 +88,6 @@ namespace BallisticCalculator
 
                 mNodes[i] = new DragTableNode(points[i].Mach, points[i].DragCoefficient, a, b, c, mNodes[i - 1]);
             }
-            //rate = (points[numpts - 1].DragCoefficient - points[numpts - 2].DragCoefficient) / (points[numpts - 1].Mach - points[numpts - 2].Mach);
             mNodes[numpts - 1] = new DragTableNode(points[numpts - 1].Mach, points[numpts - 1].DragCoefficient, 0, 0, points[numpts - 1].DragCoefficient, mNodes[numpts - 1]);
         }
 

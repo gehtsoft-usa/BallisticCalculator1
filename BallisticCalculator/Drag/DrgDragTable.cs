@@ -96,7 +96,7 @@ namespace BallisticCalculator
         /// <param name="fileName"></param>
         /// <param name="encoding"></param>
         /// <returns></returns>
-        public static DragTable Open(string fileName, Encoding encoding = null)
+        public static DrgDragTable Open(string fileName, Encoding encoding = null)
         {
             using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
             return Open(fs, encoding);
