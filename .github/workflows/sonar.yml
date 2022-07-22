@@ -36,7 +36,7 @@ jobs:
 
     - name: Build and analyze
       run: |
-        dotnet sonarscanner begin /k:"gehtsoft-usa_BallisticCalculator1" /o:"gehtsoft-usa" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="./TestResults/**/coverage.opencover.xml" /d:sonar.cs.vstest.reportsPaths="./TestResults/**/*.trx"
+        dotnet sonarscanner begin /k:"gehtsoft-usa_BallisticCalculator1" /o:"gehtsoft-usa" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="./TestResults/**/coverage.opencover.xml" /d:sonar.cs.vstest.reportsPaths="./TestResults/**/*.trx"
         dotnet build --configuration $config --no-restore
         dotnet test BallisticCalculator.sln --no-build --configuration $config --collect "XPlat Code Coverage" --logger trx --results-directory "TestResults" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
         dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
