@@ -48,6 +48,9 @@ namespace BallisticCalculator
         public Measurement<DistanceUnit>? BulletLength { get; set; }
 
 
+        /// <summary>
+        /// <para>The file name of the custom drag table</para>
+        /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("custom-table", Optional = true)]
         public string CustomTableFileName { get; set; }

@@ -35,7 +35,7 @@
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.18.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NReco.Csv" Version="1.0.0" />
+    <PackageReference Include="NReco.Csv" Version="1.0.1" />
     <PackageReference Include="FluentAssertions" Version="6.7.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />

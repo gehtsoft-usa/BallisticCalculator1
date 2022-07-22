@@ -64,8 +64,7 @@ namespace BallisticCalculator
             if (rifle.Zero.Atmosphere != null)
                 atmosphere = rifle.Zero.Atmosphere;
 
-            if (atmosphere == null)
-                atmosphere = new Atmosphere();
+            atmosphere ??= new Atmosphere();
 
             if (rifle.Zero.Ammunition != null)
                 ammunition = rifle.Zero.Ammunition;
@@ -127,8 +126,7 @@ namespace BallisticCalculator
                     double currentMach = velocity / mach;
 
                     //find Mach node for the first time
-                    if (dragTableNode == null)
-                        dragTableNode = dragTable.Find(currentMach);
+                    dragTableNode ??= dragTable.Find(currentMach);
 
                     //walk towards the beginning the table as velocity drops
                     while (dragTableNode.Previous != null && dragTableNode.Previous.Mach > currentMach)
@@ -179,8 +177,7 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> step = shot.Step;
             Measurement<DistanceUnit> calculationStep = GetCalculationStep(step);
 
-            if (atmosphere == null)
-                atmosphere = new Atmosphere();
+            atmosphere ??= new Atmosphere();
 
             dragTable = ValidateDragTable(ammunition, dragTable);
 
@@ -306,8 +303,7 @@ namespace BallisticCalculator
                 double currentMach = velocity / mach;
 
                 //find Mach node for the first time
-                if (dragTableNode == null)
-                    dragTableNode = dragTable.Find(currentMach);
+                dragTableNode ??= dragTable.Find(currentMach);
 
                 //walk towards the beginning the table as velocity drops
                 while (dragTableNode.Mach > currentMach)

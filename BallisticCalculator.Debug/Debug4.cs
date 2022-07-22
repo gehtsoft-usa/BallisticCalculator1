@@ -120,7 +120,6 @@ namespace BallisticCalculator.Debug
         public static void Do(String[] _)
         {
             var trajectory1 = Calculate(0.223, DragTableId.G7);
-            //var trajectory2 = Calculate(0.446, DragTableId.G1);
             var trajectory2 = Calculate(0.2517, DragTableId.GC);
             var trajectory3 = Calculate(1, DragTableId.GC);
 

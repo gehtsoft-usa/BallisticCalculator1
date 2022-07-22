@@ -7,6 +7,9 @@ using System.Xml;
 using Gehtsoft.Measurements;
 using System.Globalization;
 using System.IO;
+using System.Xml.Linq;
+using System.Collections.ObjectModel;
+using System.Linq.Expressions;
 
 namespace BallisticCalculator.Serialization
 {
@@ -82,50 +85,93 @@ namespace BallisticCalculator.Serialization
         /// </summary>
         public object Deserialize(XmlElement element, Type type) => Deserialize(element, type, null);
 
-        private object Deserialize(XmlElement element, Type type, string attributePrefix)
+        interface IReader
         {
-            //check whether the object has specific constructor
-            ConstructorInfo specificConstructor = null;
-            foreach (var constructor in type.GetConstructors())
+            bool CanSet(PropertyInfo propertyInfo);
+            bool CanGet(PropertyInfo propertyInfo);
+            void Set(PropertyInfo propertyInfo, object value);
+            object Get(PropertyInfo propertyInfo);
+            object GetInstance();
+        }
+
+        class ConstructorReader : IReader
+        {
+            private readonly ConstructorInfo mConstructor;
+            private readonly ParameterInfo[] mConstructorParams;
+            private readonly object[] mConstructorParamValues;
+
+            public ConstructorReader(ConstructorInfo constructorInfo)
             {
-                if (constructor.GetCustomAttribute<BXmlConstructorAttribute>() != null)
+                mConstructor = constructorInfo;
+                mConstructorParams = constructorInfo.GetParameters();
+                mConstructorParamValues = new object[mConstructorParams.Length];
+            }
+
+            public bool CanSet(PropertyInfo propertyInfo) => true;
+            public bool CanGet(PropertyInfo propertyInfo) => false;
+
+            public void Set(PropertyInfo propertyInfo, object value)
+            {
+                for (int i = 0; i < mConstructorParams.Length; i++)
                 {
-                    specificConstructor = constructor;
-                    break;
+                    if (string.Equals(propertyInfo.Name, mConstructorParams[i].Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        mConstructorParamValues[i] = value;
+                        break;
+                    }
                 }
             }
+            public object Get(PropertyInfo propertyInfo) => null;
 
-            object value = null;
-            ParameterInfo[] constructorParams = null;
-            object[] constructorParamValues = null;
+            public object GetInstance() => mConstructor.Invoke(mConstructorParamValues);
+        }
 
-            Func<PropertyInfo, Action<object>> setAction = null;
-            Func<PropertyInfo, Func<object>> getAction = null;
+        class AccessorReader : IReader
+        {
+            private readonly object mInstance;
 
-            if (specificConstructor != null)
+            public AccessorReader(Type type)
             {
-                constructorParams = specificConstructor.GetParameters();
-                constructorParamValues = new object[constructorParams.Length];
+                mInstance = Activator.CreateInstance(type);
+            }
 
-                setAction = (propertyInfo) => (propertyValue) =>
-                {
-                    for (int i = 0; i < constructorParams.Length; i++)
-                    {
-                        if (string.Equals(propertyInfo.Name, constructorParams[i].Name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            constructorParamValues[i] = propertyValue;
-                            break;
-                        }
-                    }
-                };
-                getAction = (_) => null;
-            }
-            else
+            public bool CanSet(PropertyInfo propertyInfo) => propertyInfo.SetMethod != null;
+            public bool CanGet(PropertyInfo propertyInfo) => propertyInfo.GetMethod != null;
+
+            public void Set(PropertyInfo propertyInfo, object value)
             {
-                value = Activator.CreateInstance(type);
-                setAction = (propertyInfo) => propertyInfo.SetMethod == null ? null : propertyValue => propertyInfo.SetValue(value, propertyValue);
-                getAction = (propertyInfo) => propertyInfo.GetMethod == null ? null : () => propertyInfo.GetValue(value);
+                if (propertyInfo.SetMethod != null)
+                    propertyInfo.SetValue(mInstance, value);
             }
+
+            public object Get(PropertyInfo propertyInfo)
+            {
+                if (propertyInfo.GetMethod != null)
+                    return propertyInfo.GetValue(mInstance);
+                return null;
+            }
+
+            public object GetInstance() => mInstance;
+        }
+
+        static class ReaderFactory
+        {
+            public static IReader CreateReader(Type type)
+            {
+                var specificConstructor = type.GetConstructors()
+                    .FirstOrDefault(c => c.GetCustomAttribute<BXmlConstructorAttribute>() != null);
+
+                if (specificConstructor != null)
+                    return new ConstructorReader(specificConstructor);
+                return new AccessorReader(type);
+            }
+        }
+
+
+
+        private object Deserialize(XmlElement element, Type type, string attributePrefix)
+        {
+            var reader = ReaderFactory.CreateReader(type);
 
             foreach (var property in type.GetProperties())
             {
@@ -133,25 +179,177 @@ namespace BallisticCalculator.Serialization
                 if (propertyAttribute == null)
                     continue;
 
-                ReadProperty(element, type, property.Name, property.PropertyType, propertyAttribute, attributePrefix,
-                             setAction(property), getAction(property));
+                ReadProperty(element, type, propertyAttribute, attributePrefix, property, reader);
             }
 
-            if (specificConstructor != null)
-                value = specificConstructor.Invoke(constructorParamValues);
-
-            return value;
+            return reader.GetInstance();
         }
 
-        private void ReadProperty(XmlElement element, Type type, string propertyName, Type propertyType, BXmlPropertyAttribute propertyAttribute, string attributePrefix, Action<object> setProperty, Func<object> getProperty = null)
+        private void ReadProperty(XmlElement element, Type type, BXmlPropertyAttribute propertyAttribute, string attributePrefix, PropertyInfo property, IReader reader)
         {
             bool found = false;
+            Type targetType = GetReadTargetType(propertyAttribute, property);
 
+            BXmlElementAttribute elementAttribute1 = targetType.GetCustomAttribute<BXmlElementAttribute>();
+            BXmlSelectAttribute selectAttribute = targetType.GetCustomAttribute<BXmlSelectAttribute>();
+
+            if ((!propertyAttribute.ChildElement || elementAttribute1 == null) && string.IsNullOrEmpty(propertyAttribute.Name))
+                throw new InvalidOperationException($"The value of the property {type.FullName}.{property.Name} must have the name specified in the {nameof(BXmlPropertyAttribute)}");
+
+            if ((propertyAttribute.ChildElement || propertyAttribute.Collection) &&
+                (elementAttribute1 == null && selectAttribute == null))
+            {
+                throw new InvalidOperationException($"The type of the property {type.FullName}.{property.Name} must have either {nameof(BXmlElementAttribute)} or {nameof(BXmlSelectAttribute)}");
+            }
+
+            if (propertyAttribute.ChildElement)
+                found = ReadChildElementProperty(element, propertyAttribute, property, reader, targetType, elementAttribute1, selectAttribute);
+            else if (propertyAttribute.Collection)
+                found = ReadCollectionProperty(element, propertyAttribute, property, reader, targetType, elementAttribute1, selectAttribute);
+            else
+                found = ReadAttributeProperty(element, type, propertyAttribute, attributePrefix, property, reader);
+
+            if (!found && !propertyAttribute.Optional)
+                throw new InvalidOperationException($"The value of the property {type.FullName}.{property.Name} is not found but the property is not optional");
+        }
+
+        private bool ReadAttributeProperty(XmlElement element, Type type, BXmlPropertyAttribute propertyAttribute, string attributePrefix, PropertyInfo property, IReader reader)
+        {
+            object propertyValue = ReadAttribute(type, element, property.Name, property.PropertyType, propertyAttribute, attributePrefix);
+            if (propertyValue != null)
+            {
+                reader.Set(property, propertyValue);
+                return true;
+            }
+            return false;
+        }
+
+        private bool ReadChildElementProperty(XmlElement element, BXmlPropertyAttribute propertyAttribute, PropertyInfo property, IReader reader, Type targetType, BXmlElementAttribute elementAttribute1, BXmlSelectAttribute selectAttribute)
+        {
+            string elementToSearch = null;
+
+            if (elementAttribute1 == null && string.IsNullOrEmpty(propertyAttribute.Name))
+                throw new InvalidOperationException($"The value of the property {property.DeclaringType.FullName}.{property.Name} must have the name specified in the {nameof(BXmlPropertyAttribute)}");
+
+            elementToSearch = propertyAttribute.Name ?? elementAttribute1?.Name;
+
+            if (!propertyAttribute.FlattenChild)
+                return ReadChildElementProperty_NotFlatten(element, property, reader, targetType, elementAttribute1, selectAttribute, elementToSearch);
+            else
+                return ReadChildElementProperty_Flatten(element, property, reader, targetType, elementToSearch);
+        }
+
+        private bool ReadChildElementProperty_NotFlatten(XmlElement element, PropertyInfo property, IReader reader, Type targetType, BXmlElementAttribute elementAttribute1, BXmlSelectAttribute selectAttribute, string elementToSearch)
+        {
+            bool found = false;
+            
+            var childElement = FindChildElement(element, elementToSearch);
+
+            if (childElement != null)
+            {
+                object propertyValue;
+                if (elementAttribute1 != null)
+                    propertyValue = Deserialize(childElement, targetType);
+                else
+                    propertyValue = Deserialize(childElement, selectAttribute.Options);
+
+                reader.Set(property, propertyValue);
+                found = true;
+            }
+
+            return found;
+        }
+
+        private bool ReadChildElementProperty_Flatten(XmlElement element, PropertyInfo property, IReader reader, Type targetType, string elementToSearch)
+        {
+            bool found = false;
+            string prefix = $"{elementToSearch}-";
+            bool any = false;
+            for (int i = 0; !any && i < element.Attributes.Count; i++)
+            {
+                if (element.Attributes[i].Name.StartsWith(prefix))
+                    any = true;
+            }
+
+            if (any)
+            {
+                object propertyValue = Deserialize(element, targetType, elementToSearch);
+                reader.Set(property, propertyValue);
+                found = true;
+            }
+
+            return found;
+        }
+
+        private bool ReadCollectionProperty(XmlElement element, BXmlPropertyAttribute propertyAttribute, PropertyInfo property, IReader reader, Type targetType, BXmlElementAttribute elementAttribute1, BXmlSelectAttribute selectAttribute)
+        {
+            object collection = ReadCollectionProperty_InitializeCollection(property, targetType, reader);
+
+            MethodInfo method = collection.GetType().GetMethod("Add", new Type[] { targetType });
+
+            if (method == null)
+                throw new InvalidOperationException($"The type of the property {property.DeclaringType.FullName}.{property.Name} has no Add({targetType.FullName}) method");
+
+            var collectionElement = FindChildElement(element, propertyAttribute.Name);
+
+            if (collectionElement == null)
+                return false;
+
+            object[] parameters = new object[] { null };
+
+            Func<XmlElement, object> deserializer;
+            
+            if (elementAttribute1 != null)
+                deserializer = e => Deserialize(e, targetType);
+            else
+                deserializer = e => Deserialize(e, selectAttribute.Options);
+
+            foreach (XmlNode node in collectionElement.ChildNodes)
+            {
+                if (node is not XmlElement childElement)
+                    continue;
+                
+                parameters[0] = deserializer(childElement);
+                method.Invoke(collection, parameters);
+
+            }
+
+            if (reader.CanSet(property))
+            {
+                if (property.PropertyType.IsArray)
+                    collection = collection.GetType().GetMethod("ToArray", new Type[] { }).Invoke(collection, Array.Empty<object>());
+                reader.Set(property, collection);
+            }
+
+            return true;
+        }
+
+        private object ReadCollectionProperty_InitializeCollection(PropertyInfo property, Type targetType, IReader reader)
+        {
+            object collection = null;
+            if (reader.CanSet(property))
+            {
+                if (property.PropertyType.IsArray)
+                    collection = Activator.CreateInstance(typeof(List<>).MakeGenericType(targetType));
+                else
+                    collection = Activator.CreateInstance(property.PropertyType);
+            }
+            else
+            {
+                if (reader.CanGet(property))
+                    collection = reader.Get(property);
+                if (collection == null)
+                    throw new InvalidOperationException($"The value of the property {property.DeclaringType.FullName}.{property.Name} has no set accessor and is not initialized by default");
+            }
+            return collection;
+        }
+
+        private Type GetReadTargetType(BXmlPropertyAttribute propertyAttribute, PropertyInfo property)
+        {
             Type targetType = null;
-
             if (propertyAttribute.Collection)
             {
-                foreach (Type iface in propertyType.GetInterfaces())
+                foreach (Type iface in property.PropertyType.GetInterfaces())
                 {
                     if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                     {
@@ -160,129 +358,13 @@ namespace BallisticCalculator.Serialization
                     }
                 }
                 if (targetType == null)
-                    throw new InvalidOperationException($"The type of the value {type.FullName}.{propertyName} must implement IEnumerable interface");
+                    throw new InvalidOperationException($"The type of the value {property.DeclaringType.FullName}.{property.Name} must implement IEnumerable interface");
             }
             else
             {
-                targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+                targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             }
-
-            BXmlElementAttribute elementAttribute1 = targetType.GetCustomAttribute<BXmlElementAttribute>();
-            BXmlSelectAttribute selectAttribute = targetType.GetCustomAttribute<BXmlSelectAttribute>();
-
-            if ((!propertyAttribute.ChildElement || elementAttribute1 == null) && string.IsNullOrEmpty(propertyAttribute.Name))
-                throw new InvalidOperationException($"The value of the property {type.FullName}.{propertyName} must have the name specified in the {nameof(BXmlPropertyAttribute)}");
-
-            if ((propertyAttribute.ChildElement || propertyAttribute.Collection) &&
-                (elementAttribute1 == null && selectAttribute == null))
-            {
-                throw new InvalidOperationException($"The type of the property {type.FullName}.{propertyName} must have either {nameof(BXmlElementAttribute)} or {nameof(BXmlSelectAttribute)}");
-            }
-
-            if (propertyAttribute.ChildElement)
-            {
-                string elementToSearch = null;
-
-                if (elementAttribute1 == null && string.IsNullOrEmpty(propertyAttribute.Name))
-                    throw new InvalidOperationException($"The value of the property {type.FullName}.{propertyName} must have the name specified in the {nameof(BXmlPropertyAttribute)}");
-
-                elementToSearch = propertyAttribute.Name ?? elementAttribute1?.Name;
-
-                if (!propertyAttribute.FlattenChild)
-                {
-                    var childElement = FindChildElement(element, elementToSearch);
-
-                    if (childElement != null)
-                    {
-                        object propertyValue;
-                        if (elementAttribute1 != null)
-                            propertyValue = Deserialize(childElement, targetType);
-                        else
-                            propertyValue = Deserialize(childElement, selectAttribute.Options);
-
-                        setProperty(propertyValue);
-                        found = true;
-                    }
-                }
-                else
-                {
-                    string prefix = $"{elementToSearch}-";
-                    bool any = false;
-                    for (int i = 0; !any && i < element.Attributes.Count; i++)
-                    {
-                        if (element.Attributes[i].Name.StartsWith(prefix))
-                            any = true;
-                    }
-
-                    if (any)
-                    {
-                        object propertyValue = Deserialize(element, targetType, elementToSearch);
-                        setProperty(propertyValue);
-                        found = true;
-                    }
-                }
-            }
-            else if (propertyAttribute.Collection)
-            {
-                object collection = null;
-                if (setProperty != null)
-                {
-                    if (propertyType.IsArray)
-                        collection = Activator.CreateInstance(typeof(List<>).MakeGenericType(targetType));
-                    else
-                        collection = Activator.CreateInstance(propertyType);
-                }
-                else
-                {
-                    if (getProperty != null)
-                        collection = getProperty();
-                    if (collection == null)
-                        throw new InvalidOperationException($"The value of the property {type.FullName}.{propertyName} has no set accessor and is not initialized by default");
-                }
-
-                MethodInfo method = collection.GetType().GetMethod("Add", new Type[] { targetType });
-                if (method == null)
-                    throw new InvalidOperationException($"The type of the property {type.FullName}.{propertyName} has no Add({targetType.FullName}) method");
-
-                var collectionElement = FindChildElement(element, propertyAttribute.Name);
-                if (collectionElement != null)
-                {
-                    object[] parameters = new object[] { null };
-                    foreach (XmlNode node in collectionElement.ChildNodes)
-                    {
-                        if (node is XmlElement childElement)
-                        {
-                            if (elementAttribute1 != null)
-                                parameters[0] = Deserialize(childElement, targetType);
-                            else
-                                parameters[0] = Deserialize(childElement, selectAttribute.Options);
-
-                            method.Invoke(collection, parameters);
-                        }
-                    }
-
-                    if (setProperty != null)
-                    {
-                        if (propertyType.IsArray)
-                            collection = collection.GetType().GetMethod("ToArray", new Type[] { }).Invoke(collection, Array.Empty<object>());
-                        setProperty(collection);
-                    }
-
-                    found = true;
-                }
-            }
-            else
-            {
-                object propertyValue = ReadAttribute(type, element, propertyName, propertyType, propertyAttribute, attributePrefix);
-                if (propertyValue != null)
-                {
-                    setProperty(propertyValue);
-                    found = true;
-                }
-            }
-
-            if (!found && !propertyAttribute.Optional)
-                throw new InvalidOperationException($"The value of the property {type.FullName}.{propertyName} is not found but the property is not optional");
+            return targetType;
         }
 
         private string ElementPath(XmlElement element)
@@ -340,6 +422,110 @@ namespace BallisticCalculator.Serialization
             return null;
         }
 
+        class ReadAttributeAction
+        {
+            internal Func<Type, bool> Probe { get; }
+
+            internal Func<Type, string, object> Value { get; }
+
+            internal ReadAttributeAction(Func<Type, bool> probe, Func<Type, string, object> value)
+            {
+                Probe = probe;
+                Value = value;
+            }
+        }
+
+        private static readonly ReadAttributeAction[] gReadAttributeActions = new ReadAttributeAction[]
+        {
+            new ReadAttributeAction(
+                (type) => SerializerTools.IsTypeMeasurement(type),
+                (propertyType, propertyText) => propertyType.GetConstructor(new Type[] { typeof(string) })?.Invoke(new object[] { propertyText })
+            ),
+
+            new ReadAttributeAction(
+                (type) => type.IsEnum,
+                (propertyType, propertyText) => Enum.Parse(propertyType, propertyText)
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(double),
+                (propertyType, propertyText) =>
+                {
+                    if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
+                        return x;
+                    return null;
+                }
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(float),
+                (propertyType, propertyText) =>
+                {
+                    if (float.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out float x))
+                        return x;
+                    return null;
+                }
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(int),
+                (propertyType, propertyText) =>
+                {
+                    if (int.TryParse(propertyText, NumberStyles.Any, CultureInfo.InvariantCulture, out int x))
+                        return x;
+                    return null;
+                }
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(bool),
+                (propertyType, propertyText) => propertyText == "true"
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(DateTime),
+                (propertyType, propertyText) =>
+                {
+                 if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out DateTime d))
+                        return d;
+                    else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
+                        return d;
+                    else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
+                        return d;
+                 return null;
+                }
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(TimeSpan),
+                (propertyType, propertyText) =>
+                {
+                    if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
+                        return TimeSpan.FromMilliseconds(x);
+                    else if (TimeSpan.TryParse(propertyText, out TimeSpan ts))
+                        return ts;
+                    return null;
+                }
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(string),
+                (propertyType, propertyText) => propertyText
+            ),
+
+            new ReadAttributeAction(
+                (type) => type == typeof(BallisticCoefficient),
+                (propertyType, propertyText) =>
+                {
+                    if (BallisticCoefficient.TryParse(propertyText, CultureInfo.InvariantCulture, out BallisticCoefficient ballisticCoefficient))
+                        return ballisticCoefficient;
+                    return null;
+                }
+            ),
+        };
+
+
+
         /// <summary>
         /// Reads a simple value from the attribute
         /// </summary>
@@ -352,91 +538,135 @@ namespace BallisticCalculator.Serialization
         /// <returns></returns>
         private object ReadAttribute(Type type, XmlElement element, string propertyName, Type propertyType, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {
-            object propertyValue = null;
-
-            string name;
-            if (string.IsNullOrEmpty(attributePrefix))
-                name = propertyAttribute.Name;
-            else
-                name = $"{attributePrefix}-{propertyAttribute.Name}";
-
+            string name = GetAttributeName(propertyAttribute, attributePrefix);
             string propertyText = element.Attributes[name]?.Value;
 
-            if (propertyText != null)
+            if (propertyText == null)
+                return null;
+
+            propertyType = SerializerTools.RemoveNullabilityFromType(propertyType);
+
+            for (int i = 0; i < gReadAttributeActions.Length; i++)
             {
-                var propertyType1 = Nullable.GetUnderlyingType(propertyType);
-                if (propertyType1 != null && propertyType1 != propertyType)
-                    propertyType = propertyType1;
-                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Measurement<>))
+                if (gReadAttributeActions[i].Probe(propertyType))
+                    return gReadAttributeActions[i].Value(propertyType, propertyText);
+            }
+            throw new InvalidOperationException($"The type {propertyType.FullName} of the property {type.FullName}.{propertyName} is not supported");
+        }
+
+        private string GetAttributeName(BXmlPropertyAttribute propertyAttribute, string attributePrefix)
+        {
+            if (string.IsNullOrEmpty(attributePrefix))
+                return propertyAttribute.Name;
+            else
+                return $"{attributePrefix}-{propertyAttribute.Name}";
+        }
+
+        class LegacyReaderAction
+        {
+            public string Attribute { get; }
+            public string AdditionalAttribute { get; }
+            
+            public bool Optional { get; }
+            public Func<string, string, object> TryParse { get; }
+            private readonly Func<AmmunitionLibraryEntry, object> mTargetLeftSide;
+            private readonly PropertyInfo mTargetProperty;
+
+            public LegacyReaderAction(string attribute, bool optional, Func<string, string, object> tryParse, Expression<Func<AmmunitionLibraryEntry, object>> target, string additionalAttribute = null)
+            {
+                Attribute = attribute;
+                AdditionalAttribute = additionalAttribute;
+                Optional = optional;
+                TryParse = tryParse;
+                if (target != null)
                 {
-                    var ci = propertyType.GetConstructor(new Type[] { typeof(string) });
-                    if (ci != null)
-                    {
-                        try
-                        {
-                            propertyValue = ci.Invoke(new object[] { propertyText });
-                        }
-                        catch (Exception)
-                        {
-                            propertyValue = null;
-                        }
-                    }
-                }
-                else if (propertyType.IsEnum)
-                {
-                    propertyValue = Enum.Parse(propertyType, propertyText);
-                }
-                else if (propertyType == typeof(double))
-                {
-                    if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
-                        propertyValue = x;
-                }
-                else if (propertyType == typeof(float))
-                {
-                    if (float.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out float x))
-                        propertyValue = x;
-                }
-                else if (propertyType == typeof(int))
-                {
-                    if (int.TryParse(propertyText, NumberStyles.Any, CultureInfo.InvariantCulture, out int x))
-                        propertyValue = x;
-                }
-                else if (propertyType == typeof(bool))
-                {
-                    propertyValue = propertyText == "true";
-                }
-                else if (propertyType == typeof(DateTime))
-                {
-                    if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out DateTime d))
-                        propertyValue = d;
-                    else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
-                        propertyValue = d;
-                    else if (DateTime.TryParseExact(propertyText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d))
-                        propertyValue = d;
-                }
-                else if (propertyType == typeof(TimeSpan))
-                {
-                    if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
-                        propertyValue = TimeSpan.FromMilliseconds(x);
-                    else if (TimeSpan.TryParse(propertyText, out TimeSpan ts))
-                        propertyValue = ts;
-                }
-                else if (propertyType == typeof(string))
-                {
-                    propertyValue = propertyText;
-                }
-                else if (propertyType == typeof(BallisticCoefficient))
-                {
-                    if (BallisticCoefficient.TryParse(propertyText, CultureInfo.InvariantCulture, out BallisticCoefficient ballisticCoefficient))
-                        propertyValue = ballisticCoefficient;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"The type {propertyType.FullName} of the property {type.FullName}.{propertyName} is not supported");
+                    if (!DiscoverExpression(target.Parameters, target.Body, out var targetExpression, out var property))
+                        throw new ArgumentException($"The expression {target} is not supported", nameof(target));
+                    mTargetLeftSide = targetExpression;
+                    mTargetProperty = property;
                 }
             }
-            return propertyValue;
+
+            private static bool DiscoverExpression(ReadOnlyCollection<ParameterExpression> parameters, Expression body, out Func<AmmunitionLibraryEntry, object> target, out PropertyInfo property)
+            {
+                if (body is MemberExpression memberExpression)
+                {
+                    var leftSideExpression = Expression.Lambda(memberExpression.Expression, parameters);
+                    target = (Func<AmmunitionLibraryEntry, object>)leftSideExpression.Compile();
+                    property = memberExpression.Member as PropertyInfo;
+                    return true;
+                }
+                if (body is UnaryExpression unaryExpression)
+                    return DiscoverExpression(parameters, unaryExpression.Operand, out target, out property);
+                else
+                {
+                    target = null;
+                    property = null;
+                    return false;
+                }
+
+            }
+
+            public void Proccess(XmlElement element, AmmunitionLibraryEntry target)
+            {
+                var attribute = element.Attributes[Attribute];
+                if (attribute == null)
+                {
+                     if (!Optional)
+                        throw new InvalidOperationException($"The element {element.Name} does not have the attribute {Attribute}");
+                    return;
+                }
+
+                if (TryParse != null && mTargetProperty != null)
+                {
+                    string text = attribute.Value, text1 = null;
+                    if (AdditionalAttribute != null)
+                    {
+                        var additionalAttribute = element.Attributes[AdditionalAttribute];
+                        if (additionalAttribute != null)
+                            text1 = additionalAttribute.Value;
+                    }
+
+                    object value = TryParse(text, text1);
+                    if (value == null)
+                        throw new InvalidOperationException($"The value {text} of the attribute {Attribute} could not be parsed");
+
+                    object targetObject = mTargetLeftSide.Invoke(target);
+                    mTargetProperty.SetValue(targetObject, value);
+                }
+            }
         }
+
+        private static Measurement<T>? TryParseMeasurement<T>(string text) 
+            where T : Enum
+        {
+            if (Measurement<T>.TryParse(CultureInfo.InvariantCulture, text, out Measurement<T> weight))
+                return weight;
+            return null;
+
+        }
+
+        private static readonly LegacyReaderAction[] gLegacyReaderAction = new LegacyReaderAction[]
+        {
+            new LegacyReaderAction("table", false, null, null),
+            new LegacyReaderAction("bc", false, (bc, table) =>
+            {
+                if (!Enum.TryParse<DragTableId>(table, out var tv))
+                    return null;
+                if (!double.TryParse(bc, NumberStyles.Float, CultureInfo.InvariantCulture, out var bv))
+                    return null;
+                return new BallisticCoefficient(bv, tv);
+            }, entry => entry.Ammunition.BallisticCoefficient, "table"),
+            new LegacyReaderAction("bullet-weight", false, (text, text1) => TryParseMeasurement<WeightUnit>(text), (entry) => entry.Ammunition.Weight),
+            new LegacyReaderAction("muzzle-velocity", false, (text, text1) => TryParseMeasurement<VelocityUnit>(text), (entry) => entry.Ammunition.MuzzleVelocity),
+            new LegacyReaderAction("bullet-length", true, (text, text1) => TryParseMeasurement<DistanceUnit>(text), (entry) => entry.Ammunition.BulletLength),
+            new LegacyReaderAction("bullet-diameter", true, (text, text1) => TryParseMeasurement<DistanceUnit>(text), (entry) => entry.Ammunition.BulletDiameter),
+            new LegacyReaderAction("name", false, (text, text1) => text, (entry) => entry.Name),
+            new LegacyReaderAction("barrel-length", true, (text, text1) => TryParseMeasurement<DistanceUnit>(text), (entry) => entry.BarrelLength),
+            new LegacyReaderAction("source", true, (text, text1) => text, (entry) => entry.Source),
+            new LegacyReaderAction("caliber", true, (text, text1) => text, (entry) => entry.Caliber),
+            new LegacyReaderAction("bullet-type", true, (text, text1) => text, (entry) => entry.AmmunitionType),
+        };
 
         /// <summary>
         /// Reads legacy ammunition info from the XML node
@@ -453,68 +683,9 @@ namespace BallisticCalculator.Serialization
                 Ammunition = new Ammunition()
             };
 
-            if (legacyEntry.Attributes["table"] == null)
-                throw new ArgumentException("The element must have table attribute", nameof(legacyEntry));
-
-            if (!Enum.TryParse<DragTableId>(legacyEntry.Attributes["table"].Value, out DragTableId table))
-                throw new ArgumentException("Unknown table identifier", nameof(legacyEntry));
-
-            if (legacyEntry.Attributes["bc"] == null)
-                throw new ArgumentException("The element must have bc attribute", nameof(legacyEntry));
-
-            if (!double.TryParse(legacyEntry.Attributes["bc"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double bc))
-                throw new ArgumentException("Ballistic coefficient is not a number", nameof(legacyEntry));
-
-            entry.Ammunition.BallisticCoefficient = new BallisticCoefficient(bc, table);
-
-            if (legacyEntry.Attributes["bullet-weight"] == null)
-                throw new ArgumentException("The element must have bullet-weight attribute", nameof(legacyEntry));
-
-            if (!Measurement<WeightUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["bullet-weight"].Value, out Measurement<WeightUnit> weight))
-                throw new ArgumentException("Can't parse bullet weight", nameof(legacyEntry));
-
-            entry.Ammunition.Weight = weight;
-
-            if (legacyEntry.Attributes["muzzle-velocity"] == null)
-                throw new ArgumentException("The element must have muzzle-velocity attribute", nameof(legacyEntry));
-
-            if (!Measurement<VelocityUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["muzzle-velocity"].Value, out Measurement<VelocityUnit> muzzleVelocity))
-                throw new ArgumentException("Can't parse muzzle velocity", nameof(legacyEntry));
-
-            entry.Ammunition.MuzzleVelocity = muzzleVelocity;
-
-            if (legacyEntry.Attributes["bullet-length"] != null)
-            {
-                if (Measurement<DistanceUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["bullet-length"].Value, out Measurement<DistanceUnit> bulletLength))
-                    entry.Ammunition.BulletLength = bulletLength;
-            }
-
-            if (legacyEntry.Attributes["bullet-diameter"] != null)
-            {
-                if (Measurement<DistanceUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["bullet-diameter"].Value, out Measurement<DistanceUnit> bulletDiameter))
-                    entry.Ammunition.BulletDiameter = bulletDiameter;
-            }
-
-            if (legacyEntry.Attributes["name"] == null)
-                throw new ArgumentException("The element must have name attribute", nameof(legacyEntry));
-
-            entry.Name = legacyEntry.Attributes["name"].Value;
-
-            if (legacyEntry.Attributes["barrel-length"] != null)
-            {
-                if (Measurement<DistanceUnit>.TryParse(CultureInfo.InvariantCulture, legacyEntry.Attributes["barrel-length"].Value, out Measurement<DistanceUnit> bulletLength))
-                    entry.BarrelLength = bulletLength;
-            }
-
-            if (legacyEntry.Attributes["source"] != null)
-                entry.Source = legacyEntry.Attributes["source"].Value;
-
-            if (legacyEntry.Attributes["caliber"] != null)
-                entry.Caliber = legacyEntry.Attributes["caliber"].Value;
-
-            if (legacyEntry.Attributes["bullet-type"] != null)
-                entry.AmmunitionType = legacyEntry.Attributes["bullet-type"].Value;
-
+            for (int i = 0; i < gLegacyReaderAction.Length; i++)
+                gLegacyReaderAction[i].Proccess(legacyEntry, entry);
+            
             return entry;
         }
 

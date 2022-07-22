@@ -7,9 +7,11 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace BallisticCalculator.Serialization
 {
+
     /// <summary>
     /// Serializer
     /// </summary>
@@ -85,109 +87,138 @@ namespace BallisticCalculator.Serialization
                     throw new InvalidOperationException($"The not optional property {value.GetType().FullName}.{property.Name} is null");
                 }
 
-                if ((!propertyAttribute.ChildElement || propertyAttribute.FlattenChild) && string.IsNullOrEmpty(propertyAttribute.Name))
-                    throw new InvalidOperationException($"The property {value.GetType().FullName}.{property.Name} must have the Name property specified in {nameof(BXmlPropertyAttribute)} in order to save flatten children, collections or attributes");
-
-                if ((propertyAttribute.ChildElement || propertyAttribute.Collection) && !string.IsNullOrEmpty(attributePrefix))
-                    throw new InvalidOperationException($"The type {value.GetType().FullName}.{property.Name} is saved as a flatten value but contains child elements and/or collections");
-
-                if (propertyAttribute.ChildElement)
-                {
-                    string forceName1 = null;
-
-                    if (!string.IsNullOrEmpty(propertyAttribute.Name))
-                        forceName1 = propertyAttribute.Name;
-
-                    if (propertyAttribute.FlattenChild)
-                        SerializeTo(propertyValue, element, propertyAttribute.Name);
-                    else
-                        element.AppendChild(Serialize(propertyValue, forceName1));
-                }
-                else if (propertyAttribute.Collection)
-                {
-                    var collectionElement = Document.CreateElement(propertyAttribute.Name);
-
-                    foreach (object o in (propertyValue as IEnumerable))
-                        collectionElement.AppendChild(Serialize(o));
-
-                    element.AppendChild(collectionElement);
-                }
-                else
-                {
-                    AddAttribute(element, value, propertyValue, property, propertyAttribute, attributePrefix);
-                }
+                SerializeProperty(propertyValue, element, attributePrefix, property, propertyAttribute, propertyValue);
             }
         }
+
+        private void SerializeProperty(object value, XmlElement element, string attributePrefix, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, object propertyValue)
+        {
+            if ((!propertyAttribute.ChildElement || propertyAttribute.FlattenChild) && string.IsNullOrEmpty(propertyAttribute.Name))
+                throw new InvalidOperationException($"The property {value.GetType().FullName}.{property.Name} must have the Name property specified in {nameof(BXmlPropertyAttribute)} in order to save flatten children, collections or attributes");
+
+            if ((propertyAttribute.ChildElement || propertyAttribute.Collection) && !string.IsNullOrEmpty(attributePrefix))
+                throw new InvalidOperationException($"The type {value.GetType().FullName}.{property.Name} is saved as a flatten value but contains child elements and/or collections");
+
+            if (propertyAttribute.ChildElement)
+                SerializeProperty_Child(element, propertyAttribute, propertyValue);
+            else if (propertyAttribute.Collection)
+                SerializeProperty_Collection(element, propertyAttribute, propertyValue);
+            else
+                AddAttribute(element, value, propertyValue, property, propertyAttribute, attributePrefix);
+        }
+
+        private void SerializeProperty_Child(XmlElement element, BXmlPropertyAttribute propertyAttribute, object propertyValue)
+        {
+            string forceName1 = null;
+
+            if (!string.IsNullOrEmpty(propertyAttribute.Name))
+                forceName1 = propertyAttribute.Name;
+
+            if (propertyAttribute.FlattenChild)
+                SerializeTo(propertyValue, element, propertyAttribute.Name);
+            else
+                element.AppendChild(Serialize(propertyValue, forceName1));
+        }
+
+        private void SerializeProperty_Collection(XmlElement element, BXmlPropertyAttribute propertyAttribute, object propertyValue)
+        {
+            var collectionElement = Document.CreateElement(propertyAttribute.Name);
+
+            foreach (object o in (propertyValue as IEnumerable))
+                collectionElement.AppendChild(Serialize(o));
+
+            element.AppendChild(collectionElement);
+        }
+
+        class AddAttributeAction
+        {
+            internal Func<Type, bool> Probe { get; }
+
+            internal Func<Type, object, string> Value { get; }
+
+            internal AddAttributeAction(Func<Type, bool> probe, Func<Type, object, string> value)
+            {
+                Probe = probe;
+                Value = value;
+            }
+        }
+
+        private static readonly AddAttributeAction[] gAddAttributeActions = new AddAttributeAction[]
+        {
+            new AddAttributeAction(
+                (type) => SerializerTools.IsTypeMeasurement(type),
+                (type, value) => type.GetProperty("Text").GetValue(value).ToString()
+            ),
+
+            new AddAttributeAction(
+                (type) => type.IsEnum,
+                (type, value) => value.ToString()
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(double),
+                (type, value) => ((double)value).ToString(CultureInfo.InvariantCulture)
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(float),
+                (type, value) => ((float)value).ToString(CultureInfo.InvariantCulture)
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(int),
+                (type, value) => ((int)value).ToString(CultureInfo.InvariantCulture)
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(bool),
+                (type, value) => ((bool)value) ? "true" : "false"
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(DateTime),
+                (type, value) => ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss")
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(TimeSpan),
+                (type, value) => ((TimeSpan)value).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
+            ),
+
+            new AddAttributeAction(
+                (type) => type == typeof(string),
+                (type, value) => (string)value
+            ),
+            
+            new AddAttributeAction(
+                (type) => type == typeof(BallisticCoefficient),
+                (type, value) => ((BallisticCoefficient)value).ToString(CultureInfo.InvariantCulture)
+            ),          
+        };
 
         /// <summary>
         /// Serializes a primitive value and adds it as an attribute
         /// </summary>
         /// <param name="element"></param>
         /// <param name="targetObject"></param>
-        /// <param name="propertyValue"></param>
+        /// <param name="value"></param>
         /// <param name="property"></param>
         /// <param name="propertyAttribute"></param>
         /// <param name="attributePrefix"></param>
-        private void AddAttribute(XmlElement element, object targetObject, object propertyValue, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
+        private void AddAttribute(XmlElement element, object targetObject, object value, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {
-            var propertyType = property.PropertyType;
-            var propertyType1 = Nullable.GetUnderlyingType(propertyType);
-            if (propertyType1 != null && propertyType1 != propertyType)
-                propertyType = propertyType1;
+            var type = SerializerTools.RemoveNullabilityFromType(property.PropertyType);
 
-            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Measurement<>))
-            {
-                var textProperty = propertyType.GetProperty("Text");
-                AddAttribute(element, propertyAttribute.Name, (string)textProperty.GetValue(propertyValue), attributePrefix);
-            }
-            else if (propertyType.IsEnum)
-            {
-                var textValue = propertyValue.ToString();
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(double))
-            {
-                var textValue = ((double)propertyValue).ToString(CultureInfo.InvariantCulture);
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(float))
-            {
-                var textValue = ((float)propertyValue).ToString(CultureInfo.InvariantCulture);
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(int))
-            {
-                var textValue = ((int)propertyValue).ToString(CultureInfo.InvariantCulture);
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(bool))
-            {
-                var textValue = (bool)propertyValue ? "true" : "false";
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(DateTime))
-            {
-                var textValue = ((DateTime)propertyValue).ToString("yyyy-MM-dd HH:mm:ss");
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(TimeSpan))
-            {
-                var textValue = ((TimeSpan)propertyValue).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else if (propertyType == typeof(string))
-            {
-                AddAttribute(element, propertyAttribute.Name, (string)propertyValue, attributePrefix);
-            }
-            else if (propertyType == typeof(BallisticCoefficient))
-            {
-                var textValue = ((BallisticCoefficient)propertyValue).ToString(CultureInfo.InvariantCulture);
-                AddAttribute(element, propertyAttribute.Name, textValue, attributePrefix);
-            }
-            else
-            {
-                throw new InvalidOperationException($"The type {propertyType.FullName} of the property {targetObject.GetType().FullName}.{property.Name} is not supported to save as an attribute value");
-            }
+            for (int i = 0; i < gAddAttributeActions.Length; i++)
+                if (gAddAttributeActions[i].Probe(type))
+                {
+                    AddAttribute(element, propertyAttribute.Name,
+                        gAddAttributeActions[i].Value(type, value),
+                        attributePrefix);
+                    return;
+                }
+
+            throw new InvalidOperationException($"The type {type.FullName} of the property {targetObject.GetType().FullName}.{property.Name} is not supported to save as an attribute value");
         }
 
         /// <summary>
@@ -197,12 +228,12 @@ namespace BallisticCalculator.Serialization
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <param name="attributePrefix"></param>
-        private void AddAttribute(XmlElement element, string name, string value, string attributePrefix)
+        internal static void AddAttribute(XmlElement element, string name, string value, string attributePrefix)
         {
             if (!string.IsNullOrEmpty(attributePrefix))
                 name = $"{attributePrefix}-{name}";
 
-            var attribute = Document.CreateAttribute(name);
+            var attribute = element.OwnerDocument.CreateAttribute(name);
             attribute.Value = value;
             element.Attributes.Append(attribute);
         }

@@ -3,7 +3,9 @@ obj/
 .nuget/
 .vs/
 .vscode/
+.sonarqube/
 TestResults/
 *.csproj.user
 *.nupkg
 nuget/*.nuspec
+sonar.bat

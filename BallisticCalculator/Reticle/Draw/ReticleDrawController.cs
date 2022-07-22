@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using BallisticCalculator.Reticle.Data;
@@ -12,9 +13,9 @@ namespace BallisticCalculator.Reticle.Draw
     /// </summary>
     public class ReticleDrawController
     {
-        private readonly CoordinateTranslator translator;
-        private readonly ReticleDefinition reticle;
-        private readonly IReticleCanvas canvas;
+        private readonly CoordinateTranslator mTranslator;
+        private readonly ReticleDefinition mReticle;
+        private readonly IReticleCanvas mCanvas;
 
         /// <summary>
         /// Constructor
@@ -23,9 +24,9 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="canvas">The canvas</param>
         public ReticleDrawController(ReticleDefinition reticle, IReticleCanvas canvas)
         {
-            this.reticle = reticle;
-            this.canvas = canvas;
-            translator = new CoordinateTranslator(reticle.Size.X, reticle.Size.Y, reticle.Zero.X, reticle.Zero.Y, canvas.Width, canvas.Height);
+            mReticle = reticle;
+            mCanvas = canvas;
+            mTranslator = new CoordinateTranslator(reticle.Size.X, reticle.Size.Y, reticle.Zero.X, reticle.Zero.Y, canvas.Width, canvas.Height);
         }
 
         /// <summary>
@@ -39,65 +40,68 @@ namespace BallisticCalculator.Reticle.Draw
             {
                 case ReticleLine line:
                     {
-                        translator.Transform(line.Start.X, line.Start.Y, out float x0, out float y0);
-                        translator.Transform(line.End.X, line.End.Y, out float x1, out float y1);
-                        canvas.Line(x0, y0, x1, y1, translator.TransformL(line.LineWidth), line.Color ?? "black");
+                        mTranslator.Transform(line.Start.X, line.Start.Y, out float x0, out float y0);
+                        mTranslator.Transform(line.End.X, line.End.Y, out float x1, out float y1);
+                        mCanvas.Line(x0, y0, x1, y1, mTranslator.TransformL(line.LineWidth), line.Color ?? "black");
                     }
                     break;
                 case ReticleCircle circle:
                     {
-                        translator.Transform(circle.Center.X, circle.Center.Y, out float x0, out float y0);
-                        canvas.Circle(x0, y0, translator.TransformL(circle.Radius), translator.TransformL(circle.LineWidth), circle.Fill ?? false, circle.Color ?? "black");
+                        mTranslator.Transform(circle.Center.X, circle.Center.Y, out float x0, out float y0);
+                        mCanvas.Circle(x0, y0, mTranslator.TransformL(circle.Radius), mTranslator.TransformL(circle.LineWidth), circle.Fill ?? false, circle.Color ?? "black");
                     }
                     break;
                 case ReticleRectangle rectangle:
                     {
-                        translator.Transform(rectangle.TopLeft.X, rectangle.TopLeft.Y, out float x0, out float y0);
-                        float x1 = translator.TransformL(rectangle.Size.X);
-                        float y1 = translator.TransformL(rectangle.Size.Y);
-                        canvas.Rectangle(x0, y0, x0 + x1, y0 + y1, translator.TransformL(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? "black");
+                        mTranslator.Transform(rectangle.TopLeft.X, rectangle.TopLeft.Y, out float x0, out float y0);
+                        float x1 = mTranslator.TransformL(rectangle.Size.X);
+                        float y1 = mTranslator.TransformL(rectangle.Size.Y);
+                        mCanvas.Rectangle(x0, y0, x0 + x1, y0 + y1, mTranslator.TransformL(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? "black");
                     }
                     break;
                 case ReticleText text:
                     {
-                        translator.Transform(text.Position.X, text.Position.Y, out float x0, out float y0);
-                        var h = translator.TransformL(text.TextHeight);
-                        canvas.Text(x0, y0, h, text.Text, text.Color);
+                        mTranslator.Transform(text.Position.X, text.Position.Y, out float x0, out float y0);
+                        var h = mTranslator.TransformL(text.TextHeight);
+                        mCanvas.Text(x0, y0, h, text.Text, text.Color);
                     }
                     break;
                 case ReticlePath path:
-                    {
-                        using var path1 = canvas.CreatePath();
-                        foreach (var pathElement in path.Elements)
-                        {
-                            switch (pathElement)
-                            {
-                                case ReticlePathElementMoveTo moveTo:
-                                    {
-                                        translator.Transform(moveTo.Position.X, moveTo.Position.Y, out float x, out float y);
-                                        path1.MoveTo(x, y);
-                                    }
-                                    break;
-                                case ReticlePathElementLineTo lineTo:
-                                    {
-                                        translator.Transform(lineTo.Position.X, lineTo.Position.Y, out float x, out float y);
-                                        path1.LineTo(x, y);
-                                    }
-                                    break;
-                                case ReticlePathElementArc arc:
-                                    {
-                                        translator.Transform(arc.Position.X, arc.Position.Y, out float x, out float y);
-                                        path1.Arc(translator.TransformL(arc.Radius), x, y, arc.MajorArc, arc.ClockwiseDirection);
-                                    }
-                                    break;
-                            }
-                        }
-                        if (path.Fill ?? false)
-                            path1.Close();
-                        canvas.Path(path1, translator.TransformL(path.LineWidth), path.Fill ?? false, path.Color ?? "black");
-                    }
+                    DrawPath(path);
                     break;
             }
+        }
+
+        private void DrawPath(ReticlePath path)
+        {
+            using var canvasPath = mCanvas.CreatePath();
+            foreach (var pathElement in path.Elements)
+            {
+                switch (pathElement)
+                {
+                    case ReticlePathElementMoveTo moveTo:
+                        {
+                            mTranslator.Transform(moveTo.Position.X, moveTo.Position.Y, out float x, out float y);
+                            canvasPath.MoveTo(x, y);
+                        }
+                        break;
+                    case ReticlePathElementLineTo lineTo:
+                        {
+                            mTranslator.Transform(lineTo.Position.X, lineTo.Position.Y, out float x, out float y);
+                            canvasPath.LineTo(x, y);
+                        }
+                        break;
+                    case ReticlePathElementArc arc:
+                        {
+                            mTranslator.Transform(arc.Position.X, arc.Position.Y, out float x, out float y);
+                            canvasPath.Arc(mTranslator.TransformL(arc.Radius), x, y, arc.MajorArc, arc.ClockwiseDirection);
+                        }
+                        break;
+                }
+            }
+            if (path.Fill ?? false)
+                canvasPath.Close();
+            mCanvas.Path(canvasPath, mTranslator.TransformL(path.LineWidth), path.Fill ?? false, path.Color ?? "black");
         }
 
         /// <summary>
@@ -105,7 +109,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// </summary>
         public void DrawReticle()
         {
-            foreach (var element in reticle.Elements)
+            foreach (var element in mReticle.Elements)
                 DrawElement(element);
         }
 
@@ -121,31 +125,32 @@ namespace BallisticCalculator.Reticle.Draw
                 }
                 if (closeBdc && point.Distance >= zero)
                     break;
-                if (previousPoint != null)
-                {
-                    foreach (var bdcPoint in reticle.BulletDropCompensator)
-                    {
-                        if ((previousPoint.DropAdjustment >= bdcPoint.Position.Y &&
-                             point.DropAdjustment <= bdcPoint.Position.Y) ||
-                            (previousPoint.DropAdjustment <= bdcPoint.Position.Y &&
-                             point.DropAdjustment >= bdcPoint.Position.Y))
-                        {
-                            var x = bdcPoint.Position.X + bdcPoint.TextOffset;
-                            var y = bdcPoint.Position.Y - bdcPoint.TextHeight / 2;
+                if (previousPoint == null)
+                    continue;
 
-                            yield return new ReticleText()
-                            {
-                                Position = new ReticlePosition() { X = x, Y = y},
-                                TextHeight = bdcPoint.TextHeight,
-                                Text = Math.Round(point.Distance.In(distanceUnits)).ToString(),
-                                Color = color,
-                            };
-                        }
-                    }
+                foreach (var bdcPoint in reticle.BulletDropCompensator.Where(bdcPoint => BdcPointReached(previousPoint, point, bdcPoint)))
+                {
+                    var x = bdcPoint.Position.X + bdcPoint.TextOffset;
+                    var y = bdcPoint.Position.Y - bdcPoint.TextHeight / 2;
+
+                    yield return new ReticleText()
+                    {
+                        Position = new ReticlePosition() { X = x, Y = y },
+                        TextHeight = bdcPoint.TextHeight,
+                        Text = Math.Round(point.Distance.In(distanceUnits)).ToString(),
+                        Color = color,
+                    };
+
                 }
                 previousPoint = point;
             }
         }
+
+        private static bool BdcPointReached(TrajectoryPoint previousPoint, TrajectoryPoint point, ReticleBulletDropCompensatorPoint bdcPoint)
+            => (previousPoint.DropAdjustment >= bdcPoint.Position.Y && point.DropAdjustment <= bdcPoint.Position.Y) ||
+               (previousPoint.DropAdjustment <= bdcPoint.Position.Y && point.DropAdjustment >= bdcPoint.Position.Y);
+
+
 
         /// <summary>
         /// <para>BDC on the specified canvas</para>
@@ -159,7 +164,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="color">The text color for BDC labels</param>
         public void DrawBulletDropCompensator(IEnumerable<TrajectoryPoint> trajectory, Measurement<DistanceUnit> zero, bool closeBdc, DistanceUnit units, string color)
         {
-            foreach (var bdc in CalculateBdc(reticle, trajectory, zero, closeBdc, units, color))
+            foreach (var bdc in CalculateBdc(mReticle, trajectory, zero, closeBdc, units, color))
                 DrawElement(bdc);
         }
 
