@@ -12,7 +12,6 @@ dotnet_diagnostic.RCS1123.severity = none
 # IDE0090: Use 'new(...)'
 dotnet_diagnostic.IDE0090.severity = none
 
-
 # S1199: Nested code blocks should not be used
 dotnet_diagnostic.S1199.severity = none
 
