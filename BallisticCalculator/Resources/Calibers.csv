@@ -1,0 +1,217 @@
+shotgun;;19.69mm;10ga;
+shotgun;;18.53mm;12ga;
+shotgun;;16.83mm;16ga;
+shotgun;;15.63mm;20ga;
+shotgun;;14.70mm;24ga;
+shotgun;;14.31mm;26ga;
+shotgun;;13.97mm;28ga;
+shotgun;;13.36mm;32ga;
+shotgun;;0.410";.410;
+pistol;4mm;4.2mm;4.25 mm Liliput;4.25 mm Erika
+rifle;4mm;0.172";.17 HM2;.17 Hornady Mach 2
+rifle;4mm;0.172";.17 HMR;.17 Hornady Magnum Rimfire
+pistol;4mm;4.6mm;4.6x30mm;4.6x30mm H&K
+pistol;5mm;5.3mm;5.45x18mm;5.45x18mm Soviet
+pistol;5mm;5.6mm;.22BB;
+rifle;5mm;5.6mm;.22 Short;
+rifle;5mm;5.6mm;.22 Long;
+rifle;5mm;5.6mm;.22 LR;.22 Long Rifle
+pistol;5mm;5.7mm;.22 TCM;
+rifle;5mm;5.7mm;.22 WMR;
+pistol;5mm;5.7mm;5.7x28mm;5.7x28mm FN
+pistol;6mm;6.4mm;.25 ACP;
+pistol;6mm;6.5mm;.25 NAA;
+pistol;7mm;7.1mm;7x20mm;7mm Nambu
+pistol;7mm;7.85mm;7.62x17mm;7.62 mm Chinese
+pistol;7mm;7.8mm;7.62x25mm;7.62mm Tokarev
+pistol;7mm;7.5mm;7.62x38mmR;7.62mm Nagant
+pistol;7mm;7.8mm;7.63x25mm;7.63mm Mauser
+pistol;7mm;0.309";.32 ACP;
+pistol;7mm;0.299";.32 Colt;
+pistol;7mm;7.6mm;7.65mm Frommer;
+pistol;7mm;7.8mm;.30 Luger;7.65mm Parabellum,7.65x21mm Parabellum
+pistol;7mm;7.8mm;7.65mm Mannlicher;7.65x21mm Mannlicher
+pistol;7mm;0.309";.35 Auto;.35 S&W Auto
+pistol;7mm;0.312";.32 NAA;
+pistol;7mm;0.312";.32 S&W;
+pistol;7mm;0.312";.32 S&W Long;
+pistol;7mm;0.312";.32 WCF;.32-20 Winchester,.32-20 Marlin
+pistol;7mm;0.312";.32 H&R Magnum;
+pistol;7mm;0.312";.327 Federal Magnum;
+pistol;7mm;0.312";.32 Long Colt;
+pistol;8mm;8.1mm;8 mm Nambu;
+pistol;8mm;8.4mm;8 mm Lebel Revolver;8 mm French 1892 Ordnance
+pistol;9mm;0.355";9mm Ultra;
+pistol;9mm;0.355";9x19mm;9mm Parabellum,9x19mm Luger,9mm NATO
+pistol;9mm;0.355";9x19mmR;
+pistol;9mm;0.355";9x20mmSR;9mm Browning Long
+pistol;9mm;0.355";9x21mm;9mm IMI
+pistol;9mm;0.355";9mm AE;9mm Action Express
+pistol;9mm;0.355";9x23mm;9mm Largo
+pistol;9mm;0.355";9x25mm Mauser;
+pistol;9mm;0.355";9x17mm;.380 ACP,9mm Kurz
+pistol;9mm;0.355";.38 Casull;
+pistol;9mm;0.355";.38 Short Colt;
+pistol;9mm;0.357";.38 Long Colt;
+pistol;9mm;0.357";.38 Special;
+pistol;9mm;0.357";.357 AMP;.357 AutoMag
+pistol;9mm;0.357";.357 Magnum;9x33mmR
+pistol;9mm;0.355";.357 SIG;
+pistol;9mm;0.358";.38 ACP;.38 Auto,9x23 mmSR
+pistol;9mm;0.356";.38 Super;
+pistol;9mm;0.355";9x21mm Gyurza;
+pistol;9mm;0.360";9x18mm;9x18mm PM,9x18mm Soviet
+pistol;9mm;0.386";.40 S&W;10x22mm
+pistol;10mm;0.401";9x18mm;
+pistol;10mm;0.401";.401 Short Colt;
+pistol;10mm;0.401";.401 Long Colt;
+pistol;10mm;10.2mm;10mm Auto;10x25mm,10mm Norma,10mm F.B.I.
+pistol;10mm;0.400";.40 Super;
+pistol;10mm;0.401";.400 Cor-Bon;
+pistol;10mm;0.410";.41 Action Express;
+pistol;10mm;0.410";.41 Special;
+pistol;10mm;0.410";.41 Magnum;
+pistol;10mm;0.429";44 WCF;
+pistol;10mm;0.429";.44 Russian;
+pistol;10mm;0.429";.44 Special;
+pistol;10mm;0.429";.44 Magnum;
+pistol;10mm;0.429";.440 Cor-Bon;
+pistol;10mm;0.429";.429 DE;
+pistol;10mm;0.429";.44 AMP;
+pistol;11mm;0.434";.44 S&W;
+pistol;11mm;0.440";.44 Bulldog;
+pistol;11mm;0.443";.44 Colt;
+pistol;11mm;0.451";.45 Winchester Magnum;
+pistol;11mm;0.451";.455 SuperMag;
+pistol;11mm;0.452";.45 GAP;
+pistol;11mm;0.452";.45 ACP;11.43x23mm
+pistol;11mm;0.452";.454 Casull;
+pistol;11mm;0.452";.460 S&W Magnum;
+pistol;11mm;0.454";.455 Webley;
+pistol;11mm;0.454";.45 Colt Short;
+pistol;11mm;0.454";.45 LC;.45 Long Colt
+pistol;11mm;0.455";.455 Webley;
+pistol;12mm;0.476";.480 Ruger;
+pistol;12mm;0.5";.50 GI;
+pistol;12mm;0.5";.50 AE;
+pistol;12mm;0.5";.50 WE;.500 Wyoming Express
+pistol;12mm;0.5";.500 S&W Special;
+pistol;12mm;0.5";.500 S&W Magnum;
+rifle;4mm;0.172";17 Hornet;
+rifle;4mm;0.172";17 Remington Fireball;
+rifle;4mm;0.172";17 Remington;
+rifle;5mm;0.204";204 Ruger;
+rifle;5mm;0.224";22 Hornet;
+rifle;5mm;0.224";221 Remington;
+rifle;5mm;0.224";221 Remington Fireball;
+rifle;5mm;0.224";222 Remington;
+rifle;5mm;0.224";223 Remington;
+rifle;5mm;0.224";5.56x45mm;5.56 NATO
+rifle;5mm;0.224";224 Weatherby Magnum;
+rifle;5mm;0.224";22-250 Remington;
+rifle;5mm;0.224";225 Winchester;
+rifle;5mm;0.224";5.6x57 RWS;
+rifle;5mm;5.6mm;5.45x39mm;
+rifle;5mm;5.7mm;5.6x39mm;
+rifle;6mm;0.243";243 Winchester;
+rifle;6mm;0.243";243 Winchester;
+rifle;6mm;0.257";256 Winchester Magnum;
+rifle;6mm;0.257";25 Remington;
+rifle;6mm;0.257";25 Winchester;
+rifle;6mm;0.257";25-06 Remington;
+rifle;6mm;0.257";257 Kimber;
+rifle;6mm;0.257";257 Kimber;
+rifle;6mm;0.257";250 Savage;250-3000
+rifle;6mm;0.257";257 Weatherby Magnum;
+rifle;6mm;0.264";6.5x52mm;6.5mm Mannlicher-Carcano
+rifle;6mm;0.264";6.5x54mm;6.5mm Mannlicher-Schoenauer
+rifle;6mm;0.264";6.5x50mm;6.5mm Japanese
+rifle;6mm;0.264";6.5x55mm;6.5mm Swedish Mauser
+rifle;6mm;0.264";6.5 Creedmore;
+rifle;6mm;0.264";260 Remington;
+rifle;6mm;0.264";6.5mm Remington Magnum;
+rifle;6mm;0.264";6.5mm x 68 Schuler;
+rifle;6mm;0.264";264 Winchester Magnum;
+rifle;6mm;0.277";6.8mm Remington SPC;
+rifle;6mm;0.277";270 Winchester;
+rifle;6mm;0.277";270 WSM;
+rifle;6mm;0.277";270 Weatherby Magnum;
+rifle;7mm;0.284";7x57mm;
+rifle;7mm;0.284";7mm BR Remington;
+rifle;7mm;0.284";7mm-08 Remington;
+rifle;7mm;0.284";284 Winchester;
+rifle;7mm;0.284";7mm WSM;
+rifle;7mm;0.284";7mm Remington Magnum;
+rifle;7mm;0.284";7mm Weatherby Magnum;
+rifle;7mm;0.308";30-30 Winchester;
+rifle;7mm;0.308";300 Savage;
+rifle;7mm;0.308";308 Marlin Express;
+rifle;7mm;0.308";308 Winchester;7.62x51mm NATO
+rifle;7mm;0.308";7.62x54mmR;7.62mm Mosin,7.62x54mm Russian
+rifle;7mm;0.308";30-06 Springfield;
+rifle;7mm;0.308";308 Norma Magnum;
+rifle;7mm;0.308";300 WSM;
+rifle;7mm;0.308";300 H&H Magnum;
+rifle;7mm;0.308";300 Winchester Magnum;
+rifle;7mm;0.308";300 Weatherby Magnum;
+rifle;7mm;0.308";30-378 Weatherby Magnum;
+rifle;7mm;0.308";300 RUM;
+rifle;7mm;0.308";300 Blackout;300 AAC,7.62x35mm
+rifle;7mm;0.312";303 British;
+rifle;7mm;7.85mm;7.62x39mm;
+rifle;7mm;7.94mm;7.65x53mm Mauser;
+rifle;8mm;8.22mm;7.92x57mm Mauser;8mm Mauser,8x57, 8x57IS
+rifle;8mm;8.22mm;7.92x33mm Kurtz;
+rifle;8mm;0.323";325 WSM;
+rifle;8mm;0.323";8mm Remington Magnum;
+rifle;8mm;0.338";338 Federal;
+rifle;8mm;0.338";338 Winchester Magnum;
+rifle;8mm;0.338";340 Weatherby Magnum;
+rifle;8mm;0.338";338 RUM;
+rifle;8mm;0.338";338 Lapua Magnum;8.6x70mm
+rifle;9mm;0.358";35 Remington;
+rifle;9mm;0.358";356 Winchester;
+rifle;9mm;0.358";358 Winchester;
+rifle;9mm;0.358";350 Remington Magnum;
+rifle;9mm;0.358";358 Norma Magnum;
+rifle;9mm;0.366";9.3x74mmR;
+rifle;9mm;0.366";9.3x62mm;9.3x62mm Mauser
+rifle;9mm;0.366";9.3x64mm;9.3x64mm Brennecke
+rifle;9mm;9mm;9x39mm;
+rifle;9mm;0.375";375 H&H Magnum;
+rifle;9mm;0.375";375 Weatherby Magnum;
+rifle;9mm;0.375";375 Ruger;
+rifle;9mm;0.375";378 Weatherby Magnum;
+rifle;10mm;0.408";450-400 Nitro Express;
+rifle;10mm;0.411";400 H&H Magnum;
+rifle;10mm;0.412";405 Winchester;
+rifle;10mm;0.416";416 Remington Magnum;
+rifle;10mm;0.416";416 Rigby;
+rifle;10mm;0.416";416 Weatherby Magnum;
+rifle;10mm;0.422";404 Jeffery;
+rifle;11mm;0.431";444 Marlin;
+rifle;11mm;0.458";450 Marlin;
+rifle;11mm;0.458";45-70;
+rifle;11mm;0.458";450 Nitro Express;
+rifle;11mm;0.458";458 Winchester Magnum;
+rifle;11mm;0.458";460 Weatherby Magnum;
+rifle;11mm;0.458";465 Nitro Express;
+rifle;11mm;0.468";465 H&H Magnum;
+rifle;12mm;0.474";470 Nitro Express;
+rifle;12mm;0.476";476 Westley Richards;
+rifle;12mm;0.510";50 BMG;12.7x99mm NATO
+rifle;12mm;0.510";50 Alaskan;
+rifle;12mm;0.500";50 Beowulf;
+rifle;12mm;0.511";12.7x108mm;
+rifle;12mm;0.510";500 Nitro Express;
+rifle;12mm;0.510";510 Whisper;
+rifle;7mm;0.308";30 Carbine;7.62x33mm
+rifle;7mm;0.308";30-30 Winchester;
+rifle;7mm;0.308";300 Whisper;
+rifle;7mm;0.308";300 Lapua Magnum;
+rifle;11mm;0.458";458 Lott;
+rifle;11mm;0.458";458 SOCOM;
+rifle;14mm;0.485";577 Nitro Express;
+rifle;14mm;14.88mm;14.5x114mm;
+rifle;15mm;15.7mm;600 Nitro Express;
+rifle;17mm;17.8mm;700 Nitro Express;

@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.0.9">Small fixes, dictionaries for ammo types and calibers added.</version>
   <version id="1.1.0.8">Small fixes, GI table.</version>
   <version id="1.1.0.7">Support form factor and custom plt functions.</version>
   <version id="1.1.0.6">Fix position clone.</version>

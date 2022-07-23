@@ -40,7 +40,7 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> diameter = Measurement<DistanceUnit>.ZERO;
             Measurement<WeightUnit> weight = Measurement<WeightUnit>.ZERO;
 
-            var ts = new StreamReader(stream, encoding ?? Encoding.ASCII, true);
+            using var ts = new StreamReader(stream, encoding ?? Encoding.ASCII, true, 4096, true);
             
             while (true)
             {
