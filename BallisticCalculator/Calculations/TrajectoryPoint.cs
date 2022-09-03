@@ -104,7 +104,7 @@ namespace BallisticCalculator
         /// <param name="energy"></param>
         /// <param name="optimalGameWeight"></param>
         [JsonConstructor]
-        [BXmlConstructorAttribute]
+        [BXmlConstructor]
         public TrajectoryPoint(TimeSpan time, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy,
@@ -114,11 +114,17 @@ namespace BallisticCalculator
             Distance = distance;
             Velocity = velocity;
             Drop = drop;
-            DropAdjustment = MeasurementMath.Atan(Drop / Distance);
+            if (Distance.Value > 0)
+                DropAdjustment = MeasurementMath.Atan(Drop / Distance);
+            else
+                DropAdjustment = 0.As(AngularUnit.Radian);
             Mach = mach;
 
             Windage = windage;
-            WindageAdjustment = MeasurementMath.Atan(Windage / Distance);
+            if (Distance.Value > 0)
+                WindageAdjustment = MeasurementMath.Atan(Windage / Distance);
+            else
+                WindageAdjustment = 0.As(AngularUnit.Radian);
             Energy = energy;
             OptimalGameWeight = optimalGameWeight;
         }
