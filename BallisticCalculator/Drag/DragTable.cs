@@ -88,7 +88,7 @@ namespace BallisticCalculator
 
                 mNodes[i] = new DragTableNode(points[i].Mach, points[i].DragCoefficient, a, b, c, mNodes[i - 1]);
             }
-            mNodes[numpts - 1] = new DragTableNode(points[numpts - 1].Mach, points[numpts - 1].DragCoefficient, 0, 0, points[numpts - 1].DragCoefficient, mNodes[numpts - 1]);
+            mNodes[numpts - 1] = new DragTableNode(points[numpts - 1].Mach, points[numpts - 1].DragCoefficient, 0, 0, points[numpts - 1].DragCoefficient, mNodes[numpts - 2]);
         }
 
         /// <summary>
