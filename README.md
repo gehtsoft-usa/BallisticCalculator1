@@ -25,7 +25,9 @@ Please refer to [online version of the documentation](http://docs.gehtsoftusa.co
 If you want to use the latest official version of the package, use [Gehtsoft public nuget channel](https://www.myget.org/F/gehtsoft-public/api/v3/index.json)
 or download package directly from releases here.
 
-The library is also available in Go: https://github.com/gehtsoft-usa/go_ballisticcalc
+The library is also available in 
+* Go: https://github.com/gehtsoft-usa/go_ballisticcalc
+* Java: https://github.com/nikolaygekht/ballistic.calculator.java (in progress)
 
 For those who are looking for a JavaScript version, I highly recommend [Yet Another Ballistic Calculator](https://ptosis.ch/ebalka/ebalka.html) project of our friend Alexandre Trofimov.
 
