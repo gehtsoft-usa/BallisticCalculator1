@@ -100,9 +100,9 @@ namespace BallisticCalculator
                 DragTableNode dragTableNode = null;
 
                 double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
-                double ballisicFactor = 1 / ammunition.GetBallisticCoefficient();
-                var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisicFactor;
-                
+                double ballisticFactor = 1 / ammunition.GetBallisticCoefficient();
+                var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisticFactor;
+
                 var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
@@ -242,13 +242,13 @@ namespace BallisticCalculator
             DragTableNode dragTableNode = null;
 
             double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
-            double ballisicFactor = 1 / ammunition.GetBallisticCoefficient();
-            var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisicFactor;
+            double ballisticFactor = 1 / ammunition.GetBallisticCoefficient();
+            var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisticFactor;
 
             var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
-            
-            
+
+
 
             //run all the way down the range
             while (rangeVector.X <= maximumRange)
