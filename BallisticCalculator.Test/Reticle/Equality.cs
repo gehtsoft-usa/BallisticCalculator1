@@ -78,26 +78,25 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Theory]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, AngularUnit.Mil, "color", true, true)]
-
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    0, 2, 3, 4, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 0, 3, 4, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 0, 4, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 0, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, AngularUnit.MOA, "color", true, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, AngularUnit.Mil, "color1", true, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, AngularUnit.Mil, "color", false, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, AngularUnit.Mil, "color", null, false)]
-        [InlineData(1, 2, 3, 4, AngularUnit.Mil, "color", true,
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4.0, AngularUnit.Mil, "color", true, true)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    0, 2, 3, 4.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 0, 3, 4.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 0, 4.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 0.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4.0, AngularUnit.MOA, "color", true, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4.0, AngularUnit.Mil, "color1", true, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4.0, AngularUnit.Mil, "color", false, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4.0, AngularUnit.Mil, "color", null, false)]
+        [InlineData(1, 2, 3, 4.0, AngularUnit.Mil, "color", true,
                     1, 2, 3, null, AngularUnit.Mil, "color", true, false)]
         public void Circle(double x1, double y1, double r1, double? lw1, AngularUnit u1, string color1, bool? fill1,
                            double x2, double y2, double r2, double? lw2, AngularUnit u2, string color2, bool? fill2,
@@ -165,24 +164,24 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Theory]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", true)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    6, 2, 3, 4, 5, AngularUnit.Mil, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 6, 3, 4, 5, AngularUnit.Mil, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 2, 6, 4, 5, AngularUnit.Mil, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 2, 3, 6, 5, AngularUnit.Mil, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 2, 3, 4, 6, AngularUnit.Mil, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    6, 2, 3, 4, 5.0, AngularUnit.Mil, "color", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 6, 3, 4, 5.0, AngularUnit.Mil, "color", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 2, 6, 4, 5.0, AngularUnit.Mil, "color", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 2, 3, 6, 5.0, AngularUnit.Mil, "color", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 2, 3, 4, 6.0, AngularUnit.Mil, "color", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
                     1, 2, 3, 4, null, AngularUnit.Mil, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 2, 3, 4, 5, AngularUnit.MOA, "color", false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color",
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color1", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 2, 3, 4, 5.0, AngularUnit.MOA, "color", false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color",
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color1", false)]
         public void Line(double x11, double y11, double x12, double y12, double? lw1, AngularUnit u1, string color1,
                          double x21, double y21, double x22, double y22, double? lw2, AngularUnit u2, string color2,
                            bool equals)
@@ -207,30 +206,30 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Theory]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", true, true)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    6, 2, 3, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 6, 3, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 6, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 6, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 6, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true, true)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    6, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 6, 3, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 6, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 6, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 6.0, AngularUnit.Mil, "color", true, false)]
         [InlineData(1, 2, 3, 4, null, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.MOA, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color1", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, null, true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", false, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", null, false)]
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.MOA, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color1", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, null, true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", false, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", null, false)]
         public void Rectangle(double x11, double y11, double x12, double y12, double? lw1, AngularUnit u1, string color1, bool? fill1,
                               double x21, double y21, double x22, double y22, double? lw2, AngularUnit u2, string color2, bool? fill2,
                               bool equals)
@@ -258,30 +257,30 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Theory]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", true, true)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    6, 2, 3, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 6, 3, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 6, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 6, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 6, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true, true)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    6, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 6, 3, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 6, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 6, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 6.0, AngularUnit.Mil, "color", true, false)]
         [InlineData(1, 2, 3, 4, null, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.MOA, "color", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color1", true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, null, true, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", false, false)]
-        [InlineData(1, 2, 3, 4, 5, AngularUnit.Mil, "color", true,
-                    1, 2, 3, 4, 5, AngularUnit.Mil, "color", null, false)]
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.MOA, "color", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color1", true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, null, true, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", false, false)]
+        [InlineData(1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", true,
+                    1, 2, 3, 4, 5.0, AngularUnit.Mil, "color", null, false)]
         public void Path(double x11, double y11, double x12, double y12, double? lw1, AngularUnit u1, string color1, bool? fill1,
                               double x21, double y21, double x22, double y22, double? lw2, AngularUnit u2, string color2, bool? fill2,
                               bool equals)

@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Gehtsoft.Measurements" Version="1.1.12" />
+    <PackageReference Include="Gehtsoft.Measurements" Version="1.1.13" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 
