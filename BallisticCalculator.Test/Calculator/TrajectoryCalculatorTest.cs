@@ -35,6 +35,32 @@ namespace BallisticCalculator.Test.Calculator
         }
 
         [Theory]
+        [InlineData(null, 5.489)]
+        [InlineData(0.0, 5.489)]
+        [InlineData(-2.0, 3.579)]
+        [InlineData(-0.5, 5.012)]
+        [InlineData(1.0, 6.444)]
+        public void Zero_WithOffset(double? offset, double sightAngle)
+        {
+            Ammunition ammunition = new Ammunition(
+                weight: new Measurement<WeightUnit>(69, WeightUnit.Grain),
+                muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond),
+                ballisticCoefficient: new BallisticCoefficient(0.355, DragTableId.G1));
+
+            Rifle rifle = new Rifle(
+                sight: new Sight(sightHeight: new Measurement<DistanceUnit>(3, DistanceUnit.Inch), Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+                zero: new ZeroingParameters(distance: new Measurement<DistanceUnit>(100, DistanceUnit.Yard), ammunition: null, atmosphere: null));
+
+            if (offset != null)
+                rifle.Zero.VerticalOffset = DistanceUnit.Inch.New(offset.Value);
+
+            Atmosphere atmosphere = new Atmosphere();       //default atmosphere
+
+            var sightAngle1 = (new TrajectoryCalculator()).SightAngle(ammunition, rifle, atmosphere);
+            sightAngle1.In(AngularUnit.MOA).Should().BeApproximately(sightAngle, 5e-2);
+        }
+
+        [Theory]
         [InlineData("g1_nowind", 0.005, 0.2, 0.2)]
         [InlineData("g1_nowind_up", 0.005, 0.4, 0.4)]
         [InlineData("g1_twist", 0.005, 0.2, 0.02)]

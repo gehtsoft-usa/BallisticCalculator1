@@ -9,7 +9,7 @@ namespace BallisticCalculator.Test.Data.Serialization
     public class CalculatorSerializerTest
     {
         [Fact]
-        public void TestTrajectoryPoint()
+        public void Roundtrip_TrajectoryPoint()
         {
             var point = new TrajectoryPoint(TimeSpan.FromMilliseconds(0.5),
                 new Measurement<WeightUnit>(55, WeightUnit.Grain),
@@ -102,7 +102,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTrip_Ammunition1()
+        public void Roundtrip_Ammunition1()
         {
             Ammunition ammo = new Ammunition()
             {
@@ -129,7 +129,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTrip_Ammunition2()
+        public void Roundtrip_Ammunition2()
         {
             Ammunition ammo = new Ammunition()
             {
@@ -154,7 +154,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTrip_AmmuntionLibraryEntry()
+        public void Roundtrip_AmmuntionLibraryEntry()
         {
             AmmunitionLibraryEntry entry = new AmmunitionLibraryEntry()
             {
@@ -195,7 +195,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTripAtmosphere()
+        public void Roundtrip_Atmosphere()
         {
             var atmo = new Atmosphere(new Measurement<DistanceUnit>(123, DistanceUnit.Meter),
                 new Measurement<PressureUnit>(30.02, PressureUnit.InchesOfMercury),
@@ -216,7 +216,49 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTripRifle()
+        public void Roundtrip_ZeroParam_NullableValues()
+        {
+            var zero = new ZeroingParameters()
+            {
+                Distance = DistanceUnit.Yard.New(100)
+            };
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(zero);
+            var zero2 = serializer.Deserialize<ZeroingParameters>(xml);
+
+            zero2.Should().NotBeNull();
+            zero2.Atmosphere.Should().BeNull();
+            zero2.Ammunition.Should().BeNull();
+            zero2.VerticalOffset.Should().BeNull();
+            zero2.Distance.Should().Be(zero.Distance);
+        }
+
+        [Fact]
+        public void Roundtrip_ZeroParam_NoNullableValues()
+        {
+            var zero = new ZeroingParameters()
+            {
+                Distance = DistanceUnit.Yard.New(100),
+                VerticalOffset = DistanceUnit.Inch.New(5)
+                
+            };
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(zero);
+            var zero2 = serializer.Deserialize<ZeroingParameters>(xml);
+
+            zero2.Should().NotBeNull();
+            zero2.Atmosphere.Should().BeNull();
+            zero2.Ammunition.Should().BeNull();
+            zero2.VerticalOffset.Should()
+                .NotBeNull()
+                .And.Be(zero.VerticalOffset);
+            zero2.Distance.Should().Be(zero.Distance);
+        }
+
+        [Fact]
+        public void Roundtrip_Rifle()
         {
             Rifle rifle = new Rifle()
             {
@@ -278,7 +320,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTripWind1()
+        public void Roundtrip_Wind1()
         {
             var wind = new Wind()
             {
@@ -297,7 +339,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
-        public void RoundTripWind2()
+        public void Roundtrip_Wind2()
         {
             var wind = new Wind()
             {

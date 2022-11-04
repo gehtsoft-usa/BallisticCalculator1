@@ -73,6 +73,7 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> altDelta = new Measurement<DistanceUnit>(1, DistanceUnit.Meter);
             double densityFactor = 0, drag;
             Measurement<VelocityUnit> mach = new Measurement<VelocityUnit>(0, VelocityUnit.MetersPerSecond);
+            Measurement<DistanceUnit> verticalOffset = (rifle.Zero.VerticalOffset) ?? Measurement<DistanceUnit>.ZERO;
 
             var sightAngle = new Measurement<AngularUnit>(150, AngularUnit.MOA);
             var barrelAzimuth = new Measurement<AngularUnit>(0, AngularUnit.Radian);
@@ -105,11 +106,11 @@ namespace BallisticCalculator
 
                 var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
-
+                var alt = alt0;
                 //run all the way down the range
                 while (rangeVector.X <= maximumRange)
                 {
-                    Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
+                    //Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
 
                     //update density and Mach velocity each 10 feet
                     if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
@@ -144,13 +145,15 @@ namespace BallisticCalculator
                             new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
                     rangeVector += deltaRangeVector;
+                    alt += deltaRangeVector.Y;
 
                     if (rangeVector.X >= rifle.Zero.Distance)
                     {
-                        if (Math.Abs(rangeVector.Y.In(DistanceUnit.Millimeter)) < 1)
+                        var match = rangeVector.Y - verticalOffset;
+                        if (Math.Abs(match.In(DistanceUnit.Millimeter)) < 1)
                             return sightAngle;
 
-                        sightAngle += new Measurement<AngularUnit>(-rangeVector.Y.In(DistanceUnit.Centimeter) / rifle.Zero.Distance.In(DistanceUnit.Meter) * 100, AngularUnit.CmPer100Meters);
+                        sightAngle += new Measurement<AngularUnit>(-match.In(DistanceUnit.Centimeter) / rifle.Zero.Distance.In(DistanceUnit.Meter) * 100, AngularUnit.CmPer100Meters);
                         break;
                     }
 
@@ -249,12 +252,11 @@ namespace BallisticCalculator
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
 
+            var alt = alt0;
 
             //run all the way down the range
             while (rangeVector.X <= maximumRange)
             {
-                Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
-
                 //update density and Mach velocity each 10 feet of altitude
                 if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
                 {
@@ -322,6 +324,7 @@ namespace BallisticCalculator
                         new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
                 rangeVector += deltaRangeVector;
+                alt += deltaRangeVector.Y;
                 velocity = velocityVector.Magnitude;
                 time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));
             }
