@@ -4,7 +4,6 @@
     <TargetFramework>net46</TargetFramework>
   </PropertyGroup>
 
-
  <ItemGroup>
   <PackageReference Include="Gehtsoft.Build.Nuget" Version="0.1.5" PrivateAssets="All" />
  </ItemGroup>

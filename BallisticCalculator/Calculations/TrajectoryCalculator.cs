@@ -282,7 +282,7 @@ namespace BallisticCalculator
                 {
                     var windage = rangeVector.Z;
                     if (calculateDrift)
-                        windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? 1 : -1), DistanceUnit.Inch);
+                        windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1), DistanceUnit.Inch);
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,

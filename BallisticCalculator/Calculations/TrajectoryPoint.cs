@@ -45,6 +45,7 @@ namespace BallisticCalculator
         /// <summary>
         /// <para>Current windage</para>
         /// <para>The windage is horizontal distance between trajectory and the line of sight</para>
+        /// <para>The windage to the left is positive, to the right is negative</para>
         /// </summary>
         [BXmlProperty(Name = "windage")]
         public Measurement<DistanceUnit> Windage { get; }

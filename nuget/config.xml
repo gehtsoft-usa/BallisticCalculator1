@@ -2,6 +2,9 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.1">First official version.</version>
+  <version id="1.1.0.11">Fix spin direction.</version>
+  <version id="1.1.0.10">Add zero vertical offset, update dependencies.</version>
   <version id="1.1.0.9">Small fixes, dictionaries for ammo types and calibers added.</version>
   <version id="1.1.0.8">Small fixes, GI table.</version>
   <version id="1.1.0.7">Support form factor and custom plt functions.</version>
@@ -21,6 +24,8 @@
  <projects>
    <project id="BallisticCalculator">
     <description>Ballistic Calculator</description>
+    <additional-file file="../doc/BallisticCaculator.xml" target="*" />
+    <additional-file file="../nuget/readme.md" target="/" />
    </project>
  </projects>
 </nuget>
