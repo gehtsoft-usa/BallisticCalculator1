@@ -1,0 +1,91 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Namespace BallisticCalculator.Serialization</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Namespace BallisticCalculator.Serialization</h1>
+<h2>Brief</h2>
+<p>The classes related to serialization of the library data.</p>
+<h2>Details</h2><p>You can serialize and deserialize data classes:
+<a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>,
+<a href="BallisticCalculator.Atmosphere.html"><code>Atmosphere</code></a>,
+<a href="BallisticCalculator.ZeroingParameters.html"><code>ZeroingParameters</code></a>,
+<a href="BallisticCalculator.Rifling.html"><code>Rifling</code></a>,
+<a href="BallisticCalculator.Rifle.html"><code>Rifle</code></a>,
+<a href="BallisticCalculator.Wind.html"><code>Wind</code></a>,
+<a href="BallisticCalculator.ShotParameters.html"><code>ShotParameters</code></a>,
+<a href="BallisticCalculator.TrajectoryPoint.html"><code>TrajectoryPoint</code></a>, and
+<a href="BallisticCalculator.Reticle.Data.ReticleDefinition.html"><code>ReticleDefinition</code></a>.</p>
+<p>To serialize the object use
+<a href="BallisticCalculator.Serialization.BallisticXmlSerializer.html"><code>BallisticXmlSerializer</code></a>.</p>
+<p>Example: How to serialize a reticle definition.</p><pre class="example" id="example5"><code class="cs">xmlDocument = new XmlDocument();
+BallisticXmlSerializer serializer = new BallisticXmlSerializer(xmlDocument);
+xmlDocument.AppendChild(serializer.Serialize(reticle));
+xmlDocument.Save(&quot;mildot.reticle&quot;);</code></pre><p>To deserialize the object use
+<a href="BallisticCalculator.Serialization.BallisticXmlDeserializer.html"><code>BallisticXmlDeserializer</code></a>.
+Example: How to read and deserialize a reticle definition</p><pre class="example" id="example6"><code class="cs">xmlDocument = new XmlDocument();
+xmlDocument.Load(&quot;mildot.reticle&quot;);
+BallisticXmlDeserializer deserializer = new BallisticXmlDeserializer();
+var reticle1 = deserializer.Deserialize&lt;ReticleDefinition&gt;(xmlDocument.DocumentElement);</code></pre><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Classes</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BallisticXmlDeserializer.html">BallisticXmlDeserializer</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Deserializer of ballistic calculator values</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BallisticXmlExtensions.html">BallisticXmlExtensions</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Extension classes to simplify serialization invocation</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BallisticXmlSerializer.html">BallisticXmlSerializer</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Serializer</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BXmlConstructorAttribute.html">BXmlConstructorAttribute</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The attribute to mark up to constructor to be used to deserialization</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BXmlElementAttribute.html">BXmlElementAttribute</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The attribute to markup the ballistic calculator serializable class</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BXmlPropertyAttribute.html">BXmlPropertyAttribute</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The attribute to markup the ballistic calculator serializable property</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Serialization.BXmlSelectAttribute.html">BXmlSelectAttribute</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The type that may be serialized by multiple option(s)</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

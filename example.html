@@ -1,0 +1,88 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Usage example</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Usage example</h1>
+<h2>Brief</h2>
+<p>The example of library use</p>
+<h2>Details</h2><div id="open1" style="display:none">
+  <p>Calculate trajectory for M855 projectile shot from M16 rifle&nbsp;<a href="javascript: showdiv('close1'); hidediv('open1');" onclick="javascript: showdiv('close1'); hidediv('open1');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close1" style="display:inline">
+  <p>Calculate trajectory for M855 projectile shot from M16 rifle&nbsp;<a href="javascript: showdiv('open1'); hidediv('close1');" onclick="javascript: showdiv('open1'); hidediv('close1');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example1"><code class="cs">    //define M855 projectile out of 20 inch barrel
+    var ammo = new Ammunition(
+        weight: new Measurement&lt;WeightUnit&gt;(62, WeightUnit.Grain),
+        muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(3095, VelocityUnit.FeetPerSecond),
+        ballisticCoefficient: new BallisticCoefficient(0.304, DragTableId.G1),
+        bulletDiameter: new Measurement&lt;DistanceUnit&gt;(0.224, DistanceUnit.Inch),
+        bulletLength: new Measurement&lt;DistanceUnit&gt;(0.9, DistanceUnit.Inch));
+ 
+    //define ACOG scope
+    var sight = new Sight(
+        sightHeight: new Measurement&lt;DistanceUnit&gt;(3.5, DistanceUnit.Inch),
+        verticalClick: new Measurement&lt;AngularUnit&gt;(1.0 / 3.0, AngularUnit.InchesPer100Yards),
+        horizontalClick: new Measurement&lt;AngularUnit&gt;(1.0 / 3.0, AngularUnit.InchesPer100Yards)
+        );
+ 
+    //M16 rifling
+    var rifling = new Rifling(
+        riflingStep: new Measurement&lt;DistanceUnit&gt;(12, DistanceUnit.Inch),
+        direction: TwistDirection.Right);
+ 
+    //standard 100 yard ACOG zeroing
+    var zero = new ZeroingParameters(
+        distance: new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard),
+        ammunition: null,
+        atmosphere: null
+        );
+ 
+    //define rifle by sight, zeroing and rifling parameters
+    var rifle = new Rifle(sight: sight, zero: zero, rifling: rifling);
+ 
+    //define atmosphere
+    var atmosphere = new Atmosphere(
+        pressure: new Measurement&lt;PressureUnit&gt;(29.92, PressureUnit.InchesOfMercury),
+        pressureAtSeaLevel: true,
+        altitude: new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Foot),
+        temperature: new Measurement&lt;TemperatureUnit&gt;(59, TemperatureUnit.Fahrenheit),
+        humidity: 0.78);
+ 
+    var calc = new TrajectoryCaculator();
+ 
+    //shot parameters
+    var shot = new ShotParameters()
+    {
+        MaximumDistance = new Measurement&lt;DistanceUnit&gt;(1000, DistanceUnit.Yard),
+        Step = new Measurement&lt;DistanceUnit&gt;(50, DistanceUnit.Yard),
+        //calculate sight angle for the specified zero distance
+        SightAngle = calc.SightAngle(ammo, rifle, atmosphere)
+    };
+ 
+    //define winds
+ 
+    Wind[] wind = new Wind[2]
+    {
+        new Wind()
+        {
+            Direction = new Measurement&lt;AngularUnit&gt;(45, AngularUnit.Degree),
+            Velocity = new Measurement&lt;VelocityUnit&gt;(10, VelocityUnit.MilesPerHour),
+            MaximumRange = new Measurement&lt;DistanceUnit&gt;(500, DistanceUnit.Yard),
+        },
+        new Wind()
+        {
+            Direction = new Measurement&lt;AngularUnit&gt;(15, AngularUnit.Degree),
+            Velocity = new Measurement&lt;VelocityUnit&gt;(5, VelocityUnit.MilesPerHour),
+        }
+    };
+ 
+ 
+    //calculate trajectory
+    var trajectory = calc.Calculate(ammo, rifle, atmosphere, shot, wind);
+ 
+    //print trajectory
+    foreach (var point in trajectory)
+        Console.WriteLine($&quot;{point.Time} {point.Distance.In(DistanceUnit.Yard):N0} {point.Velocity.In(VelocityUnit.FeetPerSecond):N0} {point.Drop.In(DistanceUnit.Inch):N2} {point.Windage.In(DistanceUnit.Inch):N2}&quot;);</code></pre>
+</div><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

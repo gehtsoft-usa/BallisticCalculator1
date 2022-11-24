@@ -1,0 +1,155 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Reticle definition file format</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>tags <b>Reticle definition file format</b></code></h1>
+<h2>Brief</h2>
+<p>The section describes the reticle definition file format</p>
+<h2>Details</h2><p>The root tag of the file must be <code class="ctag">reticle</code>.</p>
+<p>Note: all coordinates, dimensions and sizes are defined
+in angular units. The angular unit format is a number
+followed by the unit name. Most used unit names for reticles
+are <code class="ctag">mil</code> (mildot), <code class="ctag">mrad</code> (milliradian) and <code class="ctag">moa</code> (minutes of angle).
+For Wasrshaw Pact reticles, <code class="ctag">ths</code>, e.g. &quot;a thousdand&quot; (1/3000 of full circle)
+may also be useful.</p>
+<p>Examples: <code class="ctag">1mil</code>, <code class="ctag">-5.5moa</code>, <code class="ctag">1.7mrad</code>.</p>
+<p>For complete list of the supported units please refer to
+Measurement library source: <a href="https://github.com/gehtsoft-usa/Gehtsoft.Measurements/blob/main/Gehtsoft.Measurements/AngularUnit.cs" target="_blank"><code class="ctag">AngularUnit.cs</code></a>.</p>
+<p>Note: colors are set by SVG/HTML/CSS color names.
+For the complete list of the possible values please
+refer to
+<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value" target="_blank">CSS documentation</a>.</p>
+<p>Open example below for mildot reticle definition</p><div id="open2" style="display:inline">
+  <p>Example&nbsp;<a href="javascript: showdiv('close2'); hidediv('open2');" onclick="javascript: showdiv('close2'); hidediv('open2');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close2" style="display:none">
+  <p>Example&nbsp;<a href="javascript: showdiv('open2'); hidediv('close2');" onclick="javascript: showdiv('open2'); hidediv('close2');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example2"><code class="xml">&lt;reticle name=&quot;Mil-Dot Reticle&quot; size-x=&quot;12mil&quot; size-y=&quot;12mil&quot; zero-x=&quot;6mil&quot; zero-y=&quot;6mil&quot;&gt;
+ &lt;elements&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;0mil&quot; radius=&quot;6mil&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-line start-x=&quot;-5mil&quot; start-y=&quot;0mil&quot; end-x=&quot;5mil&quot; end-y=&quot;0mil&quot; line-width=&quot;0.01mil&quot; line-color=&quot;black&quot; /&gt;
+  &lt;reticle-line start-x=&quot;0mil&quot; start-y=&quot;-5mil&quot; end-x=&quot;0mil&quot; end-y=&quot;5mil&quot; line-width=&quot;0.01mil&quot; line-color=&quot;black&quot; /&gt;
+  &lt;reticle-line start-x=&quot;-5mil&quot; start-y=&quot;0mil&quot; end-x=&quot;-6mil&quot; end-y=&quot;0mil&quot; line-width=&quot;0.2mil&quot; line-color=&quot;black&quot; /&gt;
+  &lt;reticle-line start-x=&quot;5mil&quot; start-y=&quot;0mil&quot; end-x=&quot;6mil&quot; end-y=&quot;0mil&quot; line-width=&quot;0.2mil&quot; line-color=&quot;black&quot; /&gt;
+  &lt;reticle-line start-x=&quot;0mil&quot; start-y=&quot;-5mil&quot; end-x=&quot;0mil&quot; end-y=&quot;-6mil&quot; line-width=&quot;0.2mil&quot; line-color=&quot;black&quot; /&gt;
+  &lt;reticle-line start-x=&quot;0mil&quot; start-y=&quot;5mil&quot; end-x=&quot;0mil&quot; end-y=&quot;6mil&quot; line-width=&quot;0.2mil&quot; line-color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;-4mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;-4mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;-3mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;-3mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;-2mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;-2mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;-1mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;-1mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;1mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;1mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;2mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;2mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;3mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;3mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;4mil&quot; center-y=&quot;0mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+  &lt;reticle-circle center-x=&quot;0mil&quot; center-y=&quot;4mil&quot; radius=&quot;0.1mil&quot; fill=&quot;true&quot; line-width=&quot;0.01mil&quot; color=&quot;black&quot; /&gt;
+ &lt;/elements&gt;
+ &lt;bdc&gt;
+  &lt;bdc position-x=&quot;0mil&quot; position-y=&quot;-1mil&quot; text-offset=&quot;1mil&quot; text-height=&quot;0.3mil&quot; /&gt;
+  &lt;bdc position-x=&quot;0mil&quot; position-y=&quot;-2mil&quot; text-offset=&quot;1mil&quot; text-height=&quot;0.3mil&quot; /&gt;
+  &lt;bdc position-x=&quot;0mil&quot; position-y=&quot;-3mil&quot; text-offset=&quot;1mil&quot; text-height=&quot;0.3mil&quot; /&gt;
+  &lt;bdc position-x=&quot;0mil&quot; position-y=&quot;-4mil&quot; text-offset=&quot;1mil&quot; text-height=&quot;0.3mil&quot; /&gt;
+ &lt;/bdc&gt;
+&lt;/reticle&gt;</code></pre>
+</div><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Tags</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.bdc1.html">bdc</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The list of the bullet drop compensation points.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.bdc2.html">bdc</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The bullet drop compensator point definition.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.elements.html">elements</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Elements list.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle.html">reticle</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The root element of the reticle definition</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-circle.html">reticle-circle</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>A circle</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-line.html">reticle-line</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Reticle element: a line</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-path.html">reticle-path</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Reticle element: a path (sequence of lines and arcs)</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-path-arc.html">reticle-path-arc</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Path element: draw an arc to the specified position.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-path-line-to.html">reticle-path-line-to</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Path element: draw a line to the specified position.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-path-move-to.html">reticle-path-move-to</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Path element: move to the specified position.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="reticleXmlFile.reticle-rectangle.html">reticle-rectangle</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Reticle element: a rectangle</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="BallisticCalculator.Reticle.Data.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

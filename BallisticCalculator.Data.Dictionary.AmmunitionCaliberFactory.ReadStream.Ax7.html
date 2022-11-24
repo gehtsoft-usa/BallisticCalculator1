@@ -1,0 +1,56 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>AmmunitionCaliberFactory.ReadStream</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>AmmunitionCaliberFactory.ReadStream</b></code></h1><h2>Brief</h2>
+<p>Reads the stream as a dictonary</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code>void&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>ReadStream</b> (this <a href="BallisticCalculator.Data.Dictionary.AmmunitionCaliberDictionary.html">BallisticCalculator.Data.Dictionary.AmmunitionCaliberDictionary</a> dictionary, System.IO.Stream stream, System.Text.Encoding encoding = null, bool ignoreErrors = False) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>dictionary</code></td>
+    <td class="tmain" width="69%"></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>stream</code></td>
+    <td class="tmain" width="69%"></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>encoding</code></td>
+    <td class="tmain" width="69%"></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>ignoreErrors</code></td>
+    <td class="tmain" width="69%"></td>
+  </tr>
+</table><h2>Details</h2><p>The stream is expected to be a text with the following format</p>
+<p>1. One line of the file is one caliber</p>
+<p>2. Fields are separated with semicolon (<code class="ctag">;</code>)</p>
+<p>3. Fields are:</p>
+<p>3a. Type: pistol, rifle, shotgun or cannon</p>
+<p>3b. Group: a caliber group in inches or millimeters</p>
+<p>3c. Bullet diameter in inches or millimeters</p>
+<p>3d. The primary name</p>
+<p>3e. The optional names separated by a comma</p>
+<p>Example:</p>
+<p><code class="ctag">rifle;4mm;0.172';.17 HMR;.17 Hornady Magnum Rimfire, .17 Hornady Magnum</code></p><p>Declared in <a href="BallisticCalculator.Data.Dictionary.AmmunitionCaliberFactory.html">AmmunitionCaliberFactory</a></p>
+<p>
+  <center><a href="BallisticCalculator.Data.Dictionary.AmmunitionCaliberFactory.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('BallisticCalculator.Data.Dictionary.AmmunitionCaliberFactory');</script></body></html>
