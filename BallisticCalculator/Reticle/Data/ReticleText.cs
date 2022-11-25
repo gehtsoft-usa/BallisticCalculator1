@@ -30,6 +30,12 @@ namespace BallisticCalculator.Reticle.Data
         public string Text { get; set; }
 
         /// <summary>
+        /// The text
+        /// </summary>
+        [BXmlProperty(Name = "anchor", Optional = true)]
+        public TextAnchor? Anchor { get; set; }
+
+        /// <summary>
         /// <para>The text color.</para>
         /// <para>The value is an <see href="https://www.w3schools.com/colors/colors_names.asp">html color name</see></para>
         /// <para>If no value is, a black color will be used</para>
@@ -78,6 +84,8 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(Text)
                 .Append(",c=")
                 .Append(Color ?? "null")
+                .Append(",a=")
+                .Append((Anchor?.ToString()) ?? "default")
                 .Append(')');
 
             return sb.ToString();
@@ -87,7 +95,7 @@ namespace BallisticCalculator.Reticle.Data
         /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode()
         {
-            return HashUtil.HashCombine(Position, TextHeight, Text, Color);
+            return HashUtil.HashCombine(Position, TextHeight, Text, Color, Anchor);
         }
 
         /// <summary>Creates a new object that is a copy of the current instance.</summary>
@@ -100,6 +108,7 @@ namespace BallisticCalculator.Reticle.Data
                 TextHeight = this.TextHeight,
                 Text = this.Text,
                 Color = this.Color,
+                Anchor = this.Anchor,
             };
         }
     }

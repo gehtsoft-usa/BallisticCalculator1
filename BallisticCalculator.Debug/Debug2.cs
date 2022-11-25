@@ -126,10 +126,29 @@ namespace BallisticCalculator.Debug
                 Position = new ReticlePosition(0, 0, AngularUnit.Mil),
                 TextHeight = AngularUnit.Mil.New(0.25),
                 Color = "black",
-                Text = "Test Text",
+                Text = "Left Text",
+            });
+
+            reticle.Elements.Add(new ReticleText()
+            {
+                Position = new ReticlePosition(0, 0, AngularUnit.Mil),
+                TextHeight = AngularUnit.Mil.New(0.25),
+                Color = "black",
+                Text = "Right Text",
+                Anchor = TextAnchor.Right,
+            });
+
+            reticle.Elements.Add(new ReticleText()
+            {
+                Position = new ReticlePosition(0, -0.5, AngularUnit.Mil),
+                TextHeight = AngularUnit.Mil.New(0.25),
+                Color = "black",
+                Text = "Center Text",
+                Anchor = TextAnchor.Center,
             });
 
             Draw(reticle, "test");
+            DrawGraphics(reticle, "test");
         }
 
         public static void Do(string[] _)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using BallisticCalculator.Reticle.Data;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -82,9 +83,20 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="y"></param>
         /// <param name="height"></param>
         /// <param name="text"></param>
-        /// <param name="color"></param>
-        
+        /// <param name="color"></param>       
         void Text(float x, float y, float height, string text, string color);
+
+        /// <summary>
+        /// Draw a text
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="height"></param>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <param name="anchor"></param>
+        void Text(float x, float y, float height, string text, string color, TextAnchor anchor);
+
         /// <summary>
         /// Create a path object
         /// </summary>

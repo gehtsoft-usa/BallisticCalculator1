@@ -63,7 +63,7 @@ namespace BallisticCalculator.Reticle.Draw
                     {
                         mTranslator.Transform(text.Position.X, text.Position.Y, out float x0, out float y0);
                         var h = mTranslator.TransformL(text.TextHeight);
-                        mCanvas.Text(x0, y0, h, text.Text, text.Color);
+                        mCanvas.Text(x0, y0, h, text.Text, text.Color, text.Anchor ?? TextAnchor.Left);
                     }
                     break;
                 case ReticlePath path:
