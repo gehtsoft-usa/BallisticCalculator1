@@ -160,7 +160,8 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, dy0)),
                 It.Is<float>(f => Approximately(f, dh)),
                 It.Is<string>(s => s == text),
-                It.Is<string>(s => s == color))).Verifiable();
+                It.Is<string>(s => s == color),
+                It.Is<TextAnchor>(a => a == TextAnchor.Left))).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawReticle();
@@ -365,21 +366,24 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, 5750)),                          //x - 0.5mil(dot) + 0.5mil(text height) / 2
                 It.Is<float>(f => Approximately(f, 500)),
                 It.Is<string>(s => Approximately(float.Parse(s), 195, 10f)),        //~195 yards on the trajectory of test
-                It.Is<string>(s => s == "black"))).Verifiable();
+                It.Is<string>(s => s == "black"),
+                It.Is<TextAnchor>(a => a == TextAnchor.Left))).Verifiable();
 
             canvas.Setup(canvas => canvas.Text(
                 It.Is<float>(f => Approximately(f, 6000)),                          //x == center + 1 mil
                 It.Is<float>(f => Approximately(f, 6250)),                          //x - 1mil(dot) + 0.5mil(text height) / 2
                 It.Is<float>(f => Approximately(f, 500)),
                 It.Is<string>(s => Approximately(float.Parse(s), 257, 10f)),        //~257 yards on the trajectory of test
-                It.Is<string>(s => s == "black"))).Verifiable();
+                It.Is<string>(s => s == "black"),
+                It.Is<TextAnchor>(a => a == TextAnchor.Left))).Verifiable();
 
             canvas.Setup(canvas => canvas.Text(
                 It.Is<float>(f => Approximately(f, 4000)),                          //x == center - 1 mil
                 It.Is<float>(f => Approximately(f, 7250)),                          //x - 2mil(dot) + 0.5mil(text height) / 2
                 It.Is<float>(f => Approximately(f, 500)),
                 It.Is<string>(s => Approximately(float.Parse(s), 356, 10f)),        //~356 yards on the trajectory of test
-                It.Is<string>(s => s == "black"))).Verifiable();
+                It.Is<string>(s => s == "black"),
+                It.Is<TextAnchor>(a => a == TextAnchor.Left))).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawBulletDropCompensator(trajectory1, trajectory.Rifle.Zero.Distance, false, DistanceUnit.Yard, "black");

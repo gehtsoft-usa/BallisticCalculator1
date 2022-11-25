@@ -82,7 +82,7 @@ namespace BallisticCalculator.Test.Reticle
                 Text = "123",
             };
 
-            text.ToString().Should().Be("Text(p=(1.2345mil:6.789mil),h=1mil,t=123,c=black)");
+            text.ToString().Should().Be("Text(p=(1.2345mil:6.789mil),h=1mil,t=123,c=black,a=default)");
         }
 
         [Fact]
