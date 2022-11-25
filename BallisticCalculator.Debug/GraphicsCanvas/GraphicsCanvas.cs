@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using BallisticCalculator.Reticle.Draw;
+using BallisticCalculator.Reticle.Data;
 
 namespace BallisticCalculator.Reticle.Graphics
 {
@@ -92,8 +93,25 @@ namespace BallisticCalculator.Reticle.Graphics
         }
 
         public void Text(float x, float y, float height, string text, string color)
+            => Text(x, y, height, text, color, TextAnchor.Left);
+
+        public void Text(float x, float y, float height, string text, string color, TextAnchor anchor)
         {
-            mGraphics.DrawString(text, CreateFont("Verdana", height), TranslateBrush(color), x, y - height);
+            var font = CreateFont("Verdana", height);
+            
+            var size = mGraphics.MeasureString(text, font);
+            switch (anchor)
+            {
+                case TextAnchor.Left:
+                    mGraphics.DrawString(text, font, TranslateBrush(color), x, y - height);
+                    break;
+                case TextAnchor.Center:
+                    mGraphics.DrawString(text, font, TranslateBrush(color), x - size.Width / 2, y - height);
+                    break;
+                case TextAnchor.Right:
+                    mGraphics.DrawString(text, font, TranslateBrush(color), x - size.Width, y - height);
+                    break;
+            }
         }
 
         public IReticleCanvasPath CreatePath() => new ReticleGraphicsPath();

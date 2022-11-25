@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using BallisticCalculator.Data;
+using BallisticCalculator.Reticle.Data;
 
 namespace BallisticCalculator.Reticle.Draw
 {
+    /// <summary>
+    /// SVG drawing canvas
+    /// </summary>
     internal class SvgCanvas : IReticleCanvas
     {
         private void AppendAttribute(XmlNode node, string attributeName, string value)
@@ -187,7 +192,20 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="height"></param>
         /// <param name="text"></param>
         /// <param name="color"></param>
+        /// <param name="anchor"></param>
         public void Text(float x, float y, float height, string text, string color)
+            => Text(x, y, height, text, color, TextAnchor.Left);
+
+        /// <summary>
+        /// Draws a text
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="height"></param>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <param name="anchor"></param>
+        public void Text(float x, float y, float height, string text, string color, TextAnchor anchor)
         {
             XmlNode element = document.CreateElement("text");
             AppendAttribute(element, "x", x);
@@ -195,6 +213,13 @@ namespace BallisticCalculator.Reticle.Draw
             AppendAttribute(element, "font-family", "Verdana");
             AppendAttribute(element, "font-size", height);
             AppendAttribute(element, "fill", color);
+            AppendAttribute(element, "text-anchor", anchor switch
+                {
+                    TextAnchor.Left => "start",
+                    TextAnchor.Center => "middle",
+                    TextAnchor.Right => "end",
+                    _ => "start"
+                });
             element.AppendChild(document.CreateTextNode(text));
             document.DocumentElement.AppendChild(element);
         }

@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.2">Add text alingment to reticle and drawing canvas.</version>
   <version id="1.1.1">First official version.</version>
   <version id="1.1.0.11">Fix spin direction.</version>
   <version id="1.1.0.10">Add zero vertical offset, update dependencies.</version>
