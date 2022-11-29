@@ -22,8 +22,11 @@ Changes made since porting original C sources:
 
 Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)
 
-If you want to use the latest official version of the package, use [Gehtsoft public nuget channel](https://www.myget.org/F/gehtsoft-public/api/v3/index.json)
-or download package directly from releases here.
+You can get the latest official release from [nuget.org](https://www.nuget.org/packages/BallisticCalculator)
+
+If you want to use the latest development version of the package, use [Gehtsoft public nuget channel](https://www.myget.org/F/gehtsoft-public/api/v3/index.json)
+
+
 
 The library is also available in 
 * Go: https://github.com/gehtsoft-usa/go_ballisticcalc
