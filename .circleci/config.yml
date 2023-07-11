@@ -1,10 +1,10 @@
 version: 2.1
 
 jobs:
-  build:
+  test:
     docker:
      - image: mcr.microsoft.com/dotnet/sdk:7.0
-    step:
+    steps:
      - checkout
      - run: dotnet restore BallisticCalculator.sln 
      - run: dotnet build --no-restore BallisticCalculator.sln
