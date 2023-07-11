@@ -10,3 +10,7 @@ jobs:
      - run: dotnet build --no-restore BallisticCalculator.sln
      - run: dotnet test --no-build BallisticCalculator.sln
      
+workflows:
+  test:
+    jobs:
+      - test
