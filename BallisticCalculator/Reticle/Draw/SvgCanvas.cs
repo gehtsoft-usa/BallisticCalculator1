@@ -192,7 +192,6 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="height"></param>
         /// <param name="text"></param>
         /// <param name="color"></param>
-        /// <param name="anchor"></param>
         public void Text(float x, float y, float height, string text, string color)
             => Text(x, y, height, text, color, TextAnchor.Left);
 
