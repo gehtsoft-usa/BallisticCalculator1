@@ -20,7 +20,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.301
+        dotnet-version: 7.0.305
 
     - name: Set up JDK 11
       uses: actions/setup-java@v1
