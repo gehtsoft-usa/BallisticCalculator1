@@ -4,12 +4,14 @@ jobs:
   test:
     docker:
      - image: mcr.microsoft.com/dotnet/sdk:7.0
+    environment:
+     - gs-nuget: https://www.myget.org/F/gehtsoft-public/api
     steps:
      - checkout
-     - run: dotnet restore BallisticCalculator.sln 
+     - run: dotnet restore BallisticCalculator.sln
      - run: dotnet build --no-restore BallisticCalculator.sln
      - run: dotnet test --no-build BallisticCalculator.sln
-     
+
 workflows:
   test:
     jobs:
