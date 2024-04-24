@@ -11,5 +11,4 @@ namespace BallisticCalculator.Debug
             BallisticXmlSerializer.SerializeToFile<AmmunitionLibraryEntry>(le, args[1]);
         }
     }
-        
 }
