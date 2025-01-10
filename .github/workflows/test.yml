@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       config: 'Release'
-      gs-nuget: https://www.myget.org/F/gehtsoft-public/api
+      gs-nuget: https://proget.gehtsoft.com/nuget/public-nuget
 
     steps:
     - uses: actions/checkout@v2
@@ -54,19 +54,10 @@ jobs:
 
       # upload report as build artifact
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: ${{always()}}
       with:
-        name: 'Test Run'
+        name: test-run-${{github.workspace}}/${{env.file_name}}
         path: ${{github.workspace}}/${{env.file_name}}
-
-# action is outdated
-#
-#      # add report as PR comment (if PR)
-#    - name: comment PR
-#      uses: machine-learning-apps/pr-comment@master
-#      if: ${{ github.event_name == 'pull_request' }}
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      with:
-#        path: ${{env.file_name}}
+        overwrite: true
+        include-hidden-files: true
