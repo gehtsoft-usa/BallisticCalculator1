@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.3">Update dependencies.</version>
   <version id="1.1.2">Add text alingment to reticle and drawing canvas.</version>
   <version id="1.1.1">First official version.</version>
   <version id="1.1.0.11">Fix spin direction.</version>
@@ -21,12 +22,13 @@
   <projectUrl>https://github.com/gehtsoft-usa/BallisticCalculator1</projectUrl>
   <license type="expression">LGPL-2.1-or-later</license>
   <copyright>Gehtsoft USA LLC 2016-2022</copyright>
+  <custom-property id="readme">docs/readme.md</custom-property>
  </properties>
  <projects>
    <project id="BallisticCalculator">
     <description>Ballistic Calculator</description>
     <additional-file file="../doc/BallisticCaculator.xml" target="*" />
-    <additional-file file="../nuget/readme.md" target="/" />
+    <additional-file file="../readme.md" target="docs/" />
    </project>
  </projects>
 </nuget>

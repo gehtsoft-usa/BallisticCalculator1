@@ -24,13 +24,15 @@ Please refer to [online version of the documentation](http://docs.gehtsoftusa.co
 
 You can get the latest official release from [nuget.org](https://www.nuget.org/packages/BallisticCalculator)
 
-If you want to use the latest development version of the package, use [Gehtsoft public nuget channel](https://www.myget.org/F/gehtsoft-public/api/v3/index.json)
+If you want to use the latest development version of the package, use [Gehtsoft public nuget channel](https://proget.gehtsoft.com/feeds/public-nuget)
 
+The library is available in
 
+* .NET: https://github.com/gehtsoft-usa/BallisticCalculator1
 
-The library is also available in 
 * Go: https://github.com/gehtsoft-usa/go_ballisticcalc
-* Java: https://github.com/nikolaygekht/ballistic.calculator.java (in progress)
+
+* Java: https://github.com/nikolaygekht/ballistic.calculator.java
 
 For those who are looking for a JavaScript version, I highly recommend [Yet Another Ballistic Calculator](https://ptosis.ch/ebalka/ebalka.html) project of our friend Alexandre Trofimov.
 
@@ -38,13 +40,6 @@ The current status of the project is ALPHA version.
 
 RISK NOTICE
 
-The library performs very limited simulation of a complex physical process and so it performs a lot
-of approximations. Therefore the calculation results MUST NOT be considered as completely and reliably
-reflecting actual behavior or characteristics of projectiles. While these results may be used for
-educational purpose, they must NOT be considered as reliable for the areas where incorrect calculation may
-cause making a wrong decision, financial harm, or can put a human life at risk.
+The library performs very limited simulation of a complex physical process and so it performs a lot of approximations. Therefore the calculation results MUST NOT be considered as completely and reliably reflecting actual behavior or characteristics of projectiles. While these results may be used for educational purpose, they must NOT be considered as reliable for the areas where incorrect calculation may cause making a wrong decision, financial harm, or can put a human life at risk.
 
-THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
