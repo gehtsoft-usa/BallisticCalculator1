@@ -1,0 +1,106 @@
+﻿namespace BallisticCalculator
+{
+    internal class RA4DragTable : DragTable
+    {
+        public override DragTableId TableId => DragTableId.GS;
+
+        public static int PointCount => gDataPoints.Length;
+
+        public static DragTableDataPoint DataPoint(int index) => gDataPoints[index];
+
+        private static readonly DragTableDataPoint[] gDataPoints = new DragTableDataPoint[]
+        {
+             new DragTableDataPoint(0.000, 0.2283),
+             new DragTableDataPoint(0.050, 0.2283),
+             new DragTableDataPoint(0.100, 0.2282),
+             new DragTableDataPoint(0.150, 0.2281),
+             new DragTableDataPoint(0.200, 0.2281),
+             new DragTableDataPoint(0.250, 0.2281),
+             new DragTableDataPoint(0.300, 0.2281),
+             new DragTableDataPoint(0.350, 0.2281),
+             new DragTableDataPoint(0.400, 0.2281),
+             new DragTableDataPoint(0.450, 0.2281),
+             new DragTableDataPoint(0.500, 0.2281),
+             new DragTableDataPoint(0.550, 0.2281),
+             new DragTableDataPoint(0.600, 0.2281),
+             new DragTableDataPoint(0.650, 0.2281),
+             new DragTableDataPoint(0.700, 0.2288),
+             new DragTableDataPoint(0.725, 0.2296),
+             new DragTableDataPoint(0.750, 0.2307),
+             new DragTableDataPoint(0.775, 0.2320),
+             new DragTableDataPoint(0.800, 0.2334),
+             new DragTableDataPoint(0.825, 0.2359),
+             new DragTableDataPoint(0.850, 0.2389),
+             new DragTableDataPoint(0.875, 0.2480),
+             new DragTableDataPoint(0.900, 0.2604),
+             new DragTableDataPoint(0.925, 0.2819),
+             new DragTableDataPoint(0.950, 0.3111),
+             new DragTableDataPoint(0.975, 0.3496),
+             new DragTableDataPoint(1.000, 0.3975),
+             new DragTableDataPoint(1.025, 0.4530),
+             new DragTableDataPoint(1.050, 0.5010),
+             new DragTableDataPoint(1.075, 0.5476),
+             new DragTableDataPoint(1.100, 0.5719),
+             new DragTableDataPoint(1.125, 0.5895),
+             new DragTableDataPoint(1.150, 0.5943),
+             new DragTableDataPoint(1.175, 0.5933),
+             new DragTableDataPoint(1.200, 0.5881),
+             new DragTableDataPoint(1.225, 0.5810),
+             new DragTableDataPoint(1.250, 0.5736),
+             new DragTableDataPoint(1.275, 0.5690),
+             new DragTableDataPoint(1.300, 0.5651),
+             new DragTableDataPoint(1.325, 0.5629),
+             new DragTableDataPoint(1.350, 0.5609),
+             new DragTableDataPoint(1.375, 0.5591),
+             new DragTableDataPoint(1.400, 0.5575),
+             new DragTableDataPoint(1.425, 0.5558),
+             new DragTableDataPoint(1.450, 0.5543),
+             new DragTableDataPoint(1.475, 0.5527),
+             new DragTableDataPoint(1.500, 0.5513),
+             new DragTableDataPoint(1.525, 0.5499),
+             new DragTableDataPoint(1.550, 0.5485),
+             new DragTableDataPoint(1.575, 0.5472),
+             new DragTableDataPoint(1.600, 0.5460),
+             new DragTableDataPoint(1.625, 0.5449),
+             new DragTableDataPoint(1.650, 0.5438),
+             new DragTableDataPoint(1.675, 0.5428),
+             new DragTableDataPoint(1.700, 0.5419),
+             new DragTableDataPoint(1.725, 0.5410),
+             new DragTableDataPoint(1.750, 0.5401),
+             new DragTableDataPoint(1.775, 0.5393),
+             new DragTableDataPoint(1.800, 0.5385),
+             new DragTableDataPoint(1.825, 0.5377),
+             new DragTableDataPoint(1.850, 0.5369),
+             new DragTableDataPoint(1.875, 0.5361),
+             new DragTableDataPoint(1.900, 0.5354),
+             new DragTableDataPoint(1.925, 0.5346),
+             new DragTableDataPoint(1.950, 0.5338),
+             new DragTableDataPoint(2.000, 0.5323),
+             new DragTableDataPoint(2.100, 0.5294),
+             new DragTableDataPoint(2.200, 0.5267),
+             new DragTableDataPoint(2.300, 0.5240),
+             new DragTableDataPoint(2.400, 0.5216),
+             new DragTableDataPoint(2.500, 0.5193),
+             new DragTableDataPoint(2.600, 0.5170),
+             new DragTableDataPoint(2.650, 0.5160),
+             new DragTableDataPoint(2.700, 0.5149),
+             new DragTableDataPoint(2.800, 0.5129),
+             new DragTableDataPoint(2.900, 0.5109),
+             new DragTableDataPoint(3.000, 0.5091),
+             new DragTableDataPoint(3.100, 0.5074),
+             new DragTableDataPoint(3.200, 0.5058),
+             new DragTableDataPoint(3.300, 0.5043),
+             new DragTableDataPoint(3.400, 0.5029),
+             new DragTableDataPoint(3.500, 0.5017),
+             new DragTableDataPoint(3.600, 0.5006),
+             new DragTableDataPoint(3.700, 0.4995),
+             new DragTableDataPoint(3.800, 0.4986),
+             new DragTableDataPoint(3.900, 0.4977),
+             new DragTableDataPoint(4.000, 0.4969)
+        };
+
+        public RA4DragTable() : base(gDataPoints)
+        {
+        }
+    }
+}

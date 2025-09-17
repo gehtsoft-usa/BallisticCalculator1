@@ -48,10 +48,15 @@ namespace BallisticCalculator
         /// GS are sphere
         /// </summary>
         GS,
-        
+
         /// <summary>
         /// Custom coefficient (specify table directly)
         /// </summary>
-        GC, 
+        GC,
+
+        /// <summary>
+        /// RA4 are sphere
+        /// </summary>
+        RA4,
     }
 }
