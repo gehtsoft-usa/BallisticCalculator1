@@ -106,6 +106,7 @@ namespace BallisticCalculator
 
                 var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                                                                   VelocityUnit.MetersPerSecond)).To(velocity.Unit);
+
                 var alt = alt0;
                 //run all the way down the range
                 while (rangeVector.X <= maximumRange)
@@ -206,8 +207,13 @@ namespace BallisticCalculator
 
             var barrelAzimuth = shot.BarrelAzymuth ?? new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
             var barrelElevation = shot.SightAngle;
+            
             if (shot.ShotAngle != null)
                 barrelElevation += shot.ShotAngle.Value;
+
+            var lineOfSight = shot.ShotAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian);
+            double lineOfSightTan = MeasurementMath.Tan(lineOfSight);
+            double lineOfSightCos = MeasurementMath.Cos(lineOfSight);
 
             Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
             TimeSpan time = new TimeSpan(0);
@@ -249,13 +255,13 @@ namespace BallisticCalculator
             var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisticFactor;
 
             var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
-                                                                  VelocityUnit.MetersPerSecond)).To(velocity.Unit);
-
+                                                              VelocityUnit.MetersPerSecond)).To(velocity.Unit);
 
             var alt = alt0;
+            var distance = new Measurement<DistanceUnit>(0, rangeVector.X.Unit);
 
             //run all the way down the range
-            while (rangeVector.X <= maximumRange)
+            while (distance <= maximumRange)
             {
                 //update density and Mach velocity each 10 feet of altitude
                 if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
@@ -267,7 +273,7 @@ namespace BallisticCalculator
                 if (velocity < MinimumVelocity || rangeVector.Y < -MaximumDrop)
                     break;
 
-                if (rangeVector.X >= nextWindRange)
+                if (distance >= nextWindRange)
                 {
                     currentWind++;
                     windVector = WindVector(shot, wind[currentWind], velocity.Unit);
@@ -278,22 +284,26 @@ namespace BallisticCalculator
                         nextWindRange = wind[currentWind].MaximumRange.Value;
                 }
 
-                if (rangeVector.X >= nextRangeDistance)
+                if (distance >= nextRangeDistance)
                 {
                     var windage = rangeVector.Z;
+                    
                     if (calculateDrift)
                         windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1), DistanceUnit.Inch);
+
+                    var lineOfSightElevation = rangeVector.X * lineOfSightTan;
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
                         weight: ammunition.Weight,
-                        distance: rangeVector.X,
+                        distance: distance,
                         velocity: velocity,
                         mach: velocity / mach,
-                        drop: rangeVector.Y,
+                        drop: rangeVector.Y - lineOfSightElevation,
+                        lineOfSightElevation: lineOfSightElevation,
                         windage: windage);
-                    nextRangeDistance += step;
-                    currentItem++;
+                     nextRangeDistance += step;
+                    currentItem++;                   
                     if (currentItem == trajectoryPoints.Length)
                         break;
                 }
@@ -312,18 +322,25 @@ namespace BallisticCalculator
                     dragTableNode = dragTableNode.Previous;
 
                 drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
+                var factor = deltaTime.TotalSeconds * drag;
+
+                var xyVector = Math.Atan(velocityVector.Y.In(VelocityUnit.FeetPerSecond) / velocityVector.X.In(VelocityUnit.FeetPerSecond));
 
                 velocityVector = new Vector<VelocityUnit>(
-                    velocityVector.X - deltaTime.TotalSeconds * drag * velocityAdjusted.X,
-                    velocityVector.Y - deltaTime.TotalSeconds * drag * velocityAdjusted.Y
+                    velocityVector.X - factor * velocityAdjusted.X
+                                     /*- earthGravity * Math.Sin(xyVector) * deltaTime.TotalSeconds*/,
+                    velocityVector.Y - factor * velocityAdjusted.Y
                                      - earthGravity * deltaTime.TotalSeconds,
-                    velocityVector.Z - deltaTime.TotalSeconds * drag * velocityAdjusted.Z);
+                    velocityVector.Z - factor * velocityAdjusted.Z
+                 );
 
-                var deltaRangeVector = new Vector<DistanceUnit>(calculationStep,
+                var deltaRangeVector = new Vector<DistanceUnit>(
+                        new Measurement<DistanceUnit>(velocityVector.X.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
                         new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
                         new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
                 rangeVector += deltaRangeVector;
+                distance = rangeVector.X / lineOfSightCos;
                 alt += deltaRangeVector.Y;
                 velocity = velocityVector.Magnitude;
                 time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));

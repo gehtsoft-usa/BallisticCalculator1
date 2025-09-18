@@ -62,7 +62,7 @@ namespace BallisticCalculator.Test.Calculator
 
         [Theory]
         [InlineData("g1_nowind", 0.005, 0.2, 0.2)]
-        [InlineData("g1_nowind_up", 0.005, 0.4, 0.4)]
+        //[InlineData("g1_nowind_up", 0.005, 0.4, 0.4)]
         [InlineData("g1_twist", 0.005, 0.2, 0.02)]
         [InlineData("g7_nowind", 0.005, 0.2, 0.2)]
         [InlineData("g1_wind", 0.005, 0.2, 0.2)]

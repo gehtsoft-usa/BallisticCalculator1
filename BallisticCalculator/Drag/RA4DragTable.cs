@@ -2,7 +2,7 @@
 {
     internal class RA4DragTable : DragTable
     {
-        public override DragTableId TableId => DragTableId.GS;
+        public override DragTableId TableId => DragTableId.RA4;
 
         public static int PointCount => gDataPoints.Length;
 

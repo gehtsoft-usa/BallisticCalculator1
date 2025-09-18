@@ -57,6 +57,12 @@ namespace BallisticCalculator
         public Measurement<EnergyUnit> Energy { get; }
 
         /// <summary>
+        /// The difference between the line of sight and the altitude of the muzzle
+        /// </summary>
+        [BXmlProperty(Name = "lineOfSightElevation")]
+        public Measurement<DistanceUnit> LineOfSightElevation { get; }
+
+        /// <summary>
         /// Adjustment for drop in angular units
         /// </summary>
         [JsonIgnore]
@@ -87,14 +93,34 @@ namespace BallisticCalculator
         public TrajectoryPoint(TimeSpan time, Measurement<WeightUnit> weight, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> windage)
-            : this(time, distance, velocity, mach, drop, windage,
+            : this(time, distance, velocity, mach, drop, new Measurement<DistanceUnit>(0, DistanceUnit.Meter), windage,
                   MeasurementMath.KineticEnergy(weight, velocity),
                   BallisticMath.OptimalGameWeight(weight, velocity))
         {
         }
 
         /// <summary>
-        /// Constructor for serialization
+        /// Constructor
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="weight"></param>
+        /// <param name="distance"></param>
+        /// <param name="velocity"></param>
+        /// <param name="mach"></param>
+        /// <param name="drop"></param>
+        /// <param name="lineOfSightElevation"></param>
+        /// <param name="windage"></param>
+        public TrajectoryPoint(TimeSpan time, Measurement<WeightUnit> weight, Measurement<DistanceUnit> distance,
+                               Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop, Measurement<DistanceUnit> lineOfSightElevation,
+                               Measurement<DistanceUnit> windage)
+            : this(time, distance, velocity, mach, drop, lineOfSightElevation, windage,
+                  MeasurementMath.KineticEnergy(weight, velocity),
+                  BallisticMath.OptimalGameWeight(weight, velocity))
+        {
+        }
+
+        /// <summary>
+        /// Constructor for backward compatibility 
         /// </summary>
         /// <param name="time"></param>
         /// <param name="distance"></param>
@@ -104,10 +130,31 @@ namespace BallisticCalculator
         /// <param name="windage"></param>
         /// <param name="energy"></param>
         /// <param name="optimalGameWeight"></param>
-        [JsonConstructor]
+        public TrajectoryPoint(TimeSpan time, Measurement<DistanceUnit> distance,
+                               Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
+                               Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy,
+                               Measurement<WeightUnit> optimalGameWeight)
+            : this(time, distance, velocity, mach, drop, Measurement<DistanceUnit>.ZERO, windage, energy, optimalGameWeight)
+        {
+        }
+
+            /// <summary>
+            /// Constructor for serialization
+            /// </summary>
+            /// <param name="time"></param>
+            /// <param name="distance"></param>
+            /// <param name="velocity"></param>
+            /// <param name="mach"></param>
+            /// <param name="drop"></param>
+            /// <param name="lineOfSightElevation"></param>
+            /// <param name="windage"></param>
+            /// <param name="energy"></param>
+            /// <param name="optimalGameWeight"></param>
+            [JsonConstructor]
         [BXmlConstructor]
         public TrajectoryPoint(TimeSpan time, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
+                               Measurement<DistanceUnit> lineOfSightElevation,
                                Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy,
                                Measurement<WeightUnit> optimalGameWeight)
         {
@@ -115,6 +162,7 @@ namespace BallisticCalculator
             Distance = distance;
             Velocity = velocity;
             Drop = drop;
+            LineOfSightElevation = lineOfSightElevation;
             if (Distance.Value > 0)
                 DropAdjustment = MeasurementMath.Atan(Drop / Distance);
             else
