@@ -55,7 +55,7 @@ namespace BallisticCalculator
         GC,
 
         /// <summary>
-        /// RA4 are sphere
+        /// RA4 is drag model for slugs, rimfire and airguns
         /// </summary>
         RA4,
     }
