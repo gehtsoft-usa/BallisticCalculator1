@@ -1,0 +1,226 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Namespace BallisticCalculator.Reticle.Data</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Namespace BallisticCalculator.Reticle.Data</h1>
+<h2>Brief</h2>
+<p>The classes used to define the reticle image.</p>
+<h2>Details</h2><p><b>Key elements of the reticle definition</b></p>
+<p>The main class that contains the reticle definition
+is <a href="BallisticCalculator.Reticle.Data.ReticleDefinition.html"><code>ReticleDefinition</code></a>.</p>
+<p>You can either create the reticle programmatically or load it
+from the <a href="reticleXmlFile.html">reticle definition file</a>.</p>
+<p>The reticle image is defined by adding
+<a href="BallisticCalculator.Reticle.Data.ReticleElement.html"><code>ReticleElement</code></a>s
+to <a href="BallisticCalculator.Reticle.Data.ReticleDefinition.Elements.IVA.html"><code>ReticleDefinition.Elements</code></a>
+collection.</p>
+<p>You can also define <a href="BallisticCalculator.Reticle.Data.ReticleBulletDropCompensatorPoint.html">BDC</a> (bullet drop compensator)
+point to display the distances that matches the specified mark on the reticle.
+Add BDC points to
+<a href="BallisticCalculator.Reticle.Data.ReticleDefinition.BulletDropCompensator.fd7.html"><code>ReticleDefinition.BulletDropCompensator</code></a>.</p>
+<p><b>Coordinate System</b></p>
+<p>The reticle uses angular coordinate system, i.e. position and
+size of each element is defined in mils, minutes of angle or
+other angular units.</p>
+<p>You define two parameters for the reticle: the size (which is, in other words,
+the field of view) and the offset of zero point from top-left corner of the retcile.</p>
+<p>The zero point will have coordinates (0, 0).</p>
+<p>X coordiante is for windage (i.e. drifting the projectile left or right
+from the line of sight due to wind or precession). A negative value
+means drift to left, a positive value means drift to right.</p>
+<p>Y coordinate is for projectile drop (i.e. moving the projectile via
+ballistic trajectory). Positive value means that the projectile is
+above the line of sight and the negative value means that the
+projectile is below the line of sight.</p>
+<p>Refer to image below for visualization of the reticle coordinate system</p>
+<p><img src="reticle.png"></p>
+<p>See also the definition of MilDot reticle for 10x scope
+in the library sources</p>
+<p><a href="https://github.com/gehtsoft-usa/BallisticCalculator1/blob/main/BallisticCalculator/Reticle/MilDotReticle.cs" target="_blank"><code class="ctag">MilDotReticle.cs</code></a>.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Classes</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleBulletDropCompensatorPoint.html">ReticleBulletDropCompensatorPoint</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The information about bullet drop compensator point</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleBulletDropCompensatorPointCollection.html">ReticleBulletDropCompensatorPointCollection</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Collection of ReticleBulletDropCompensatorPoint</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleCircle.html">ReticleCircle</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>A circle</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleCollectionBase.html">ReticleCollectionBase<T></a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The base class for reticle collections</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleDefinition.html">ReticleDefinition</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The definition of a reticle</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleElement.html">ReticleElement</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>An element of a reticle</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleElementsCollection.html">ReticleElementsCollection</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>A collection of reticle elements</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleLine.html">ReticleLine</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>A line</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePath.html">ReticlePath</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Reticle path.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePathElement.html">ReticlePathElement</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The base class for path elements</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePathElementArc.html">ReticlePathElementArc</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Arc path element</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePathElementLineTo.html">ReticlePathElementLineTo</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>LineTo path element</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePathElementMoveTo.html">ReticlePathElementMoveTo</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>MoveTo path element</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePathElementsCollection.html">ReticlePathElementsCollection</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>A collection of reticle path elements</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePosition.html">ReticlePosition</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>A position on the reticle</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleRectangle.html">ReticleRectangle</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Rectangle</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleText.html">ReticleText</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Text</p>
+    </td>
+  </tr>
+</table>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Enumerations</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticleElementType.html">ReticleElementType</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The type of the</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.ReticlePathElementType.html">ReticlePathElementType</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The type of a reticle path element</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Data.TextAnchor.html">TextAnchor</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Text anchor position</p>
+    </td>
+  </tr>
+</table>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Tags</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="reticleXmlFile.html">Reticle definition file format</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The section describes the reticle definition file format</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>
