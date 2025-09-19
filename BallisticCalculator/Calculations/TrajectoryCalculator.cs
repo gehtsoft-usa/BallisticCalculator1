@@ -48,16 +48,19 @@ namespace BallisticCalculator
         /// <summary>
         /// Calculates the sight angle for the specified zero distance
         /// </summary>
-        /// <param name="ammunition"></param>
-        /// <param name="rifle"></param>
-        /// <param name="atmosphere"></param>
-        /// <param name="dragTable">Custom dragTable</param>
+        /// <param name="ammunition">The ammunition used to zero</param>
+        /// <param name="rifle">The rifle zeroed</param>
+        /// <param name="atmosphere">The atmosphere of the time of zeroing</param>
+        /// <param name="dragTable">Custom dragTable (is DragTableId.GC is used)</param>
+        /// <param name="accuracy">Accuracy of calculation. Default accuracy is 0.1mm</param>
         /// <returns></returns>
-        public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, DragTable dragTable = null)
+        /// <exception cref="InvalidOperationException">Exception is thrown in case zeroing parameters cannot be found. Try to lower accuracy if you get this exception</exception>"
+        public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, DragTable dragTable = null, Measurement<DistanceUnit>? accuracy = null)
         {
             Measurement<DistanceUnit> rangeTo = rifle.Zero.Distance * 2;
             Measurement<DistanceUnit> step = rifle.Zero.Distance / 100;
             Measurement<DistanceUnit> calculationStep = GetCalculationStep(step);
+            accuracy ??= new Measurement<DistanceUnit>(0.1, DistanceUnit.Millimeter);
 
             dragTable = ValidateDragTable(ammunition, dragTable);
 
@@ -111,8 +114,6 @@ namespace BallisticCalculator
                 //run all the way down the range
                 while (rangeVector.X <= maximumRange)
                 {
-                    //Measurement<DistanceUnit> alt = alt0 + rangeVector.Y;
-
                     //update density and Mach velocity each 10 feet
                     if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
                     {
@@ -141,9 +142,11 @@ namespace BallisticCalculator
                         velocityVector.Y - deltaTime.TotalSeconds * drag * velocityVector.Y - earthGravity * deltaTime.TotalSeconds,
                         velocityVector.Z - deltaTime.TotalSeconds * drag * velocityVector.Z);
 
-                    var deltaRangeVector = new Vector<DistanceUnit>(calculationStep,
+                    var deltaRangeVector = new Vector<DistanceUnit>(
+                            new Measurement<DistanceUnit>(velocityVector.X.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
                             new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
-                            new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
+                            new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter)
+                            );
 
                     rangeVector += deltaRangeVector;
                     alt += deltaRangeVector.Y;
@@ -151,7 +154,7 @@ namespace BallisticCalculator
                     if (rangeVector.X >= rifle.Zero.Distance)
                     {
                         var match = rangeVector.Y - verticalOffset;
-                        if (Math.Abs(match.In(DistanceUnit.Millimeter)) < 1)
+                        if (Math.Abs(match.In(DistanceUnit.Millimeter)) < accuracy.Value.In(DistanceUnit.Millimeter))
                             return sightAngle;
 
                         sightAngle += new Measurement<AngularUnit>(-match.In(DistanceUnit.Centimeter) / rifle.Zero.Distance.In(DistanceUnit.Meter) * 100, AngularUnit.CmPer100Meters);
@@ -213,6 +216,7 @@ namespace BallisticCalculator
 
             var lineOfSight = shot.ShotAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian);
             double lineOfSightTan = MeasurementMath.Tan(lineOfSight);
+            double lineOfDepartureTan = MeasurementMath.Tan(barrelElevation);
             double lineOfSightCos = MeasurementMath.Cos(lineOfSight);
 
             Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
@@ -247,7 +251,7 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> maximumRange = rangeTo + calculationStep;
             Measurement<DistanceUnit> nextRangeDistance = new Measurement<DistanceUnit>(0, DistanceUnit.Meter);
 
-            Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000, DistanceUnit.Meter);
+            Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000000, DistanceUnit.Meter);
             DragTableNode dragTableNode = null;
 
             double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
@@ -292,6 +296,7 @@ namespace BallisticCalculator
                         windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1), DistanceUnit.Inch);
 
                     var lineOfSightElevation = rangeVector.X * lineOfSightTan;
+                    var lineOfDepartureElevation = rangeVector.X * lineOfDepartureTan - rifle.Sight.SightHeight;
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
@@ -301,6 +306,7 @@ namespace BallisticCalculator
                         mach: velocity / mach,
                         drop: rangeVector.Y - lineOfSightElevation,
                         lineOfSightElevation: lineOfSightElevation,
+                        lineOfDepartureElevation: lineOfDepartureElevation,
                         windage: windage);
                      nextRangeDistance += step;
                     currentItem++;                   
@@ -324,11 +330,8 @@ namespace BallisticCalculator
                 drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
                 var factor = deltaTime.TotalSeconds * drag;
 
-                var xyVector = Math.Atan(velocityVector.Y.In(VelocityUnit.FeetPerSecond) / velocityVector.X.In(VelocityUnit.FeetPerSecond));
-
                 velocityVector = new Vector<VelocityUnit>(
-                    velocityVector.X - factor * velocityAdjusted.X
-                                     /*- earthGravity * Math.Sin(xyVector) * deltaTime.TotalSeconds*/,
+                    velocityVector.X - factor * velocityAdjusted.X,
                     velocityVector.Y - factor * velocityAdjusted.Y
                                      - earthGravity * deltaTime.TotalSeconds,
                     velocityVector.Z - factor * velocityAdjusted.Z

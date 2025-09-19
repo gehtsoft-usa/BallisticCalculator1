@@ -58,7 +58,7 @@ namespace BallisticCalculator.Debug
 
             foreach (var point in trajectory)
             {
-                Console.WriteLine($"{point.Time} {point.Distance.In(DistanceUnit.Yard):N0} {point.Velocity.In(VelocityUnit.FeetPerSecond):N1} {point.Drop.In(DistanceUnit.Inch):N1} {point.LineOfSightElevation.In(DistanceUnit.Inch):N1} {point.Windage.In(DistanceUnit.Inch):N1}");
+                Console.WriteLine($"{point.Time};{point.Distance.In(DistanceUnit.Yard):N0};{point.Velocity.In(VelocityUnit.FeetPerSecond):N1};{point.Drop.In(DistanceUnit.Inch):N1};{point.LineOfSightElevation.In(DistanceUnit.Inch):N1};{point.Windage.In(DistanceUnit.Inch):N1};{point.DropVsLineOfDeparture.In(DistanceUnit.Inch):N1}");
             }
         }
     }

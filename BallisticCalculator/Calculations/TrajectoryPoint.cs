@@ -37,7 +37,7 @@ namespace BallisticCalculator
 
         /// <summary>
         /// <para>Current drop</para>
-        /// <para>The stop is vertical distance between trajectory and the line of sight.</para>
+        /// <para>The drop is vertical distance between trajectory and the line of sight.</para>
         /// </summary>
         [BXmlProperty(Name = "drop")]
         public Measurement<DistanceUnit> Drop { get; }
@@ -59,8 +59,20 @@ namespace BallisticCalculator
         /// <summary>
         /// The difference between the line of sight and the altitude of the muzzle
         /// </summary>
-        [BXmlProperty(Name = "lineOfSightElevation")]
+        [BXmlProperty(Name = "lineOfSight")]
         public Measurement<DistanceUnit> LineOfSightElevation { get; }
+
+        /// <summary>
+        /// The difference between the line of departure and the altitude of the muzzle
+        /// </summary>
+        [BXmlProperty(Name = "lineOfDeparture")]
+        public Measurement<DistanceUnit> LineOfDepartureElevation { get; }
+
+        /// <summary>
+        /// Vertical distance between trajectory and the line of departure.
+        /// </summary>
+        [JsonIgnore]
+        public Measurement<DistanceUnit> DropVsLineOfDeparture => LineOfDepartureElevation - (Drop + LineOfSightElevation);
 
         /// <summary>
         /// Adjustment for drop in angular units
@@ -93,7 +105,7 @@ namespace BallisticCalculator
         public TrajectoryPoint(TimeSpan time, Measurement<WeightUnit> weight, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> windage)
-            : this(time, distance, velocity, mach, drop, new Measurement<DistanceUnit>(0, DistanceUnit.Meter), windage,
+            : this(time, distance, velocity, mach, drop, new Measurement<DistanceUnit>(0, DistanceUnit.Meter), new Measurement<DistanceUnit>(0, DistanceUnit.Meter), windage,
                   MeasurementMath.KineticEnergy(weight, velocity),
                   BallisticMath.OptimalGameWeight(weight, velocity))
         {
@@ -109,11 +121,13 @@ namespace BallisticCalculator
         /// <param name="mach"></param>
         /// <param name="drop"></param>
         /// <param name="lineOfSightElevation"></param>
+        /// <param name="lineOfDepartureElevation"></param>
         /// <param name="windage"></param>
         public TrajectoryPoint(TimeSpan time, Measurement<WeightUnit> weight, Measurement<DistanceUnit> distance,
-                               Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop, Measurement<DistanceUnit> lineOfSightElevation,
+                               Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop, 
+                               Measurement<DistanceUnit> lineOfSightElevation, Measurement<DistanceUnit> lineOfDepartureElevation,
                                Measurement<DistanceUnit> windage)
-            : this(time, distance, velocity, mach, drop, lineOfSightElevation, windage,
+            : this(time, distance, velocity, mach, drop, lineOfSightElevation, lineOfDepartureElevation, windage,
                   MeasurementMath.KineticEnergy(weight, velocity),
                   BallisticMath.OptimalGameWeight(weight, velocity))
         {
@@ -134,27 +148,29 @@ namespace BallisticCalculator
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy,
                                Measurement<WeightUnit> optimalGameWeight)
-            : this(time, distance, velocity, mach, drop, Measurement<DistanceUnit>.ZERO, windage, energy, optimalGameWeight)
+            : this(time, distance, velocity, mach, drop, Measurement<DistanceUnit>.ZERO, Measurement<DistanceUnit>.ZERO, windage, energy, optimalGameWeight)
         {
         }
 
-            /// <summary>
-            /// Constructor for serialization
-            /// </summary>
-            /// <param name="time"></param>
-            /// <param name="distance"></param>
-            /// <param name="velocity"></param>
-            /// <param name="mach"></param>
-            /// <param name="drop"></param>
-            /// <param name="lineOfSightElevation"></param>
-            /// <param name="windage"></param>
-            /// <param name="energy"></param>
-            /// <param name="optimalGameWeight"></param>
-            [JsonConstructor]
+        /// <summary>
+        /// Constructor for serialization
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="distance"></param>
+        /// <param name="velocity"></param>
+        /// <param name="mach"></param>
+        /// <param name="drop"></param>
+        /// <param name="lineOfSightElevation"></param>
+        /// <param name="lineOfDepartureElevation"></param>
+        /// <param name="windage"></param>
+        /// <param name="energy"></param>
+        /// <param name="optimalGameWeight"></param>
+        [JsonConstructor]
         [BXmlConstructor]
         public TrajectoryPoint(TimeSpan time, Measurement<DistanceUnit> distance,
                                Measurement<VelocityUnit> velocity, double mach, Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> lineOfSightElevation,
+                               Measurement<DistanceUnit> lineOfDepartureElevation,
                                Measurement<DistanceUnit> windage, Measurement<EnergyUnit> energy,
                                Measurement<WeightUnit> optimalGameWeight)
         {
@@ -163,6 +179,7 @@ namespace BallisticCalculator
             Velocity = velocity;
             Drop = drop;
             LineOfSightElevation = lineOfSightElevation;
+            LineOfDepartureElevation = lineOfDepartureElevation;
             if (Distance.Value > 0)
                 DropAdjustment = MeasurementMath.Atan(Drop / Distance);
             else

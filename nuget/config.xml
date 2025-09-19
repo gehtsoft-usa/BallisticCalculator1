@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.5">Added line of departure and drop vs line of departure. Added zero elevation calculation accuracy parameter.</version>
   <version id="1.1.4">Add RA4 model, update trajectory calculation for upward or downward line of sight.</version>
   <version id="1.1.3">Update dependencies.</version>
   <version id="1.1.2">Add text alingment to reticle and drawing canvas.</version>
