@@ -1,0 +1,90 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Ballistic Calculator</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Ballistic Calculator</h1><p>The library provides trajectory calculations for projectiles, including for various applications, including air rifles, bows, firearms, artillery, and so on.</p>
+<p>3DF (3 degrees of freedom) model that is used in this calculator is rooted in <a href="http://www.jbmballistics.com/ballistics/downloads/downloads.shtml" target="_blank">old C sources</a> of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's &quot;Applied Ballistics&quot; book and ideas of the friendly project by Alexandre Trofimov.</p>
+<p>Changes made since porting original C sources:</p><ul class="main">
+  <li><p>&quot;Deciphering&quot; formulas and making them readable for anyone familiar with the school curriculum of physics.</p></li>
+  <li><p>New drag calculation method with higher accuracy (40+ approximation points for calculating polynomial coefficients vs 5-6).</p></li>
+  <li><p>New atmosphere parameters calculating basing on NASA formulas</p></li>
+  <li><p>New algorithm of step size definition to find the right balance between performance and accuracy.</p></li>
+  <li><p>Drift calculation is added using Liltz's formulas</p></li>
+  <li><p>Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern commercial calculators.</p></li>
+</ul><p>The source code of the library is available in git: <a href="https://github.com/gehtsoft-usa/BallisticCalculator1" target="_blank">https://github.com/gehtsoft-usa/BallisticCalculator1</a></p>
+<p>Please feel free to report defects in <a href="https://github.com/gehtsoft-usa/BallisticCalculator1/issues" target="_blank">Git Issues</a>.</p>
+<p>The library is also available in Go: <a href="https://github.com/gehtsoft-usa/go_ballisticcalc" target="_blank">https://github.com/gehtsoft-usa/go_ballisticcalc</a></p>
+<p>For those who are looking for a JavaScript version, I highly recommend <a href="https://ptosis.ch/ebalka/ebalka.html" target="_blank">Yet Another Ballistic Calculator</a> project of our friend Alexandre Trofimov.</p>
+<p>The current status of the project is ALPHA version.</p>
+<p>Suggested reading:</p><ul class="main">
+  <li><p><a href="https://en.wikipedia.org/wiki/Projectile_motion" target="_blank">Projectile motion</a> at wiki.</p></li>
+  <li><p><a href="https://en.wikipedia.org/wiki/Drag_coefficient" target="_blank">Drag coefficient</a> at wiki.</p></li>
+  <li><p><a href="https://en.wikipedia.org/wiki/Ballistic_coefficient" target="_blank">Ballistic coefficient</a> at wiki.</p></li>
+  <li><p><a href="https://en.wikipedia.org/wiki/External_ballistics" target="_blank">External ballistics</a> at wiki.</p></li>
+  <li><p><a href="https://en.wikipedia.org/wiki/Density_of_air" target="_blank">Density of air</a> at wiki.</p></li>
+</ul><p>Recommended books:
+<a href="https://www.amazon.com/Applied-Ballistics-Long-Range-Shooting/dp/0990920615" target="_blank">Applied Ballistics For Long Range Shooting 3rd Edition</a> by Bryan Litz</p>
+<p>Most of variables and parameters in the library are
+defined using special data type <a href="http://docs.gehtsoftusa.com/Gehtsoft.Measurements/web-content.html#Gehtsoft.Measurements.Measurement.html" target="_blank"><code class="ctag">Measurement</code></a>,
+defined in <a href="https://www.nuget.org/packages/Gehtsoft.Measurements/" target="_blank"><code class="ctag">Gehtsoft.Measurement</code></a>
+package. This allows you to seamlessly switch between metric and
+US system or even use them both in the same calculation.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Articles</b></td>
+  </tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="license.html">License Information</a></p>
+    <p>The information about the license</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="risknotice.html">Risk Notice</a></p>
+    <p>The explanation of the risks associated with using 3DF algorithms</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="no_warranties.html">No Warranty Notice</a></p>
+    <p>The explanation that no warranties of any kind is associated with this code</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="example.html">Usage example</a></p>
+    <p>The example of library use</p>
+  </td>
+</tr></table>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Groups</b></td>
+  </tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="BallisticCalculator.html">Namespace BallisticCalculator</a></p>
+    <p>The classes related to calculate a projectile trajectory.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="BallisticCalculator.Reticle.html">Namespace BallisticCalculator.Reticle</a></p>
+    <p>The classes to define and draw reticles.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="BallisticCalculator.Reticle.Data.html">Namespace BallisticCalculator.Reticle.Data</a></p>
+    <p>The classes used to define the reticle image.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="BallisticCalculator.Reticle.Draw.html">Namespace BallisticCalculator.Reticle.Draw</a></p>
+    <p>The classes to draw a reticle and trajectory parameters as SVG image.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="BallisticCalculator.Serialization.html">Namespace BallisticCalculator.Serialization</a></p>
+    <p>The classes related to serialization of the library data.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="BallisticCalculator.Data.Dictionary.html">Namespace BallisticCalculator.Data.Dictionary</a></p>
+    <p></p>
+  </td>
+</tr></table><script language="javascript" type="text/javascript">syncList();</script></body></html>

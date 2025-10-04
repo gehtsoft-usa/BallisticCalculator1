@@ -1,0 +1,73 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Namespace BallisticCalculator.Reticle.Draw</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Namespace BallisticCalculator.Reticle.Draw</h1>
+<h2>Brief</h2>
+<p>The classes to draw a reticle and trajectory parameters as SVG image.</p>
+<h2>Details</h2><p>To draw a reticle use <a href="BallisticCalculator.Reticle.Draw.ReticleDrawController.html"><code>ReticleDrawController</code></a>.</p>
+<p>Example:</p><pre class="example" id="example3"><code class="cs">    using BallisticCalculator.Reticle;
+    using BallisticCalculator.Reticle.Data;
+    using BallisticCalculator.Reticle.Draw;
+    ...
+    var reticle = new MilDotReticle();
+    var canvas = SvgCanvasFactory.Create(&quot;reticle&quot;, &quot;2in&quot;, &quot;2in&quot;);
+    var controller = new ReticleDrawController(reticle, canvas);
+    controller.DrawReticle();
+    string svg = SvgCanvasFactory.ToSvg(canvas);</code></pre><p>If you need to draw a reticle on a Graphics, please
+use <a href="https://www.nuget.org/packages/Svg/" target="_blank">SVG draw library</a>.</p>
+<p>Example</p><pre class="example" id="example4"><code class="cs">    using BallisticCalculator.Reticle;
+    using BallisticCalculator.Reticle.Data;
+    using BallisticCalculator.Reticle.Draw;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.Xml;
+    using Svg;
+
+    ...
+    var svg = SvgCanvasFactory.ToSvg(canvas);
+    XmlDocument xmlDocument = new XmlDocument();
+    xmlDocument.LoadXml(svg);
+    var svgDocument = SvgDocument.Open(xmlDocument);
+    var bm = svgDocument.Draw(1024, 1024);</code></pre><p>You can also implement <a href="BallisticCalculator.Reticle.Draw.IReticleCanvas.html"><code>IReticleCanvas</code></a>
+for Graphics. The example of such implementation is avaiable in
+<a href="https://github.com/gehtsoft-usa/BallisticCalculator1/tree/main/BallisticCalculator.Debug/GraphicsCanvas" target="_blank">git repository</a>.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Classes</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Draw.IReticleCanvas.html">IReticleCanvas</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The interface to a reticle canvas</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Draw.IReticleCanvasPath.html">IReticleCanvasPath</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The interface to a path on a reticle canvas.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Draw.ReticleDrawController.html">ReticleDrawController</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The controller to draw a reticle on a canvas.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="BallisticCalculator.Reticle.Draw.SvgCanvasFactory.html">SvgCanvasFactory</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The factory to create an SVG drawing canvas</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

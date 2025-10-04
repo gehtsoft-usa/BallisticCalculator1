@@ -1,0 +1,34 @@
+ul.mktree { white-space:nowrap; }
+/* Turn off list bullets */
+ul.mktree  li { list-style: none; }
+/* Control how "spaced out" the tree is */
+ul.mktree, ul.mktree ul , ul.mktree li { margin-left:5px; padding:0px; font-family : Verdana, Trebuchet MS, Arial; font-size: 12pt; }
+/* Provide space for our own "bullet" inside the LI */
+/* Show "bullets" in the links, depending on the class of the LI that the link's in */
+ul.mktree  li.liOpen    .bullet { cursor: pointer; }
+ul.mktree  li.liClosed  .bullet { cursor: pointer; }
+ul.mktree  li.liBullet  .bullet { cursor: default; }
+li .bullet:before { font-family: "dripicons-v2" !important; vertical-align: text-bottom; }
+li.liOpen    .bullet:before { content: "\54"; }
+li.liClosed  .bullet:before { content: "\56"; }
+li.liBullet  .bullet:before { content: "\28"; }
+/* Sublists are visible or not based on class of parent LI */
+ul.mktree  li.liOpen    ul { display: block; }
+ul.mktree  li.liClosed  ul { display: none; }
+
+a.select {font-weight:bold;}
+
+body
+{
+    background-color: #f1f1f1;
+    font-size: 13px;
+}
+div.HelpCaption
+{
+    background-image: url(pageImages/header-bg.gif);
+    height: 43px;
+}
+A:link
+{
+    color:#0068be;
+}
