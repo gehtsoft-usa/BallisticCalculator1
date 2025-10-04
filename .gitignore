@@ -4,6 +4,7 @@ obj/
 .vs/
 .vscode/
 .sonarqube/
+.claude/
 TestResults/
 *.csproj.user
 *.nupkg

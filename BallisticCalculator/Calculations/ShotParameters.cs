@@ -16,7 +16,7 @@ namespace BallisticCalculator
         /// <summary>
         /// <para>Sight angle</para>
         /// <para>
-        /// Use <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere, DragTable)">TrajectoryCalculator.SightAngle</see> to calculate
+        /// Use <see cref="TrajectoryCalculator.SightAngle(Ammunition, Rifle, Atmosphere, DragTable, Measurement{DistanceUnit}?)">TrajectoryCalculator.SightAngle</see> to calculate
         /// sight angle by the zero distance
         /// </para>
         /// </summary>
@@ -38,11 +38,11 @@ namespace BallisticCalculator
         public Measurement<AngularUnit>? ShotAngle { get; set; }
 
         /// <summary>
-        /// The azymuth of the shot
+        /// The azimuth of the shot
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("azimuth-angle", Optional = true)]
-        public Measurement<AngularUnit>? BarrelAzymuth { get; set; }
+        public Measurement<AngularUnit>? BarrelAzimuth { get; set; }
 
         /// <summary>
         /// Output table step

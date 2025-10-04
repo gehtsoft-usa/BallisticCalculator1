@@ -12,5 +12,13 @@ namespace BallisticCalculator
 
         public static TimeSpan TravelTime(Measurement<DistanceUnit> distance, Measurement<VelocityUnit> velocity)
             => TimeSpan.FromSeconds(distance.In(DistanceUnit.Meter) / velocity.In(VelocityUnit.MetersPerSecond));
+
+        internal static Measurement<AngularUnit> CalculateAdjustment(Measurement<DistanceUnit> linearAdjustment, Measurement<DistanceUnit> distance)
+        {
+            if (distance.Value > 0)
+                return MeasurementMath.Atan(linearAdjustment / distance);
+            else
+                return 0.As(AngularUnit.Radian);
+        }
     }
 }

@@ -208,16 +208,16 @@ namespace BallisticCalculator
 
             TrajectoryPoint[] trajectoryPoints = new TrajectoryPoint[(int)(Math.Floor(rangeTo / step)) + 1];
 
-            var barrelAzimuth = shot.BarrelAzymuth ?? new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
+            var barrelAzimuth = shot.BarrelAzimuth ?? new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
             var barrelElevation = shot.SightAngle;
-            
-            if (shot.ShotAngle != null)
+            bool hasShotAngle = shot.ShotAngle != null;
+            if (hasShotAngle)
                 barrelElevation += shot.ShotAngle.Value;
-
             var lineOfSight = shot.ShotAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian);
             double lineOfSightTan = MeasurementMath.Tan(lineOfSight);
             double lineOfDepartureTan = MeasurementMath.Tan(barrelElevation);
             double lineOfSightCos = MeasurementMath.Cos(lineOfSight);
+            double lineOfSightSin = MeasurementMath.Sin(lineOfSight);
 
             Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
             TimeSpan time = new TimeSpan(0);
@@ -298,17 +298,43 @@ namespace BallisticCalculator
                     var lineOfSightElevation = rangeVector.X * lineOfSightTan;
                     var lineOfDepartureElevation = rangeVector.X * lineOfDepartureTan - rifle.Sight.SightHeight;
 
+                    var drop = rangeVector.Y;
+                    Measurement<AngularUnit> dropAdjustment;
+                    Measurement<AngularUnit> windageAdjustment;
+
+
+                    if (hasShotAngle)
+                    {
+                        var y = rangeVector.Y + rifle.Sight.SightHeight;
+                        var x_rotated = rangeVector.X * lineOfSightCos + y * lineOfSightSin;
+                        var y_rotated = -rangeVector.X * lineOfSightSin + y * lineOfSightCos;
+                        drop = y_rotated - rifle.Sight.SightHeight;
+                        dropAdjustment = BallisticMath.CalculateAdjustment(drop, distance);
+                        windageAdjustment = BallisticMath.CalculateAdjustment(windage, distance);
+                    }
+                    else
+                    {
+                        dropAdjustment = BallisticMath.CalculateAdjustment(drop, distance);
+                        windageAdjustment = BallisticMath.CalculateAdjustment(windage, distance);
+                    }
+                    
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
-                        weight: ammunition.Weight,
                         distance: distance,
+                        distanceFlat: rangeVector.X,
                         velocity: velocity,
                         mach: velocity / mach,
-                        drop: rangeVector.Y - lineOfSightElevation,
+                        drop: drop,
+                        dropFlat: rangeVector.Y,
+                        dropAdjustment: dropAdjustment,
+                        windageAdjustment: windageAdjustment,
                         lineOfSightElevation: lineOfSightElevation,
                         lineOfDepartureElevation: lineOfDepartureElevation,
-                        windage: windage);
-                     nextRangeDistance += step;
+                        windage: windage,
+                        energy: MeasurementMath.KineticEnergy(ammunition.Weight, velocity),
+                        optimalGameWeight : BallisticMath.OptimalGameWeight(ammunition.Weight, velocity));
+
+                    nextRangeDistance += step;
                     currentItem++;                   
                     if (currentItem == trajectoryPoints.Length)
                         break;
@@ -367,8 +393,12 @@ namespace BallisticCalculator
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector<VelocityUnit> WindVector(ShotParameters shot, Wind wind, VelocityUnit units)
         {
-            double sightCosine = shot.SightAngle.Cos();
-            double sightSine = shot.SightAngle.Sin();
+            var shotAngle = shot.SightAngle;
+            if (shot.ShotAngle != null)
+                shotAngle += shot.ShotAngle.Value;
+
+            double sightCosine = shotAngle.Cos();
+            double sightSine = shotAngle.Sin();
             double cantCosine = (shot.CantAngle ?? AngularUnit.Radian.New(0)).Cos();
             double cantSine = (shot.CantAngle ?? AngularUnit.Radian.New(0)).Sin();
 

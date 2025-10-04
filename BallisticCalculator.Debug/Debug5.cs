@@ -42,8 +42,8 @@ namespace BallisticCalculator.Debug
             //shot parameters
             var shot = new BallisticCalculator.ShotParameters()
             {
-                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
-                Step = DistanceUnit.Yard.New(50),
+                MaximumDistance = new Measurement<DistanceUnit>(300, DistanceUnit.Yard),
+                Step = DistanceUnit.Yard.New(10),
                 //calculate sight angle for the specified zero distance
                 SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
                 ShotAngle = new Measurement<AngularUnit>(30, AngularUnit.Degree),
@@ -58,7 +58,7 @@ namespace BallisticCalculator.Debug
 
             foreach (var point in trajectory)
             {
-                Console.WriteLine($"{point.Time};{point.Distance.In(DistanceUnit.Yard):N0};{point.Velocity.In(VelocityUnit.FeetPerSecond):N1};{point.Drop.In(DistanceUnit.Inch):N1};{point.LineOfSightElevation.In(DistanceUnit.Inch):N1};{point.Windage.In(DistanceUnit.Inch):N1};{point.DropVsLineOfDeparture.In(DistanceUnit.Inch):N1}");
+                Console.WriteLine($"{point.Time};{point.Distance.In(DistanceUnit.Yard):N0};{point.Velocity.In(VelocityUnit.FeetPerSecond):N1};{point.Drop.In(DistanceUnit.Inch):N1};{point.DropAdjustment.In(AngularUnit.MOA):N1};{point.Windage.In(DistanceUnit.Inch):N1};{point.DistanceFlat.In(DistanceUnit.Yard):N1};");
             }
         }
     }
