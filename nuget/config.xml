@@ -2,7 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
-  <version id="1.1.7">Fix defect that windage distance is not saved to trajectory</version>
+  <version id="1.1.7.1">Fix defects that mach and windage distance is not saved to trajectory</version>
   <version id="1.1.6">Fix calculations for shot angle != 0, now it also perfectly matches competitors</version>
   <version id="1.1.5">Added line of departure and drop vs line of departure. Added zero elevation calculation accuracy parameter.</version>
   <version id="1.1.4">Add RA4 model, update trajectory calculation for upward or downward line of sight.</version>

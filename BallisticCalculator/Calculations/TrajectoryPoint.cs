@@ -220,6 +220,7 @@ namespace BallisticCalculator
             Time = time;
             Distance = distance;
             DistanceFlat = distanceFlat;
+            Mach = mach;
             Velocity = velocity;
             Drop = drop;
             DropFlat = dropFlat;
