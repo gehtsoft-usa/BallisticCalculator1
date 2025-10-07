@@ -226,6 +226,7 @@ namespace BallisticCalculator
             LineOfSightElevation = lineOfSightElevation;
             LineOfDepartureElevation = lineOfDepartureElevation;
             DropAdjustment = dropAdjustment;
+            Windage = windage;
             WindageAdjustment = windageAdjustment;
             Energy = energy;
             OptimalGameWeight = optimalGameWeight;
