@@ -42,8 +42,8 @@ namespace BallisticCalculator.Debug
             //shot parameters
             var shot = new BallisticCalculator.ShotParameters()
             {
-                MaximumDistance = new Measurement<DistanceUnit>(300, DistanceUnit.Yard),
-                Step = DistanceUnit.Yard.New(10),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+                Step = DistanceUnit.Yard.New(100),
                 //calculate sight angle for the specified zero distance
                 SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
                 ShotAngle = new Measurement<AngularUnit>(30, AngularUnit.Degree),

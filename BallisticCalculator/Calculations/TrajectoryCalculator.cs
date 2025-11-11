@@ -263,6 +263,7 @@ namespace BallisticCalculator
 
             var alt = alt0;
             var distance = new Measurement<DistanceUnit>(0, rangeVector.X.Unit);
+            atmosphere.AtAltitude(alt, out densityFactor, out mach);
 
             //run all the way down the range
             while (distance <= maximumRange)
@@ -277,7 +278,7 @@ namespace BallisticCalculator
                 if (velocity < MinimumVelocity || rangeVector.Y < -MaximumDrop)
                     break;
 
-                if (distance >= nextWindRange)
+                if (rangeVector.X >= nextWindRange)
                 {
                     currentWind++;
                     windVector = WindVector(shot, wind[currentWind], velocity.Unit);
@@ -339,9 +340,7 @@ namespace BallisticCalculator
                     if (currentItem == trajectoryPoints.Length)
                         break;
                 }
-
-                TimeSpan deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
-
+                var deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
                 var velocityAdjusted = velocityVector - windVector;
                 velocity = velocityAdjusted.Magnitude;
                 double currentMach = velocity / mach;

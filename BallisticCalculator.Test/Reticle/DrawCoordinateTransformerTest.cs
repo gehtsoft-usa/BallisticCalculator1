@@ -1,5 +1,5 @@
 ﻿using BallisticCalculator.Reticle.Draw;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace BallisticCalculator.Test.Reticle

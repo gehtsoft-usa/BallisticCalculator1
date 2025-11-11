@@ -1,5 +1,5 @@
 ﻿using BallisticCalculator.Reticle.Data;
-using FluentAssertions;
+using AwesomeAssertions;
 using Gehtsoft.Measurements;
 using Xunit;
 

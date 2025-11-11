@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Gehtsoft.Measurements;
 using System;
 using Xunit;

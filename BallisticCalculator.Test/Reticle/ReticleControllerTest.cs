@@ -8,7 +8,7 @@ using System.Xml;
 using BallisticCalculator.Reticle.Data;
 using BallisticCalculator.Reticle.Draw;
 using BallisticCalculator.Test.Calculator;
-using FluentAssertions;
+using AwesomeAssertions;
 using Gehtsoft.Measurements;
 using Moq;
 using Xunit;

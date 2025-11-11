@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BallisticCalculator.Reticle;
 using BallisticCalculator.Reticle.Data;
-using FluentAssertions;
+using AwesomeAssertions;
 using Gehtsoft.Measurements;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Host;
 using Xunit;

@@ -1,5 +1,5 @@
 ﻿using BallisticCalculator.Data.Dictionary;
-using FluentAssertions;
+using AwesomeAssertions;
 using Gehtsoft.Measurements;
 using Xunit;
 using System.Linq;

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Xml.Linq;
 using BallisticCalculator.Reticle.Draw;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace BallisticCalculator.Test.Reticle

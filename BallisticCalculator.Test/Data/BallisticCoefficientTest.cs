@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using System.Globalization;
 using System.Text.Json;
 using Xunit;
