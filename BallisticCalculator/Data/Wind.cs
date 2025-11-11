@@ -31,10 +31,10 @@ namespace BallisticCalculator
         /// Wind direction
         ///
         /// Directions:
-        /// * 0 degrees   - wind toward the shooter
-        /// * 90 degrees  - wind from the left of the shooter
-        /// * 270/-90 degrees  - wind from the right of the shooter
-        /// * 180 degrees  - wind toward the target
+        /// * 0 degrees   - wind toward the target
+        /// * 90 degrees  - wind to the right of the shooter
+        /// * 270/-90 degrees  - wind to the left of the shooter
+        /// * 180 degrees  - wind toward the shooter
         /// </summary>
         [BXmlProperty("direction")]
         public Measurement<AngularUnit> Direction { get; set; }

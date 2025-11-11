@@ -340,8 +340,10 @@ namespace BallisticCalculator
                     if (currentItem == trajectoryPoints.Length)
                         break;
                 }
+                
                 var deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
                 var velocityAdjusted = velocityVector - windVector;
+
                 velocity = velocityAdjusted.Magnitude;
                 double currentMach = velocity / mach;
 
