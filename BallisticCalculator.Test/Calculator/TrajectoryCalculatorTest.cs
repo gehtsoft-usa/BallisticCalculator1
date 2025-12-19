@@ -109,6 +109,32 @@ namespace BallisticCalculator.Test.Calculator
         }
 
         [Fact]
+        public void TrajectoryTest_Azimuth90Degrees()
+        {
+            TableLoader template = TableLoader.FromResource("g1_nowind");
+
+            var cal = new TrajectoryCalculator();
+
+            ShotParameters shot = new ShotParameters()
+            {
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere),
+                ShotAngle = template.ShotParameters?.ShotAngle,
+                CantAngle = template.ShotParameters?.CantAngle,
+                BarrelAzimuth = new Measurement<AngularUnit>(90, AngularUnit.Degree)
+            };
+
+            var winds = template.Wind == null ? null : new Wind[] { template.Wind };
+
+            var trajectory = cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot, winds);
+
+            trajectory.Length.Should().BeGreaterThan(1, "Trajectory should have multiple points even at azimuth 90°");
+            trajectory.Should().NotContain(p => p == null, "All trajectory points should be valid");
+            trajectory.Last().Distance.In(DistanceUnit.Yard).Should().BeGreaterThan(900, "Trajectory should progress to near maximum distance");
+        }
+
+        [Fact]
         public void CustomTable()
         {
             TableLoader template = TableLoader.FromResource("g1_nowind");

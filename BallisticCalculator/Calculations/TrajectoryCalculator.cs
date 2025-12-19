@@ -341,7 +341,10 @@ namespace BallisticCalculator
                         break;
                 }
                 
-                var deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
+                var horizontalVelocity = new Vector<VelocityUnit>(velocityVector.X, new Measurement<VelocityUnit>(0, velocityVector.X.Unit), velocityVector.Z).Magnitude;
+                if (horizontalVelocity.Value < 0.001)
+                    horizontalVelocity = new Measurement<VelocityUnit>(0.001, horizontalVelocity.Unit);
+                var deltaTime = BallisticMath.TravelTime(calculationStep, horizontalVelocity);
                 var velocityAdjusted = velocityVector - windVector;
 
                 velocity = velocityAdjusted.Magnitude;
@@ -370,7 +373,7 @@ namespace BallisticCalculator
                         new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
                 rangeVector += deltaRangeVector;
-                distance = rangeVector.X / lineOfSightCos;
+                distance = new Vector<DistanceUnit>(rangeVector.X, new Measurement<DistanceUnit>(0, rangeVector.X.Unit), rangeVector.Z).Magnitude / lineOfSightCos;
                 alt += deltaRangeVector.Y;
                 velocity = velocityVector.Magnitude;
                 time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));
