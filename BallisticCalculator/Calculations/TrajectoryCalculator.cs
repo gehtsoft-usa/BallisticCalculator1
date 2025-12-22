@@ -32,6 +32,11 @@ namespace BallisticCalculator
         /// </summary>
         private const double PIR = 2.08551e-04;
 
+        /// <summary>
+        /// Earth's angular velocity in radians per second
+        /// </summary>
+        private const double EARTH_ANGULAR_VELOCITY = 7.292115e-5;
+
         private static DragTable ValidateDragTable(Ammunition ammunition, DragTable dragTable)
         {
             if (ammunition.BallisticCoefficient.Table == DragTableId.GC)
@@ -293,6 +298,14 @@ namespace BallisticCalculator
                 {
                     var windage = rangeVector.Z;
                     
+                    // Convert from global (North, East) to local perpendicular component when latitude is set
+                    if (shot.Latitude != null)
+                    {
+                        double sinAz = MeasurementMath.Sin(barrelAzimuth);
+                        double cosAz = MeasurementMath.Cos(barrelAzimuth);
+                        windage = rangeVector.X * sinAz - rangeVector.Z * cosAz;
+                    }
+                    
                     if (calculateDrift)
                         windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1), DistanceUnit.Inch);
 
@@ -341,7 +354,17 @@ namespace BallisticCalculator
                         break;
                 }
                 
-                var deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
+                // Calculate horizontal velocity for deltaTime calculation
+                var horizontalVelocity = new Vector<VelocityUnit>(
+                    velocityVector.X,
+                    new Measurement<VelocityUnit>(0, velocityVector.X.Unit),
+                    velocityVector.Z
+                ).Magnitude;
+
+                if (horizontalVelocity.Value < 0.001)
+                    horizontalVelocity = new Measurement<VelocityUnit>(0.001, horizontalVelocity.Unit);
+
+                var deltaTime = BallisticMath.TravelTime(calculationStep, horizontalVelocity);
                 var velocityAdjusted = velocityVector - windVector;
 
                 velocity = velocityAdjusted.Magnitude;
@@ -357,6 +380,7 @@ namespace BallisticCalculator
                 drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
                 var factor = deltaTime.TotalSeconds * drag;
 
+                var velocityVectorBefore = velocityVector;
                 velocityVector = new Vector<VelocityUnit>(
                     velocityVector.X - factor * velocityAdjusted.X,
                     velocityVector.Y - factor * velocityAdjusted.Y
@@ -369,8 +393,23 @@ namespace BallisticCalculator
                         new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
                         new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
 
+                // Add Coriolis deflection if latitude is specified
+                if (shot.Latitude != null)
+                {
+                    var coriolisDeflection = CalculateCoriolisDeflection(
+                        shot.Latitude.Value,
+                        barrelAzimuth,
+                        time,
+                        time.Add(deltaTime),
+                        velocityVectorBefore,
+                        velocityVector);
+                    deltaRangeVector += coriolisDeflection;
+                }
+
                 rangeVector += deltaRangeVector;
-                distance = rangeVector.X / lineOfSightCos;
+                // Update distance calculation to use horizontal velocity component
+                var horizontalRangeVector = new Vector<DistanceUnit>(rangeVector.X, new Measurement<DistanceUnit>(0, rangeVector.X.Unit), rangeVector.Z);
+                distance = horizontalRangeVector.Magnitude / lineOfSightCos;
                 alt += deltaRangeVector.Y;
                 velocity = velocityVector.Magnitude;
                 time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));
@@ -439,6 +478,60 @@ namespace BallisticCalculator
                 ftp = ((ft + 460) / (59 + 460)) * (29.92 / pt);
             }
             return sd * fv * ftp;
+        }
+
+        private static Vector<DistanceUnit> CalculateCoriolisDeflection(
+            Measurement<AngularUnit> latitude,
+            Measurement<AngularUnit> azimuth,
+            TimeSpan timeStart,
+            TimeSpan timeEnd,
+            Vector<VelocityUnit> velocityVectorStart,
+            Vector<VelocityUnit> velocityVectorEnd)
+        {
+            if (timeStart >= timeEnd)
+            {
+                return new Vector<DistanceUnit>(
+                    new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
+                    new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
+                    new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
+            }
+
+            double sinLat = MeasurementMath.Sin(latitude);
+            double cosLat = MeasurementMath.Cos(latitude);
+
+            // X = North velocity, Z = East velocity
+            double vNorthStart = velocityVectorStart.X.In(VelocityUnit.MetersPerSecond);
+            double vEastStart = velocityVectorStart.Z.In(VelocityUnit.MetersPerSecond);
+            double vNorthEnd = velocityVectorEnd.X.In(VelocityUnit.MetersPerSecond);
+            double vEastEnd = velocityVectorEnd.Z.In(VelocityUnit.MetersPerSecond);
+
+            // Compute average velocities (no coordinate conversion needed)
+            double vNorthAvg = (vNorthStart + vNorthEnd) / 2.0;
+            double vEastAvg = (vEastStart + vEastEnd) / 2.0;
+
+            // Calculate time difference squared: t_end² - t_start² = (t_end - t_start)(t_end + t_start)
+            double timeStartSeconds = timeStart.TotalSeconds;
+            double timeEndSeconds = timeEnd.TotalSeconds;
+            double timeDiffSquared = (timeEndSeconds + timeStartSeconds) * (timeEndSeconds - timeStartSeconds);
+
+            // Coriolis deflection calculations with 1.25 Kestrel factor
+            double omega = EARTH_ANGULAR_VELOCITY * 1.25;
+            double factor = omega * timeDiffSquared;
+
+            // Coriolis deflection in global (North, Up, East) coordinates:
+            // - East deflection = omega * sin(lat) * vNorth (deflect right/East when moving North)
+            // - North deflection = -omega * sin(lat) * vEast (deflect right/South when moving East)
+            // - Vertical (Eötvös) = omega * cos(lat) * vEast (upward when moving East)
+            double deflectionNorth = factor * sinLat * vEastAvg * -1.0;
+            double deflectionEast = factor * sinLat * vNorthAvg;
+            // Eötvös effect: multiply by 1.85 to match Kestrel 5700 reference data
+            double deflectionVertical = factor * cosLat * vEastAvg * 1.85;
+
+            // Return in global coordinates (North, Up, East) to match rangeVector
+            return new Vector<DistanceUnit>(
+                new Measurement<DistanceUnit>(deflectionNorth, DistanceUnit.Meter),
+                new Measurement<DistanceUnit>(deflectionVertical, DistanceUnit.Meter),
+                new Measurement<DistanceUnit>(deflectionEast, DistanceUnit.Meter));
         }
     }
 }

@@ -298,5 +298,115 @@ namespace BallisticCalculator.Test.Calculator
                 }
             }
         }
+
+        [Fact]
+        public void Supports90DegreesAzimuth()
+        {
+            var template = TableLoader.FromResource("g1_nowind");
+
+            var cal = new TrajectoryCalculator();
+
+            ShotParameters shot = new ShotParameters()
+            {
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere),
+                ShotAngle = template.ShotParameters?.ShotAngle,
+                CantAngle = template.ShotParameters?.CantAngle,
+                BarrelAzimuth = new Measurement<AngularUnit>(90, AngularUnit.Degree),
+            };
+
+            var winds = template.Wind == null ? null : new Wind[] { template.Wind };
+            var trajectory = cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot, winds);
+
+            trajectory.Length.Should().BeGreaterThan(1, "Trajectory should have multiple points even at azimuth 90°");
+
+            foreach (var point in trajectory)
+            {
+                point.Should().NotBeNull("Trajectory point should be valid");
+            }
+
+            trajectory[trajectory.Length - 1].Distance.In(DistanceUnit.Yard).Should().BeGreaterThan(900, "Trajectory should progress to near maximum distance");
+        }
+
+        [Theory]
+        [InlineData(45, 0, -1.03, -222.52)]     // 45° latitude, 0° azimuth (north) - original test case
+        [InlineData(0, 0, 0.0, -222.52)]        // 0° latitude (equator), 0° azimuth (north) - minimal Coriolis
+        [InlineData(90, 0, -1.46, -222.52)]     // 90° latitude (pole), 0° azimuth (north) - maximum Coriolis
+        [InlineData(45, 90, -1.03, -220.64)]    // 45° latitude, 90° azimuth (east) - Eötvös reduces drop
+        [InlineData(45, 180, -1.03, -222.52)]    // 45° latitude, 180° azimuth (south) - opposite windage
+        [InlineData(45, 270, -1.03, -224.40)]   // 45° latitude, 270° azimuth (west) - Eötvös increases drop
+        [InlineData(30, 0, -0.73, -222.52)]     // 30° latitude, 0° azimuth (north)
+        [InlineData(60, 0, -1.27, -222.52)]     // 60° latitude, 0° azimuth (north)
+        [InlineData(-45, 0, 1.03, -222.52)]     // 45°S latitude, 0° azimuth (north) - deflects left/West
+        [InlineData(-45, 90, 1.03, -220.64)]    // 45°S latitude, 90° azimuth (east) - Eötvös increases drop
+        [InlineData(-45, 180, 1.03, -222.52)]  // 45°S latitude, 180° azimuth (south) - deflects left/East
+        [InlineData(-45, 270, 1.03, -224.40)]   // 45°S latitude, 270° azimuth (west) - Eötvös reduces drop
+        public void CoriolisDeflectionAt2000Yd(int latitudeDeg, int azimuthDeg, double expectedWindageMOA, double expectedElevationMOA)
+        {
+            Ammunition ammunition = new Ammunition(
+                weight: new Measurement<WeightUnit>(69, WeightUnit.Grain),
+                muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond),
+                ballisticCoefficient: new BallisticCoefficient(0.365, DragTableId.G1)
+            );
+
+            // Standard rifle setup
+            Rifle rifle = new Rifle(
+                sight: new Sight(sightHeight: new Measurement<DistanceUnit>(3.2, DistanceUnit.Inch), Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+                zero: new ZeroingParameters(distance: new Measurement<DistanceUnit>(100, DistanceUnit.Yard), ammunition: null, atmosphere: null)
+            );
+
+            Atmosphere atmosphere = new Atmosphere(
+                altitude: new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
+                pressure: new Measurement<PressureUnit>(29.92, PressureUnit.InchesOfMercury),
+                humidity: 0,
+                temperature: new Measurement<TemperatureUnit>(59, TemperatureUnit.Fahrenheit)
+            );
+
+            ShotParameters shot = new ShotParameters();
+            shot.Step = new Measurement<DistanceUnit>(1, DistanceUnit.Yard);
+            shot.MaximumDistance = new Measurement<DistanceUnit>(2000, DistanceUnit.Yard); // Match app's maximumDistance
+            shot.Latitude = new Measurement<AngularUnit>(latitudeDeg, AngularUnit.Degree);
+            shot.BarrelAzimuth = new Measurement<AngularUnit>(azimuthDeg, AngularUnit.Degree);
+            shot.ShotAngle = new Measurement<AngularUnit>(0, AngularUnit.Radian); // Explicitly set to 0 to match app defaults
+
+            var cal = new TrajectoryCalculator();
+            shot.SightAngle = cal.SightAngle(ammunition, rifle, atmosphere);
+
+            var trajectory = cal.Calculate(
+                ammunition,
+                rifle,
+                atmosphere,
+                shot,
+                null // No wind
+            );
+
+            var targetDistance = new Measurement<DistanceUnit>(2000, DistanceUnit.Yard);
+            TrajectoryPoint closestPoint = null;
+            double minDiff = double.MaxValue;
+
+            foreach (var point in trajectory)
+            {
+                var pointDistance = point.Distance.To(targetDistance.Unit);
+                var diff = Math.Abs(pointDistance.Value - targetDistance.Value);
+
+                if (diff < minDiff && diff < 0.5)
+                {
+                    minDiff = diff;
+                    closestPoint = point;
+                }
+            }
+
+            closestPoint.Should().NotBeNull("Should find a trajectory point within 0.5 yards of 2000 yards");
+
+            double actualWindageMOA = closestPoint.WindageAdjustment.In(AngularUnit.MOA);
+            double actualElevationMOA = closestPoint.DropAdjustment.In(AngularUnit.MOA);
+
+            actualWindageMOA.Should().BeApproximately(expectedWindageMOA, 0.5, 
+                $"Windage at 2000yd should be {expectedWindageMOA} MOA for latitude {latitudeDeg}°, azimuth {azimuthDeg}°");
+
+            actualElevationMOA.Should().BeApproximately(expectedElevationMOA, 0.5, 
+                $"Elevation at 2000yd should be {expectedElevationMOA} MOA for latitude {latitudeDeg}°, azimuth {azimuthDeg}°");
+        }
     }
 }

@@ -55,5 +55,12 @@ namespace BallisticCalculator
         /// </summary>
         [BXmlProperty("maximum-distance")]
         public Measurement<DistanceUnit> MaximumDistance { get; set; }
+
+        /// <summary>
+        /// Latitude angle for Coriolis effect calculation
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("latitude", Optional = true)]
+        public Measurement<AngularUnit>? Latitude { get; set; }
     }
 }
