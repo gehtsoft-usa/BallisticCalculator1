@@ -11,6 +11,9 @@ using System.Xml.Linq;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 
+//ignore make static method warning due it active use of reflection and the fact that the class is not designed to be inherited
+#pragma warning disable S2325       
+
 namespace BallisticCalculator.Serialization
 {
     /// <summary>
@@ -18,6 +21,7 @@ namespace BallisticCalculator.Serialization
     /// </summary>
     public class BallisticXmlDeserializer
     {
+        private const string DATA_TYPE = "data-type";
         private readonly ElementDictionary mElementDictionary = new ElementDictionary();
 
         /// <summary>
@@ -44,8 +48,8 @@ namespace BallisticCalculator.Serialization
         public object Deserialize(XmlElement element)
         {
             string typeName;
-            if (element.Attributes["data-type"] != null)
-                typeName = element.Attributes["data-type"].Value;
+            if (element.Attributes[DATA_TYPE] != null)
+                typeName = element.Attributes[DATA_TYPE].Value;
             else
                 typeName = element.Name;
 
@@ -66,8 +70,8 @@ namespace BallisticCalculator.Serialization
         public object Deserialize(XmlElement element, Type[] possibleTypes)
         {
             string typeName;
-            if (element.Attributes["data-type"] != null)
-                typeName = element.Attributes["data-type"].Value;
+            if (element.Attributes[DATA_TYPE] != null)
+                typeName = element.Attributes[DATA_TYPE].Value;
             else
                 typeName = element.Name;
 
@@ -502,7 +506,7 @@ namespace BallisticCalculator.Serialization
                 {
                     if (double.TryParse(propertyText, NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
                         return TimeSpan.FromMilliseconds(x);
-                    else if (TimeSpan.TryParse(propertyText, out TimeSpan ts))
+                    else if (TimeSpan.TryParse(propertyText, CultureInfo.InvariantCulture, out TimeSpan ts))
                         return ts;
                     return null;
                 }

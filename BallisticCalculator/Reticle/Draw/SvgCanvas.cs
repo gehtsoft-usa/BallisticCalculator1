@@ -6,6 +6,9 @@ using System.Xml;
 using BallisticCalculator.Data;
 using BallisticCalculator.Reticle.Data;
 
+//it's ok to use string literals in SVG attributes
+#pragma warning disable S1192
+
 namespace BallisticCalculator.Reticle.Draw
 {
     /// <summary>

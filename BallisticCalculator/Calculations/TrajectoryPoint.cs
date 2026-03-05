@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
+//Disable constructor have more than 7 parameters warning. Trajectory point really need this constructor
+#pragma warning disable S107
+
 namespace BallisticCalculator
 {
     /// <summary>
@@ -122,7 +125,7 @@ namespace BallisticCalculator
                                Measurement<DistanceUnit> windage)
             : this(time, distance, distance, velocity, mach, drop, drop,
                   BallisticMath.CalculateAdjustment(drop, distance),
-                  new Measurement<DistanceUnit>(0, DistanceUnit.Meter), new Measurement<DistanceUnit>(0, DistanceUnit.Meter), 
+                  new Measurement<DistanceUnit>(0, DistanceUnit.Meter), new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
                   windage, BallisticMath.CalculateAdjustment(windage, distance),
                   MeasurementMath.KineticEnergy(weight, velocity),
                   BallisticMath.OptimalGameWeight(weight, velocity))
@@ -148,12 +151,12 @@ namespace BallisticCalculator
                                Measurement<DistanceUnit> distanceFlat,
                                Measurement<VelocityUnit> velocity, double mach,
                                Measurement<DistanceUnit> drop, Measurement<DistanceUnit> dropFlat,
-                               Measurement<DistanceUnit> lineOfSightElevation, 
+                               Measurement<DistanceUnit> lineOfSightElevation,
                                Measurement<DistanceUnit> lineOfDepartureElevation,
                                Measurement<DistanceUnit> windage)
             : this(time, distance, distanceFlat, velocity, mach, drop, dropFlat,
                   BallisticMath.CalculateAdjustment(drop, distance),
-                  lineOfSightElevation, lineOfDepartureElevation, 
+                  lineOfSightElevation, lineOfDepartureElevation,
                   windage, BallisticMath.CalculateAdjustment(windage, distance),
                   MeasurementMath.KineticEnergy(weight, velocity),
                   BallisticMath.OptimalGameWeight(weight, velocity))
@@ -161,7 +164,7 @@ namespace BallisticCalculator
         }
 
         /// <summary>
-        /// Constructor for backward compatibility 
+        /// Constructor for backward compatibility
         /// </summary>
         /// <param name="time"></param>
         /// <param name="distance"></param>
@@ -177,7 +180,7 @@ namespace BallisticCalculator
                                Measurement<WeightUnit> optimalGameWeight)
             : this(time, distance, distance, velocity, mach, drop, drop,
                   BallisticMath.CalculateAdjustment(drop, distance),
-                  Measurement<DistanceUnit>.ZERO, Measurement<DistanceUnit>.ZERO, 
+                  Measurement<DistanceUnit>.ZERO, Measurement<DistanceUnit>.ZERO,
                   windage, BallisticMath.CalculateAdjustment(windage, distance),
                   energy, optimalGameWeight)
         {
@@ -205,7 +208,7 @@ namespace BallisticCalculator
         public TrajectoryPoint(TimeSpan time,
                                Measurement<DistanceUnit> distance,
                                Measurement<DistanceUnit> distanceFlat,
-                               Measurement<VelocityUnit> velocity, 
+                               Measurement<VelocityUnit> velocity,
                                double mach,
                                Measurement<DistanceUnit> drop,
                                Measurement<DistanceUnit> dropFlat,

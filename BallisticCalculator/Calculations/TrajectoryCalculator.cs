@@ -45,6 +45,8 @@ namespace BallisticCalculator
             return dragTable;
         }
 
+        //sonar: disable cognitive complexity warning. the suggested simplification will affect performance
+        #pragma warning disable S3776
         /// <summary>
         /// Calculates the sight angle for the specified zero distance
         /// </summary>
@@ -191,7 +193,6 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> alt0 = atmosphere.Altitude;
             Measurement<DistanceUnit> altDelta = new Measurement<DistanceUnit>(1, DistanceUnit.Meter);
             double densityFactor = 0, drag;
-            Measurement<VelocityUnit> mach = new Measurement<VelocityUnit>(0, VelocityUnit.MetersPerSecond);
 
             double stabilityCoefficient = 1;
             bool calculateDrift;
@@ -263,7 +264,7 @@ namespace BallisticCalculator
 
             var alt = alt0;
             var distance = new Measurement<DistanceUnit>(0, rangeVector.X.Unit);
-            atmosphere.AtAltitude(alt, out densityFactor, out mach);
+            atmosphere.AtAltitude(alt, out densityFactor, out Measurement<VelocityUnit> mach);
 
             //run all the way down the range
             while (distance <= maximumRange)
@@ -292,7 +293,7 @@ namespace BallisticCalculator
                 if (distance >= nextRangeDistance)
                 {
                     var windage = rangeVector.Z;
-                    
+
                     if (calculateDrift)
                         windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1), DistanceUnit.Inch);
 
@@ -307,7 +308,6 @@ namespace BallisticCalculator
                     if (hasShotAngle)
                     {
                         var y = rangeVector.Y + rifle.Sight.SightHeight;
-                        var x_rotated = rangeVector.X * lineOfSightCos + y * lineOfSightSin;
                         var y_rotated = -rangeVector.X * lineOfSightSin + y * lineOfSightCos;
                         drop = y_rotated - rifle.Sight.SightHeight;
                         dropAdjustment = BallisticMath.CalculateAdjustment(drop, distance);
@@ -318,7 +318,7 @@ namespace BallisticCalculator
                         dropAdjustment = BallisticMath.CalculateAdjustment(drop, distance);
                         windageAdjustment = BallisticMath.CalculateAdjustment(windage, distance);
                     }
-                    
+
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
                         distance: distance,
@@ -336,11 +336,11 @@ namespace BallisticCalculator
                         optimalGameWeight : BallisticMath.OptimalGameWeight(ammunition.Weight, velocity));
 
                     nextRangeDistance += step;
-                    currentItem++;                   
+                    currentItem++;
                     if (currentItem == trajectoryPoints.Length)
                         break;
                 }
-                
+
                 var deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
                 var velocityAdjusted = velocityVector - windVector;
 
@@ -378,6 +378,7 @@ namespace BallisticCalculator
 
             return trajectoryPoints;
         }
+        #pragma warning restore S3776
 
         internal Measurement<DistanceUnit> GetCalculationStep(Measurement<DistanceUnit> step)
         {

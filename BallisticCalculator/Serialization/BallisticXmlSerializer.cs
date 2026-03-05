@@ -9,6 +9,9 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
+//ignore make static method warning due it active use of reflection and the fact that the class is not designed to be inherited
+#pragma warning disable S2325
+
 namespace BallisticCalculator.Serialization
 {
 
@@ -189,11 +192,11 @@ namespace BallisticCalculator.Serialization
                 (type) => type == typeof(string),
                 (type, value) => (string)value
             ),
-            
+
             new AddAttributeAction(
                 (type) => type == typeof(BallisticCoefficient),
                 (type, value) => ((BallisticCoefficient)value).ToString(CultureInfo.InvariantCulture)
-            ),          
+            ),
         };
 
         /// <summary>

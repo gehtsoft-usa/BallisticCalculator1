@@ -11,31 +11,34 @@ namespace BallisticCalculator.Reticle
     /// </summary>
     public sealed class MilDotReticle : ReticleDefinition
     {
+        private const string BLACK = "black";
+        private const string TITLE = "Mil-Dot Reticle";
+
         /// <summary>
         /// Constructor
         /// </summary>
         public MilDotReticle() 
         {
-            Name = "Mil-Dot Reticle";
+            Name = TITLE;
             Size = new ReticlePosition(12, 12, AngularUnit.Mil); 
             Zero = new ReticlePosition(6, 6, AngularUnit.Mil);
 
-            Elements.Add(new ReticleCircle() { Center = new ReticlePosition(0, 0, AngularUnit.Mil), Radius = AngularUnit.Mil.New(6), Color = "black", LineWidth = AngularUnit.Mil.New(0.01) });
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(-5, 0, AngularUnit.Mil), End = new ReticlePosition(5, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = "black" });
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, -5, AngularUnit.Mil), End = new ReticlePosition(0, 5, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = "black" });
+            Elements.Add(new ReticleCircle() { Center = new ReticlePosition(0, 0, AngularUnit.Mil), Radius = AngularUnit.Mil.New(6), Color = BLACK, LineWidth = AngularUnit.Mil.New(0.01) });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(-5, 0, AngularUnit.Mil), End = new ReticlePosition(5, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = BLACK });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, -5, AngularUnit.Mil), End = new ReticlePosition(0, 5, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.01), Color = BLACK });
 
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(-5, 0, AngularUnit.Mil), End = new ReticlePosition(-6, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = "black" });
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(5, 0, AngularUnit.Mil), End = new ReticlePosition(6, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = "black" });
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, -5, AngularUnit.Mil), End = new ReticlePosition(0, -6, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = "black" });
-            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, 5, AngularUnit.Mil), End = new ReticlePosition(0, 6, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = "black" });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(-5, 0, AngularUnit.Mil), End = new ReticlePosition(-6, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = BLACK });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(5, 0, AngularUnit.Mil), End = new ReticlePosition(6, 0, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = BLACK });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, -5, AngularUnit.Mil), End = new ReticlePosition(0, -6, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = BLACK });
+            Elements.Add(new ReticleLine() { Start = new ReticlePosition(0, 5, AngularUnit.Mil), End = new ReticlePosition(0, 6, AngularUnit.Mil), LineWidth = AngularUnit.Mil.New(0.2), Color = BLACK });
 
             for (int i = -4; i <= 4; i++)
             {
                 if (i == 0)
                     continue;
 
-                Elements.Add(new ReticleCircle() { Center = new ReticlePosition(i, 0, AngularUnit.Mil), Radius = AngularUnit.Mil.New(0.1), LineWidth = AngularUnit.Mil.New(0.01), Fill = true, Color = "black"});
-                Elements.Add(new ReticleCircle() { Center = new ReticlePosition(0, i, AngularUnit.Mil), Radius = AngularUnit.Mil.New(0.1), LineWidth = AngularUnit.Mil.New(0.01), Fill = true, Color = "black"});
+                Elements.Add(new ReticleCircle() { Center = new ReticlePosition(i, 0, AngularUnit.Mil), Radius = AngularUnit.Mil.New(0.1), LineWidth = AngularUnit.Mil.New(0.01), Fill = true, Color = BLACK});
+                Elements.Add(new ReticleCircle() { Center = new ReticlePosition(0, i, AngularUnit.Mil), Radius = AngularUnit.Mil.New(0.1), LineWidth = AngularUnit.Mil.New(0.01), Fill = true, Color = BLACK});
             }
 
             for (int i = -1; i >= -4; i--)

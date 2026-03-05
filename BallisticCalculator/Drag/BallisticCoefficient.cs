@@ -13,22 +13,22 @@ namespace BallisticCalculator
     {
         /// <summary>
         /// Coefficient.
-        /// 
-        /// The typical BC value. 
-        /// 
-        /// It is proportion of the bullet sectional density to 
+        ///
+        /// The typical BC value.
+        ///
+        /// It is proportion of the bullet sectional density to
         /// the sectional density of the original table's bullet
         /// </summary>
         Coefficient,
-        
+
         /// <summary>
         /// The form factor
-        /// 
+        ///
         /// The coefficient showing how the bullet's behavior rely to
-        /// the the original bullet. 
-        /// 
+        /// the the original bullet.
+        ///
         /// If you use form factor, make sure that the bullet diameter and
-        /// bullet weight are specified. 
+        /// bullet weight are specified.
         /// </summary>
         FormFactor,
     }
@@ -136,13 +136,13 @@ namespace BallisticCalculator
 
             if (text.Length < 3)
                 return false;
-            
+
             if (text[0] == 'F')
             {
                 text = text.Substring(1);
                 if (text.Length < 3)
                     return false;
-                
+
                 valueType = BallisticCoefficientValueType.FormFactor;
             }
 
@@ -181,9 +181,9 @@ namespace BallisticCalculator
         /// <returns></returns>
         public bool Equals(BallisticCoefficient other)
         {
-            return ValueType == other.ValueType && 
-                Value == other.Value && 
-                Table == other.Table;
+            return ValueType == other.ValueType &&
+                   Table == other.Table &&
+                    Math.Abs(Value - other.Value) < 1e-7;
         }
 
         /// <summary>
