@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SonarQubeExclude>true</SonarQubeExclude>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="resources\*.txt" />
+    <EmbeddedResource Include="resources\g1_nowind.txt" />
+    <EmbeddedResource Include="resources\g1_nowind_up.txt" />
+    <EmbeddedResource Include="resources\g1_twist.txt" />
+    <EmbeddedResource Include="resources\g1_wind.txt" />
+    <EmbeddedResource Include="resources\g1_wind_cold.txt" />
+    <EmbeddedResource Include="resources\g1_wind_hot.txt" />
+    <EmbeddedResource Include="resources\g7_nowind.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NReco.Csv" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BallisticCalculator\BallisticCalculator.csproj" />
+  </ItemGroup>
+
+</Project>
