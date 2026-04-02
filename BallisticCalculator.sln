@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BallisticCalculator.Benchmark", "BallisticCalculator.Benchmark\BallisticCalculator.Benchmark.csproj", "{00FFE223-4F83-45A0-83DF-2E3042DAB585}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,10 +32,6 @@ Global
 		{096C2838-6364-4F84-B685-C1863F6E9747}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{096C2838-6364-4F84-B685-C1863F6E9747}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{096C2838-6364-4F84-B685-C1863F6E9747}.Release|Any CPU.Build.0 = Release|Any CPU
-		{00FFE223-4F83-45A0-83DF-2E3042DAB585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{00FFE223-4F83-45A0-83DF-2E3042DAB585}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{00FFE223-4F83-45A0-83DF-2E3042DAB585}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{00FFE223-4F83-45A0-83DF-2E3042DAB585}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
