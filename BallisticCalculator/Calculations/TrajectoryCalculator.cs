@@ -1,4 +1,4 @@
-﻿using Gehtsoft.Measurements;
+using Gehtsoft.Measurements;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -74,97 +74,114 @@ namespace BallisticCalculator
             if (rifle.Zero.Ammunition != null)
                 ammunition = rifle.Zero.Ammunition;
 
-            Measurement<DistanceUnit> alt0 = atmosphere.Altitude;
-            Measurement<DistanceUnit> altDelta = new Measurement<DistanceUnit>(1, DistanceUnit.Meter);
-            double densityFactor = 0, drag;
-            Measurement<VelocityUnit> mach = new Measurement<VelocityUnit>(0, VelocityUnit.MetersPerSecond);
-            Measurement<DistanceUnit> verticalOffset = (rifle.Zero.VerticalOffset) ?? Measurement<DistanceUnit>.ZERO;
+            // Pre-compute all conversion factors outside the approximation loop
+            VelocityUnit velUnit = ammunition.MuzzleVelocity.Unit;
+            double vel0 = ammunition.MuzzleVelocity.Value;                      // velUnit
+            double sightHeightMeters = rifle.Sight.SightHeight.In(DistanceUnit.Meter);
+            double calcStepMeters = calculationStep.In(DistanceUnit.Meter);
+            double maximumRangeMeters = rangeTo.In(DistanceUnit.Meter);
+            double zeroDistanceMeters = rifle.Zero.Distance.In(DistanceUnit.Meter);
+            double verticalOffsetMeters = ((rifle.Zero.VerticalOffset) ?? Measurement<DistanceUnit>.ZERO).In(DistanceUnit.Meter);
+            double accuracyMillimeters = accuracy.Value.In(DistanceUnit.Millimeter);
+
+            double maximumDropMeters = MaximumDrop.In(DistanceUnit.Meter);
+            double minimumVelocity = MinimumVelocity.In(velUnit);
+
+            // velUnit->m/s divisor: use division (not multiply by reciprocal) to match
+            // Measurement<T>.In(MPS) which internally divides by this constant
+            double mpsToVel = Measurement<VelocityUnit>.Convert(1, VelocityUnit.MetersPerSecond, velUnit);
+
+            // Altitude tracked in native unit for FP accuracy
+            DistanceUnit altUnit = atmosphere.Altitude.Unit;
+            double alt0Value = atmosphere.Altitude.Value;                        // altUnit
+            double meterToAltUnit = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, altUnit);
+            double alt0Meters = atmosphere.Altitude.In(DistanceUnit.Meter);
+
+            // Drag factor
+            double adjustToFps = Measurement<VelocityUnit>.Convert(1, velUnit, VelocityUnit.FeetPerSecond);
+            double ballisticFactor = 1.0 / ammunition.GetBallisticCoefficient();
+            double accumulatedFactor = PIR * adjustToFps * ballisticFactor;
+
+            // Gravity in velUnit per second
+            double earthGravity = Measurement<VelocityUnit>.Convert(
+                Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
+                VelocityUnit.MetersPerSecond, velUnit);
+
+            // Conversion: meters -> millimeters for accuracy check
+            double meterToMm = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, DistanceUnit.Millimeter);
+            // Conversion: meters -> centimeters for angle adjustment
+            double meterToCm = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, DistanceUnit.Centimeter);
 
             var sightAngle = new Measurement<AngularUnit>(150, AngularUnit.MOA);
-            var barrelAzimuth = new Measurement<AngularUnit>(0, AngularUnit.Radian);
 
             for (int approximation = 0; approximation < 100; approximation++)
             {
-                var barrelElevation = sightAngle;
+                double barrelElevCos = sightAngle.Cos();
+                double barrelElevSin = sightAngle.Sin();
 
-                Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
-                TimeSpan time = new TimeSpan(0);
+                // Velocity vector in velUnit; barrelAzimuth=0 so cos=1, sin=0, vz=0
+                double vx = vel0 * barrelElevCos;
+                double vy = vel0 * barrelElevSin;
 
-                //x - distance towards target,
-                //y - drop and
-                //z - windage
-                var rangeVector = new Vector<DistanceUnit>(new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
-                    -rifle.Sight.SightHeight,
-                    new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
+                // Range vector in meters
+                double rx = 0, ry = -sightHeightMeters;
 
-                var velocityVector = new Vector<VelocityUnit>(velocity * barrelElevation.Cos() * barrelAzimuth.Cos(),
-                                                              velocity * barrelElevation.Sin(),
-                                                              velocity * barrelElevation.Cos() * barrelAzimuth.Sin());
+                // Altitude tracking
+                double altValue = alt0Value;                                     // altUnit
+                double altMeters = alt0Meters;                                   // meters (shadow for threshold)
+                double lastAtAltMeters = -1e9;
 
-                Measurement<DistanceUnit> maximumRange = rangeTo;
-                Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000, DistanceUnit.Meter);
+                double densityFactor = 0;
+                double machInVelUnit = 0;
                 DragTableNode dragTableNode = null;
 
-                double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
-                double ballisticFactor = 1 / ammunition.GetBallisticCoefficient();
-                var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisticFactor;
-
-                var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
-                                                                  VelocityUnit.MetersPerSecond)).To(velocity.Unit);
-
-                var alt = alt0;
-                //run all the way down the range
-                while (rangeVector.X <= maximumRange)
+                while (rx <= maximumRangeMeters)
                 {
-                    //update density and Mach velocity each 10 feet
-                    if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
+                    if (Math.Abs(altMeters - lastAtAltMeters) > 1.0)
                     {
-                        atmosphere.AtAltitude(alt, out densityFactor, out mach);
-                        lastAtAltitude = alt;
+                        atmosphere.AtAltitude(new Measurement<DistanceUnit>(altValue, altUnit), out densityFactor, out Measurement<VelocityUnit> machMeasurement);
+                        machInVelUnit = machMeasurement.In(velUnit);
+                        lastAtAltMeters = altMeters;
                     }
 
-                    if (velocity < MinimumVelocity || rangeVector.Y < -MaximumDrop)
+                    double velocityMag = Math.Sqrt(vx * vx + vy * vy);
+                    if (velocityMag < minimumVelocity || ry < -maximumDropMeters)
                         break;
 
-                    TimeSpan deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
+                    // dt must go through TimeSpan for tick-precision truncation
+                    double dt = TimeSpan.FromSeconds(calcStepMeters / (vx / mpsToVel)).TotalSeconds;
 
-                    double currentMach = velocity / mach;
+                    double currentMach = velocityMag / machInVelUnit;
 
-                    //find Mach node for the first time
                     dragTableNode ??= dragTable.Find(currentMach);
 
-                    //walk towards the beginning the table as velocity drops
-                    while (dragTableNode.Previous != null && dragTableNode.Previous.Mach > currentMach)
+                    while (dragTableNode.Mach > currentMach)
                         dragTableNode = dragTableNode.Previous;
 
-                    drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
+                    double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityMag;
+                    double factor = dt * drag;
 
-                    velocityVector = new Vector<VelocityUnit>(
-                        velocityVector.X - deltaTime.TotalSeconds * drag * velocityVector.X,
-                        velocityVector.Y - deltaTime.TotalSeconds * drag * velocityVector.Y - earthGravity * deltaTime.TotalSeconds,
-                        velocityVector.Z - deltaTime.TotalSeconds * drag * velocityVector.Z);
+                    vx = vx - factor * vx;
+                    vy = vy - factor * vy - earthGravity * dt;
 
-                    var deltaRangeVector = new Vector<DistanceUnit>(
-                            new Measurement<DistanceUnit>(velocityVector.X.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
-                            new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
-                            new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter)
-                            );
+                    double drx = vx / mpsToVel * dt;                            // meters
+                    double dry = vy / mpsToVel * dt;                            // meters
 
-                    rangeVector += deltaRangeVector;
-                    alt += deltaRangeVector.Y;
+                    rx += drx;
+                    ry += dry;
 
-                    if (rangeVector.X >= rifle.Zero.Distance)
+                    altValue += dry * meterToAltUnit;                            // altUnit
+                    altMeters += dry;                                            // meters
+
+                    if (rx >= zeroDistanceMeters)
                     {
-                        var match = rangeVector.Y - verticalOffset;
-                        if (Math.Abs(match.In(DistanceUnit.Millimeter)) < accuracy.Value.In(DistanceUnit.Millimeter))
+                        double matchMeters = ry - verticalOffsetMeters;
+                        if (Math.Abs(matchMeters * meterToMm) < accuracyMillimeters)
                             return sightAngle;
 
-                        sightAngle += new Measurement<AngularUnit>(-match.In(DistanceUnit.Centimeter) / rifle.Zero.Distance.In(DistanceUnit.Meter) * 100, AngularUnit.CmPer100Meters);
+                        sightAngle += new Measurement<AngularUnit>(-matchMeters * meterToCm / zeroDistanceMeters * 100, AngularUnit.CmPer100Meters);
                         break;
                     }
-
-                    velocity = velocityVector.Magnitude;
-                    time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));
                 }
             }
             throw new InvalidOperationException("Cannot find zero parameters");
@@ -187,12 +204,7 @@ namespace BallisticCalculator
             Measurement<DistanceUnit> calculationStep = GetCalculationStep(step);
 
             atmosphere ??= new Atmosphere();
-
             dragTable = ValidateDragTable(ammunition, dragTable);
-
-            Measurement<DistanceUnit> alt0 = atmosphere.Altitude;
-            Measurement<DistanceUnit> altDelta = new Measurement<DistanceUnit>(1, DistanceUnit.Meter);
-            double densityFactor = 0, drag;
 
             double stabilityCoefficient = 1;
             bool calculateDrift;
@@ -220,160 +232,206 @@ namespace BallisticCalculator
             double lineOfSightCos = MeasurementMath.Cos(lineOfSight);
             double lineOfSightSin = MeasurementMath.Sin(lineOfSight);
 
-            Measurement<VelocityUnit> velocity = ammunition.MuzzleVelocity;
-            TimeSpan time = new TimeSpan(0);
+            //
+            // Performance-critical section: all Measurement<T>/Vector<T> operations are replaced
+            // with raw doubles to avoid unit-conversion overhead in the hot loop.
+            //
+            // Unit conventions:
+            //   velocity (vx, vy, vz, wx, wy, wz) — in velUnit (muzzle velocity's native unit, e.g. ft/s)
+            //   position (rx, ry, rz)              — in meters
+            //   altitude (altValue)                 — in altUnit (atmosphere's native unit, e.g. ft)
+            //   time (dt)                           — in seconds, truncated to TimeSpan tick precision
+            //
 
+            VelocityUnit velUnit = ammunition.MuzzleVelocity.Unit;
+            double vel0 = ammunition.MuzzleVelocity.Value;                      // velUnit
+            double sightHeightMeters = rifle.Sight.SightHeight.In(DistanceUnit.Meter);
+            double calcStepMeters = calculationStep.In(DistanceUnit.Meter);
+            double stepMeters = step.In(DistanceUnit.Meter);
+            double rangeToMeters = rangeTo.In(DistanceUnit.Meter);
+
+            double barrelElevCos = barrelElevation.Cos();
+            double barrelElevSin = barrelElevation.Sin();
+            double barrelAzCos = barrelAzimuth.Cos();
+            double barrelAzSin = barrelAzimuth.Sin();
+
+            // Velocity vector: x = towards target, y = vertical, z = lateral — in velUnit
+            double vx = vel0 * barrelElevCos * barrelAzCos;
+            double vy = vel0 * barrelElevSin;
+            double vz = vel0 * barrelElevCos * barrelAzSin;
+
+            // Range vector: x = towards target, y = drop, z = windage — in meters
+            double rx = 0, ry = -sightHeightMeters, rz = 0;
+
+            // Wind vector — in velUnit
+            double wx = 0, wy = 0, wz = 0;
             int currentWind = 0;
-            Measurement<DistanceUnit> nextWindRange = new Measurement<DistanceUnit>(1e7, DistanceUnit.Meter);
-            Vector<VelocityUnit> windVector;
-            if (wind == null || wind.Length < 1)
-            {
-                windVector = new Vector<VelocityUnit>();
-            }
-            else
+            double nextWindRangeMeters = 1e7;
+
+            if (wind != null && wind.Length >= 1)
             {
                 if (wind.Length > 1 && wind[0].MaximumRange != null)
-                    nextWindRange = wind[0].MaximumRange.Value;
-                windVector = WindVector(shot, wind[0], velocity.Unit);
+                    nextWindRangeMeters = wind[0].MaximumRange.Value.In(DistanceUnit.Meter);
+                WindVectorRaw(shot, wind[0], velUnit, out wx, out wy, out wz);
             }
 
-            //x - distance towards target,
-            //y - drop and
-            //z - windage
-            var rangeVector = new Vector<DistanceUnit>(new Measurement<DistanceUnit>(0, DistanceUnit.Meter),
-                -rifle.Sight.SightHeight,
-                new Measurement<DistanceUnit>(0, DistanceUnit.Meter));
+            // Drag: PIR * (velUnit->fps factor) / BC — combines all constant multipliers
+            double adjustToFps = Measurement<VelocityUnit>.Convert(1, velUnit, VelocityUnit.FeetPerSecond);
+            double ballisticFactor = 1.0 / ammunition.GetBallisticCoefficient();
+            double accumulatedFactor = PIR * adjustToFps * ballisticFactor;
 
-            var velocityVector = new Vector<VelocityUnit>(velocity * barrelElevation.Cos() * barrelAzimuth.Cos(),
-                                                          velocity * barrelElevation.Sin(),
-                                                          velocity * barrelElevation.Cos() * barrelAzimuth.Sin());
+            // Gravity acceleration in velUnit per second (e.g. ~32.17 ft/s^2)
+            double earthGravity = Measurement<VelocityUnit>.Convert(
+                Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
+                VelocityUnit.MetersPerSecond, velUnit);
 
-            int currentItem = 0;
-            Measurement<DistanceUnit> maximumRange = rangeTo + calculationStep;
-            Measurement<DistanceUnit> nextRangeDistance = new Measurement<DistanceUnit>(0, DistanceUnit.Meter);
+            double maximumRangeMeters = rangeToMeters + calcStepMeters;
+            double maximumDropMeters = MaximumDrop.In(DistanceUnit.Meter);
+            double minimumVelocity = MinimumVelocity.In(velUnit);       // velUnit
 
-            Measurement<DistanceUnit> lastAtAltitude = new Measurement<DistanceUnit>(-1000000000, DistanceUnit.Meter);
+            // Altitude is tracked in its original unit (e.g. Feet) as a raw double.
+            // This preserves the per-step meter->altUnit FP conversion pattern from the
+            // original Measurement<T> arithmetic, which is required for 1e-7 accuracy.
+            DistanceUnit altUnit = atmosphere.Altitude.Unit;
+            double altValue = atmosphere.Altitude.Value;                 // altUnit
+            double meterToAltUnit = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, altUnit);
+            double altMeters = atmosphere.Altitude.In(DistanceUnit.Meter);  // shadow for fast 1m threshold check
+            double lastAtAltMeters = -1e9;
+
+            double distanceMeters = 0;                                  // line-of-sight distance, meters
+            double nextRangeDistMeters = 0;                             // next output point distance, meters
+            double densityFactor = 0;
+            double machInVelUnit = 0;                                   // speed of sound in velUnit
+
             DragTableNode dragTableNode = null;
+            int currentItem = 0;
+            TimeSpan time = new TimeSpan(0);
 
-            double adjustBallisticFactorForVelocityUnits = Measurement<VelocityUnit>.Convert(1, velocity.Unit, VelocityUnit.FeetPerSecond);
-            double ballisticFactor = 1 / ammunition.GetBallisticCoefficient();
-            var accumulatedFactor = PIR * adjustBallisticFactorForVelocityUnits * ballisticFactor;
+            atmosphere.AtAltitude(new Measurement<DistanceUnit>(altValue, altUnit), out densityFactor, out Measurement<VelocityUnit> machMeasurement);
+            machInVelUnit = machMeasurement.In(velUnit);
 
-            var earthGravity = (new Measurement<VelocityUnit>(Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
-                                                              VelocityUnit.MetersPerSecond)).To(velocity.Unit);
+            // Pre-compute drift constants
+            int driftDirection = calculateDrift ? (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1) : 0;
+            double driftFactor = calculateDrift ? 1.25 * (stabilityCoefficient + 1.2) : 0;
+            double inchToMeter = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Inch, DistanceUnit.Meter);
 
-            var alt = alt0;
-            var distance = new Measurement<DistanceUnit>(0, rangeVector.X.Unit);
-            atmosphere.AtAltitude(alt, out densityFactor, out Measurement<VelocityUnit> mach);
+            // velUnit->m/s divisor: use division (not multiply by reciprocal) to match
+            // Measurement<T>.In(MPS) which internally divides by this constant
+            double mpsToVel = Measurement<VelocityUnit>.Convert(1, VelocityUnit.MetersPerSecond, velUnit);
 
-            //run all the way down the range
-            while (distance <= maximumRange)
+            double velocityMag = Math.Sqrt(vx * vx + vy * vy + vz * vz);
+
+            while (distanceMeters <= maximumRangeMeters)
             {
-                //update density and Mach velocity each 10 feet of altitude
-                if (MeasurementMath.Abs(lastAtAltitude - alt) > altDelta)
+                if (Math.Abs(altMeters - lastAtAltMeters) > 1.0)
                 {
-                    atmosphere.AtAltitude(alt, out densityFactor, out mach);
-                    lastAtAltitude = alt;
+                    atmosphere.AtAltitude(new Measurement<DistanceUnit>(altValue, altUnit), out densityFactor, out machMeasurement);
+                    machInVelUnit = machMeasurement.In(velUnit);
+                    lastAtAltMeters = altMeters;
                 }
 
-                if (velocity < MinimumVelocity || rangeVector.Y < -MaximumDrop)
+                if (velocityMag < minimumVelocity || ry < -maximumDropMeters)
                     break;
 
-                if (rangeVector.X >= nextWindRange)
+                if (rx >= nextWindRangeMeters)
                 {
                     currentWind++;
-                    windVector = WindVector(shot, wind[currentWind], velocity.Unit);
+                    WindVectorRaw(shot, wind[currentWind], velUnit, out wx, out wy, out wz);
 
                     if (currentWind == wind.Length - 1 || wind[currentWind].MaximumRange == null)
-                        nextWindRange = new Measurement<DistanceUnit>(1e7, DistanceUnit.Meter);
+                        nextWindRangeMeters = 1e7;
                     else
-                        nextWindRange = wind[currentWind].MaximumRange.Value;
+                        nextWindRangeMeters = wind[currentWind].MaximumRange.Value.In(DistanceUnit.Meter);
                 }
 
-                if (distance >= nextRangeDistance)
+                if (distanceMeters >= nextRangeDistMeters)
                 {
-                    var windage = rangeVector.Z;
-
+                    double windage_m = rz;
                     if (calculateDrift)
-                        windage += new Measurement<DistanceUnit>(1.25 * (stabilityCoefficient + 1.2) * Math.Pow(time.TotalSeconds, 1.83) * (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1), DistanceUnit.Inch);
+                        windage_m += driftFactor * Math.Pow(time.TotalSeconds, 1.83) * driftDirection * inchToMeter;
 
-                    var lineOfSightElevation = rangeVector.X * lineOfSightTan;
-                    var lineOfDepartureElevation = rangeVector.X * lineOfDepartureTan - rifle.Sight.SightHeight;
+                    var windageMeas = new Measurement<DistanceUnit>(windage_m, DistanceUnit.Meter);
+                    var distanceMeas = new Measurement<DistanceUnit>(distanceMeters, DistanceUnit.Meter);
 
-                    var drop = rangeVector.Y;
-                    Measurement<AngularUnit> dropAdjustment;
-                    Measurement<AngularUnit> windageAdjustment;
-
-
+                    double drop_m = ry;
                     if (hasShotAngle)
                     {
-                        var y = rangeVector.Y + rifle.Sight.SightHeight;
-                        var y_rotated = -rangeVector.X * lineOfSightSin + y * lineOfSightCos;
-                        drop = y_rotated - rifle.Sight.SightHeight;
-                        dropAdjustment = BallisticMath.CalculateAdjustment(drop, distance);
-                        windageAdjustment = BallisticMath.CalculateAdjustment(windage, distance);
+                        double y = ry + sightHeightMeters;
+                        double y_rotated = -rx * lineOfSightSin + y * lineOfSightCos;
+                        drop_m = y_rotated - sightHeightMeters;
                     }
-                    else
-                    {
-                        dropAdjustment = BallisticMath.CalculateAdjustment(drop, distance);
-                        windageAdjustment = BallisticMath.CalculateAdjustment(windage, distance);
-                    }
+
+                    var dropMeas = new Measurement<DistanceUnit>(drop_m, DistanceUnit.Meter);
+                    var dropAdjustment = BallisticMath.CalculateAdjustment(dropMeas, distanceMeas);
+                    var windageAdjustment = BallisticMath.CalculateAdjustment(windageMeas, distanceMeas);
+
+                    var velocityOut = new Measurement<VelocityUnit>(velocityMag, velUnit);
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
                         time: time,
-                        distance: distance,
-                        distanceFlat: rangeVector.X,
-                        velocity: velocity,
-                        mach: velocity / mach,
-                        drop: drop,
-                        dropFlat: rangeVector.Y,
+                        distance: distanceMeas,
+                        distanceFlat: new Measurement<DistanceUnit>(rx, DistanceUnit.Meter),
+                        velocity: velocityOut,
+                        mach: velocityMag / machInVelUnit,
+                        drop: dropMeas,
+                        dropFlat: new Measurement<DistanceUnit>(ry, DistanceUnit.Meter),
                         dropAdjustment: dropAdjustment,
                         windageAdjustment: windageAdjustment,
-                        lineOfSightElevation: lineOfSightElevation,
-                        lineOfDepartureElevation: lineOfDepartureElevation,
-                        windage: windage,
-                        energy: MeasurementMath.KineticEnergy(ammunition.Weight, velocity),
-                        optimalGameWeight : BallisticMath.OptimalGameWeight(ammunition.Weight, velocity));
+                        lineOfSightElevation: new Measurement<DistanceUnit>(rx * lineOfSightTan, DistanceUnit.Meter),
+                        lineOfDepartureElevation: new Measurement<DistanceUnit>(rx * lineOfDepartureTan - sightHeightMeters, DistanceUnit.Meter),
+                        windage: windageMeas,
+                        energy: MeasurementMath.KineticEnergy(ammunition.Weight, velocityOut),
+                        optimalGameWeight: BallisticMath.OptimalGameWeight(ammunition.Weight, velocityOut));
 
-                    nextRangeDistance += step;
+                    nextRangeDistMeters += stepMeters;
                     currentItem++;
                     if (currentItem == trajectoryPoints.Length)
                         break;
                 }
 
-                var deltaTime = BallisticMath.TravelTime(calculationStep, velocityVector.X);
-                var velocityAdjusted = velocityVector - windVector;
+                // --- Physics integration step ---
 
-                velocity = velocityAdjusted.Magnitude;
-                double currentMach = velocity / mach;
+                // dt must go through TimeSpan to match the original's tick-precision truncation
+                double dt = TimeSpan.FromSeconds(calcStepMeters / (vx / mpsToVel)).TotalSeconds;
 
-                //find Mach node for the first time
+                // Wind-adjusted velocity vector (velUnit)
+                double vax = vx - wx;
+                double vay = vy - wy;
+                double vaz = vz - wz;
+
+                // Drag lookup by Mach number
+                double velocityAdj = Math.Sqrt(vax * vax + vay * vay + vaz * vaz);
+                double currentMach = velocityAdj / machInVelUnit;
+
                 dragTableNode ??= dragTable.Find(currentMach);
 
-                //walk towards the beginning the table as velocity drops
                 while (dragTableNode.Mach > currentMach)
                     dragTableNode = dragTableNode.Previous;
 
-                drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocity.Value;
-                var factor = deltaTime.TotalSeconds * drag;
+                // Apply drag deceleration and gravity
+                double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityAdj;
+                double factor = dt * drag;
 
-                velocityVector = new Vector<VelocityUnit>(
-                    velocityVector.X - factor * velocityAdjusted.X,
-                    velocityVector.Y - factor * velocityAdjusted.Y
-                                     - earthGravity * deltaTime.TotalSeconds,
-                    velocityVector.Z - factor * velocityAdjusted.Z
-                 );
+                vx = vx - factor * vax;                                 // velUnit
+                vy = vy - factor * vay - earthGravity * dt;             // velUnit (gravity in velUnit/s)
+                vz = vz - factor * vaz;                                 // velUnit
 
-                var deltaRangeVector = new Vector<DistanceUnit>(
-                        new Measurement<DistanceUnit>(velocityVector.X.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
-                        new Measurement<DistanceUnit>(velocityVector.Y.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter),
-                        new Measurement<DistanceUnit>(velocityVector.Z.In(VelocityUnit.MetersPerSecond) * deltaTime.TotalSeconds, DistanceUnit.Meter));
+                // Position delta: convert velocity to m/s via division, then multiply by dt
+                double drx = vx / mpsToVel * dt;                       // meters
+                double dry = vy / mpsToVel * dt;                       // meters
+                double drz = vz / mpsToVel * dt;                       // meters
 
-                rangeVector += deltaRangeVector;
-                distance = rangeVector.X / lineOfSightCos;
-                alt += deltaRangeVector.Y;
-                velocity = velocityVector.Magnitude;
-                time = time.Add(BallisticMath.TravelTime(deltaRangeVector.Magnitude, velocity));
+                rx += drx;
+                ry += dry;
+                rz += drz;
+
+                distanceMeters = rx / lineOfSightCos;
+                altValue += dry * meterToAltUnit;                       // altUnit (matches Measurement operator+ FP path)
+                altMeters += dry;                                       // meters (shadow for threshold check)
+
+                velocityMag = Math.Sqrt(vx * vx + vy * vy + vz * vz);  // velUnit (reused at top of next iteration)
+                double drMag = Math.Sqrt(drx * drx + dry * dry + drz * drz);
+                time = time.Add(TimeSpan.FromSeconds(drMag / (velocityMag / mpsToVel)));
             }
 
             return trajectoryPoints;
@@ -393,7 +451,7 @@ namespace BallisticCalculator
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector<VelocityUnit> WindVector(ShotParameters shot, Wind wind, VelocityUnit units)
+        private static void WindVectorRaw(ShotParameters shot, Wind wind, VelocityUnit units, out double wx, out double wy, out double wz)
         {
             var shotAngle = shot.SightAngle;
             if (shot.ShotAngle != null)
@@ -404,22 +462,24 @@ namespace BallisticCalculator
             double cantCosine = (shot.CantAngle ?? AngularUnit.Radian.New(0)).Cos();
             double cantSine = (shot.CantAngle ?? AngularUnit.Radian.New(0)).Sin();
 
-            Measurement<VelocityUnit> rangeVelocity, crossComponent;
+            double rangeVelocity, crossComponent;
 
             if (wind != null)
             {
-                rangeVelocity = (wind.Velocity * wind.Direction.Cos()).To(units);
-                crossComponent = (wind.Velocity * wind.Direction.Sin()).To(units);
+                rangeVelocity = (wind.Velocity * wind.Direction.Cos()).In(units);
+                crossComponent = (wind.Velocity * wind.Direction.Sin()).In(units);
             }
             else
             {
-                rangeVelocity = new Measurement<VelocityUnit>(0, units);
-                crossComponent = new Measurement<VelocityUnit>(0, units);
+                rangeVelocity = 0;
+                crossComponent = 0;
             }
 
-            Measurement<VelocityUnit> rangeFactor = -rangeVelocity * sightSine;
+            double rangeFactor = -rangeVelocity * sightSine;
 
-            return new Vector<VelocityUnit>(rangeVelocity * sightCosine, rangeFactor * cantCosine + crossComponent * cantSine, crossComponent * cantCosine - rangeFactor * cantSine);
+            wx = rangeVelocity * sightCosine;
+            wy = rangeFactor * cantCosine + crossComponent * cantSine;
+            wz = crossComponent * cantCosine - rangeFactor * cantSine;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
