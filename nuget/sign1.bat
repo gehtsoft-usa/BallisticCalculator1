@@ -1,0 +1,1 @@
+nuget sign -Verbosity detailed -CertificateFingerprint 0D96BC4CC55412DAE19410FB208FFC550C32A20EA1E337388FF0776B358744C0 -Timestamper http://timestamp.digicert.com BallisticCalculator.1.1.7.2.nupkg

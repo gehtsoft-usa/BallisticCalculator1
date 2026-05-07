@@ -2,11 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
   <TargetFramework>netstandard2.0</TargetFramework>
-  <DocGenVersion>0.1.33</DocGenVersion>
+  <DocGenVersion>0.1.34</DocGenVersion>
  </PropertyGroup>
  <ItemGroup>
   <PackageReference Include="Gehtsoft.Build.DocGen" Version="$(DocGenVersion)" IncludeAssets="build" />
-  <PackageReference Include="Gehtsoft.Build.ContentDelivery" Version="0.1.10" IncludeAssets="build" />
+  <PackageReference Include="Gehtsoft.Build.ContentDelivery" Version="0.1.11" IncludeAssets="build" />
  </ItemGroup>
  <PropertyGroup>
   <DocTargetDir>$(MSBuildProjectDirectory)/dst</DocTargetDir>
@@ -36,7 +36,7 @@
   <DocSource Include="$(MSBuildProjectDirectory)/../BallisticCalculator/bin/Debug/netstandard2.0/BallisticCalculator.dll" />
  </ItemGroup>
  <Target Name="Scan">
-  <Asm2Xml Assemblies="@(DocSource)" OutputXml="obj/raw.xml" Mode="net60" />
+  <Asm2Xml Assemblies="@(DocSource)" OutputXml="obj/raw.xml" Mode="net80" />
  </Target>
  <Target Name="Raw">
   <RemoveDir Directories="@(CurrentRawDir)" />
