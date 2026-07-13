@@ -1,6 +1,6 @@
 # Installing the BallisticCalculator skill
 
-The skill is the folder [`SKILLS/Gehtsoft.BallisticCalculator/`](SKILLS/Gehtsoft.BallisticCalculator/)
+The skill is the folder [`SKILLS/ballistic-calculator/`](SKILLS/ballistic-calculator/)
 (a `SKILL.md` plus a `references/` subfolder). Installing it means copying that **whole folder** into a
 skills directory that your agent scans. Both Claude Code and Codex CLI implement the same `SKILL.md`
 standard, so the same folder works in either — only the destination directory differs.
@@ -8,14 +8,14 @@ standard, so the same folder works in either — only the destination directory 
 Throughout, `SRC` is the skill folder in this repo:
 
 ```bash
-SRC="$(pwd)/SKILLS/Gehtsoft.BallisticCalculator"   # run from the SKILL/ directory
+SRC="$(pwd)/SKILLS/ballistic-calculator"   # run from the SKILL/ directory
 ```
 
-> **Folder name = invocation name (Claude Code).** Claude Code derives the `/slash-command` from the
-> *folder* name, so installed as `Gehtsoft.BallisticCalculator` it is `/Gehtsoft.BallisticCalculator`.
-> Auto-triggering (from the description) works regardless of folder name. If you prefer a cleaner
-> command, rename the destination folder to `ballistic-calculator` when copying. The examples below keep
-> the original name; change the last path segment if you want the shorter one.
+> **Keep the folder named `ballistic-calculator`.** Claude Code derives the skill's identity and its
+> `/slash-command` from the *folder* name (the frontmatter `name:` is not used for this), so the folder
+> is kept in sync with `name: ballistic-calculator` — install it as `ballistic-calculator` and it is
+> `/ballistic-calculator`. Auto-triggering (from the description) works regardless, but matching the
+> names keeps the identity consistent across Claude Code and Codex.
 
 ---
 
@@ -30,7 +30,7 @@ registration or config edit is needed. References in the `references/` folder lo
 ```bash
 mkdir -p ~/.claude/skills
 cp -r "$SRC" ~/.claude/skills/
-# -> ~/.claude/skills/Gehtsoft.BallisticCalculator/SKILL.md
+# -> ~/.claude/skills/ballistic-calculator/SKILL.md
 ```
 
 ### Project-local (available only in one repo; check it into version control)
@@ -38,7 +38,7 @@ cp -r "$SRC" ~/.claude/skills/
 ```bash
 mkdir -p /path/to/your-app/.claude/skills
 cp -r "$SRC" /path/to/your-app/.claude/skills/
-# -> /path/to/your-app/.claude/skills/Gehtsoft.BallisticCalculator/SKILL.md
+# -> /path/to/your-app/.claude/skills/ballistic-calculator/SKILL.md
 ```
 
 Project skills also load when Claude Code is started in a subdirectory (it searches up to the repo root).
@@ -61,7 +61,7 @@ automatically. Frontmatter (`name`, `description`) is the same standard, and `re
 ```bash
 mkdir -p ~/.agents/skills
 cp -r "$SRC" ~/.agents/skills/
-# -> ~/.agents/skills/Gehtsoft.BallisticCalculator/SKILL.md
+# -> ~/.agents/skills/ballistic-calculator/SKILL.md
 ```
 
 ### Project-local (checked into a repo)
@@ -71,7 +71,7 @@ Place it under `.agents/skills` anywhere from your working directory up to the r
 ```bash
 mkdir -p /path/to/your-app/.agents/skills
 cp -r "$SRC" /path/to/your-app/.agents/skills/
-# -> /path/to/your-app/.agents/skills/Gehtsoft.BallisticCalculator/SKILL.md
+# -> /path/to/your-app/.agents/skills/ballistic-calculator/SKILL.md
 ```
 
 ### System-wide (shared machine/container image)
@@ -93,10 +93,10 @@ picks up the skill. (Codex also exposes a `skill-installer` helper and per-skill
 
 On Windows, the equivalents are:
 
-- Claude Code, global: `%USERPROFILE%\.claude\skills\Gehtsoft.BallisticCalculator\`
-- Claude Code, project: `<repo>\.claude\skills\Gehtsoft.BallisticCalculator\`
-- Codex, global: `%USERPROFILE%\.agents\skills\Gehtsoft.BallisticCalculator\`
-- Codex, project: `<repo>\.agents\skills\Gehtsoft.BallisticCalculator\`
+- Claude Code, global: `%USERPROFILE%\.claude\skills\ballistic-calculator\`
+- Claude Code, project: `<repo>\.claude\skills\ballistic-calculator\`
+- Codex, global: `%USERPROFILE%\.agents\skills\ballistic-calculator\`
+- Codex, project: `<repo>\.agents\skills\ballistic-calculator\`
 
 Copy the folder with `xcopy /E /I` or `Copy-Item -Recurse`.
 
@@ -105,7 +105,7 @@ Copy the folder with `xcopy /E /I` or `Copy-Item -Recurse`.
 ## Updating / uninstalling
 
 - **Update:** re-copy the folder over the installed one; both tools pick up changes automatically.
-- **Uninstall:** delete the installed `Gehtsoft.BallisticCalculator/` folder from the skills directory.
+- **Uninstall:** delete the installed `ballistic-calculator/` folder from the skills directory.
 
 ---
 

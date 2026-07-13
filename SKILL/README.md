@@ -4,7 +4,7 @@ A self-contained **Agent Skill** that teaches an AI coding assistant (Claude Cod
 tool that supports the `SKILL.md` standard) how to use the **`BallisticCalculator`** .NET NuGet package
 correctly — without reading the library source or decompiling the package to rediscover its API.
 
-The skill lives in [`SKILLS/Gehtsoft.BallisticCalculator/`](SKILLS/Gehtsoft.BallisticCalculator/).
+The skill lives in [`SKILLS/ballistic-calculator/`](SKILLS/ballistic-calculator/).
 
 ## Why
 
@@ -31,7 +31,7 @@ round-trips than rediscovering the API from the package's XML docs.
 ## Structure (progressive disclosure)
 
 ```
-SKILLS/Gehtsoft.BallisticCalculator/
+SKILLS/ballistic-calculator/
 ├── SKILL.md                 # core trajectory workflow — always loaded when the skill triggers
 └── references/              # specialized topics — loaded only when a task needs them
     ├── custom-drag.md       # custom / .drg / multi-BC drag curves
