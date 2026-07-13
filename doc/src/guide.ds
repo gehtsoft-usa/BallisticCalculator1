@@ -1,0 +1,391 @@
+@group
+    @key=guide
+    @title=Guide
+    @ingroup=main
+    @brief=A task-oriented guide to using the library.
+    @order=custom
+    @sortarticles=no
+
+    A short, example-driven tour of the library. Each article is a complete, runnable
+    program followed by its actual output.
+
+    * [link=guide.output]Understanding the output[/link]
+    * [link=guide.minimal]Minimalistic calculation[/link]
+    * [link=guide.atmosphere]Atmosphere, wind, and drift[/link]
+    * [link=guide.customdrag]Custom drag: GC and .drg tables[/link]
+    * [link=guide.multibc]Multi-BC drag tables[/link]
+@end
+
+@article
+    @key=guide.output
+    @title=Understanding the output
+    @ingroup=guide
+    @brief=What a trajectory point contains and how to read it.
+
+    [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].Calculate
+    returns an array of [clink=BallisticCalculator.TrajectoryPoint]TrajectoryPoint[/clink],
+    one per output step. Every physical value is a
+    [c]Measurement<T>[/c], so you choose the unit when you read it (for example
+    [c]point.Velocity.In(VelocityUnit.FeetPerSecond)[/c]).
+
+    |!30%,Property | Meaning |
+    | `Time` | Time of flight to the point. |
+    | `Distance` | Distance along the line of sight (the sight axis). |
+    | `DistanceFlat` | Horizontal distance from the muzzle. |
+    | `Velocity` | Projectile speed. |
+    | `Mach` | Speed relative to the local speed of sound. |
+    | `Drop` | Vertical position relative to the line of sight. At the muzzle it equals minus the sight height. |
+    | `DropFlat` | Vertical position relative to the muzzle. |
+    | `Windage` | Horizontal deflection. Left is positive, right is negative. Includes spin drift when it is modelled. |
+    | `Energy` | Kinetic energy. |
+    | `DropAdjustment` | Angular correction for the drop at this distance (scope come-up). |
+    | `WindageAdjustment` | Angular correction for the windage at this distance. |
+    | `OptimalGameWeight` | Litz optimal game weight estimate. |
+
+    A crossed reference: `Drop` is measured from the sighting line, so it is negative
+    below the line of sight and around zero at the zero range; `DropFlat` is measured from
+    the bore line and is almost always negative downrange.
+
+    @example
+        @title=Reading every column
+        @highlight=cs
+       !var ammo = new Ammunition(
+       !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
+       !    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
+       !    muzzleVelocity: new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond));
+       !
+       !var rifle = new Rifle(
+       !    sight: new Sight(new Measurement<DistanceUnit>(1.5, DistanceUnit.Inch),
+       !                     Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+       !    zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null));
+       !
+       !var atmosphere = new Atmosphere();
+       !var calc = new TrajectoryCalculator();
+       !
+       !var shot = new ShotParameters
+       !{
+       !    MaximumDistance = new Measurement<DistanceUnit>(600, DistanceUnit.Yard),
+       !    Step = new Measurement<DistanceUnit>(200, DistanceUnit.Yard),
+       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+       !};
+       !
+       !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot))
+       !    Console.WriteLine($"{p.Time.TotalSeconds:0.000} {p.Distance.In(DistanceUnit.Yard),4:N0} " +
+       !        $"{p.Velocity.In(VelocityUnit.FeetPerSecond),5:N0} {p.Mach,4:N2} " +
+       !        $"{p.Drop.In(DistanceUnit.Inch),7:N1} {p.Energy.In(EnergyUnit.FootPound),5:N0} " +
+       !        $"{p.DropAdjustment.In(AngularUnit.MOA),6:N2}");
+    @end
+
+    |!time (s)| dist (yd)| vel (fps)| mach| drop (in)| energy (ft-lb)| drop (MOA)|
+    | 0.000 | 0 | 2,700 | 2.42 | -1.5 | 2,719 | 0.00 |
+    | 0.241 | 200 | 2,303 | 2.06 | -4.1 | 1,979 | -1.95 |
+    | 0.524 | 400 | 1,943 | 1.74 | -33.2 | 1,408 | -7.91 |
+    | 0.863 | 600 | 1,613 | 1.44 | -99.5 | 970 | -15.84 |
+@end
+
+@article
+    @key=guide.minimal
+    @title=Minimalistic calculation
+    @ingroup=guide
+    @brief=The smallest program that computes a trajectory.
+
+    The minimum you need is an [clink=BallisticCalculator.Ammunition]Ammunition[/clink]
+    (a ballistic coefficient, a bullet weight, and a muzzle velocity), a
+    [clink=BallisticCalculator.Rifle]Rifle[/clink] (a sight height and a zero range), and
+    an [clink=BallisticCalculator.Atmosphere]Atmosphere[/clink]. The default atmosphere is
+    a reasonable sea-level standard.
+
+    Compute the sight angle for the zero range with
+    [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].SightAngle,
+    put it on the [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink], and call
+    Calculate.
+
+    @example
+        @title=A bare trajectory
+        @highlight=cs
+       !var ammo = new Ammunition(
+       !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
+       !    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
+       !    muzzleVelocity: new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond));
+       !
+       !var rifle = new Rifle(
+       !    sight: new Sight(new Measurement<DistanceUnit>(1.5, DistanceUnit.Inch),
+       !                     Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+       !    zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null));
+       !
+       !var atmosphere = new Atmosphere();
+       !var calc = new TrajectoryCalculator();
+       !
+       !var shot = new ShotParameters
+       !{
+       !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+       !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+       !};
+       !
+       !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot))
+       !    Console.WriteLine($"{p.Distance.In(DistanceUnit.Yard),5:N0} " +
+       !        $"{p.Velocity.In(VelocityUnit.FeetPerSecond),6:N0} " +
+       !        $"{p.Drop.In(DistanceUnit.Inch),8:N1}");
+    @end
+
+    Output (every 200 yd):
+
+    |!dist (yd)| vel (fps)| drop (in)|
+    | 0 | 2,700 | -1.5 |
+    | 200 | 2,303 | -4.1 |
+    | 400 | 1,943 | -33.2 |
+    | 600 | 1,612 | -99.6 |
+    | 800 | 1,310 | -220.4 |
+    | 1,000 | 1,066 | -423.7 |
+@end
+
+@article
+    @key=guide.atmosphere
+    @title=Atmosphere, wind, and drift
+    @ingroup=guide
+    @brief=Non-standard air, multiple wind zones, and spin drift.
+
+    Three additions turn the bare trajectory into a realistic one.
+
+    ## Atmosphere
+
+    Build an [clink=BallisticCalculator.Atmosphere]Atmosphere[/clink] from altitude,
+    pressure, temperature, and humidity. Two things to remember: **humidity is a fraction
+    from 0 to 1** (not a percentage), and the four-argument constructor treats the pressure
+    as the station pressure //at that altitude// (use the overload with
+    [c]pressureAtSeaLevel: true[/c] to pass a sea-level-corrected value).
+
+    ## Wind
+
+    [clink=BallisticCalculator.Wind]Wind[/clink] is given as a velocity and a direction
+    (0 deg blows toward the target, 90 deg blows from the right). Pass an array to model
+    several zones; each applies out to its [c]MaximumRange[/c], and the last (or one with no
+    range) applies to the end. The zones must be ordered by increasing range.
+
+    ## Spin drift
+
+    Spin drift is modelled only when the [clink=BallisticCalculator.Rifle]Rifle[/clink] has
+    [clink=BallisticCalculator.Rifling]Rifling[/clink] **and** the ammunition has both a
+    bullet diameter and a bullet length. It is folded into `Windage` (there is no separate
+    output column).
+
+    @example
+        @title=Altitude, two wind zones, and a right-hand twist
+        @highlight=cs
+       !var ammo = new Ammunition(
+       !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
+       !    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
+       !    muzzleVelocity: new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond),
+       !    bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch),
+       !    bulletLength: new Measurement<DistanceUnit>(1.2, DistanceUnit.Inch));
+       !
+       !var rifle = new Rifle(
+       !    sight: new Sight(new Measurement<DistanceUnit>(2.0, DistanceUnit.Inch),
+       !                     Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+       !    zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null),
+       !    rifling: new Rifling(new Measurement<DistanceUnit>(11.25, DistanceUnit.Inch), TwistDirection.Right));
+       !
+       !var atmosphere = new Atmosphere(
+       !    altitude: new Measurement<DistanceUnit>(5000, DistanceUnit.Foot),
+       !    pressure: new Measurement<PressureUnit>(24.9, PressureUnit.InchesOfMercury),
+       !    temperature: new Measurement<TemperatureUnit>(40, TemperatureUnit.Fahrenheit),
+       !    humidity: 0.30);
+       !
+       !var wind = new[]
+       !{
+       !    new Wind(new Measurement<VelocityUnit>(10, VelocityUnit.MilesPerHour),
+       !             new Measurement<AngularUnit>(90, AngularUnit.Degree),
+       !             new Measurement<DistanceUnit>(500, DistanceUnit.Yard)),
+       !    new Wind(new Measurement<VelocityUnit>(5, VelocityUnit.MilesPerHour),
+       !             new Measurement<AngularUnit>(45, AngularUnit.Degree)),
+       !};
+       !
+       !var calc = new TrajectoryCalculator();
+       !var shot = new ShotParameters
+       !{
+       !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+       !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+       !};
+       !
+       !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, wind))
+       !    Console.WriteLine($"{p.Distance.In(DistanceUnit.Yard),5:N0} " +
+       !        $"{p.Velocity.In(VelocityUnit.FeetPerSecond),6:N0} " +
+       !        $"{p.Drop.In(DistanceUnit.Inch),8:N1} " +
+       !        $"{p.Windage.In(DistanceUnit.Inch),7:N1}");
+    @end
+
+    Output (every 200 yd). Windage combines wind drift and spin drift:
+
+    |!dist (yd)| vel (fps)| drop (in)| windage (in)|
+    | 0 | 2,700 | -2.0 | 0.0 |
+    | 200 | 2,357 | -3.5 | 2.4 |
+    | 400 | 2,041 | -30.1 | 10.5 |
+    | 600 | 1,749 | -90.5 | 24.7 |
+    | 800 | 1,479 | -196.7 | 41.8 |
+    | 1,000 | 1,230 | -367.3 | 61.7 |
+@end
+
+@article
+    @key=guide.customdrag
+    @title=Custom drag: GC and .drg tables
+    @ingroup=guide
+    @brief=Use a measured or custom drag curve instead of a standard G-table.
+
+    When a standard G1/G7 curve does not describe a bullet well, supply your own drag curve.
+    A custom curve uses the [c]GC[/c] table id and is passed directly to both SightAngle and
+    Calculate.
+
+    ## A custom drag table in code
+
+    Derive from [clink=BallisticCalculator.DragTable]DragTable[/clink], return
+    [c]DragTableId.GC[/c], and feed it drag points (Mach, drag coefficient). The ammunition
+    uses a [clink=BallisticCalculator.BallisticCoefficient]BallisticCoefficient[/clink] with
+    the [c]GC[/c] table id.
+
+    @example
+        @title=Running a custom GC curve
+        @highlight=cs
+       !class MyDrag : DragTable
+       !{
+       !    public override DragTableId TableId => DragTableId.GC;
+       !    private static readonly DragTableDataPoint[] Points =
+       !    {
+       !        new DragTableDataPoint(0.00, 0.180), new DragTableDataPoint(0.60, 0.129),
+       !        new DragTableDataPoint(0.80, 0.136), new DragTableDataPoint(0.90, 0.177),
+       !        new DragTableDataPoint(1.00, 0.427), new DragTableDataPoint(1.05, 0.452),
+       !        new DragTableDataPoint(1.20, 0.429), new DragTableDataPoint(1.50, 0.394),
+       !        new DragTableDataPoint(2.00, 0.339), new DragTableDataPoint(2.50, 0.297),
+       !        new DragTableDataPoint(3.00, 0.250), new DragTableDataPoint(5.00, 0.180),
+       !    };
+       !    public MyDrag() : base(Points) { }
+       !}
+       !
+       !var table = new MyDrag();
+       !var ammo = new Ammunition(
+       !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
+       !    ballisticCoefficient: new BallisticCoefficient(0.5, DragTableId.GC),
+       !    muzzleVelocity: new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond));
+       !
+       !var rifle = new Rifle(
+       !    sight: new Sight(new Measurement<DistanceUnit>(1.5, DistanceUnit.Inch),
+       !                     Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+       !    zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null));
+       !
+       !var atmosphere = new Atmosphere();
+       !var calc = new TrajectoryCalculator();
+       !var shot = new ShotParameters
+       !{
+       !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+       !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table),
+       !};
+       !
+       !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, null, table))
+       !    Console.WriteLine($"{p.Distance.In(DistanceUnit.Yard),5:N0} " +
+       !        $"{p.Velocity.In(VelocityUnit.FeetPerSecond),6:N0} " +
+       !        $"{p.Drop.In(DistanceUnit.Inch),8:N1}");
+    @end
+
+    Output (every 200 yd):
+
+    |!dist (yd)| vel (fps)| drop (in)|
+    | 0 | 2,700 | -1.5 |
+    | 200 | 2,499 | -3.6 |
+    | 400 | 2,305 | -28.1 |
+    | 600 | 2,117 | -78.8 |
+    | 800 | 1,936 | -160.7 |
+    | 1,000 | 1,762 | -279.7 |
+
+    ## Loading a radar .drg file
+
+    A measured Doppler-radar curve is usually distributed as a [c].drg[/c] file. Load it with
+    [clink=BallisticCalculator.DrgDragTable]DrgDragTable[/clink].Open and use it exactly like
+    the custom table above (pass it to SightAngle and Calculate):
+
+    @example
+        @title=Loading a .drg file
+        @highlight=cs
+       !var table = DrgDragTable.Open("308-168gr.drg");
+       !// then use `table` the same way as a custom DragTable
+    @end
+@end
+
+@article
+    @key=guide.multibc
+    @title=Multi-BC drag tables
+    @ingroup=guide
+    @brief=Turn a few BC-vs-Mach points into a custom drag curve automatically.
+
+    A single published ballistic coefficient is a compromise: the real drag of a bullet
+    changes with speed. Many sources publish a **multi-BC** instead - a BC value for two or
+    three velocity (Mach) bands.
+    [clink=BallisticCalculator.DrgDragTableFactory]DrgDragTableFactory[/clink] turns such a
+    profile into a custom drag table for you: it scales a standard base curve by the BC at
+    each Mach, so no changes to the trajectory engine are needed.
+
+    Give it the base table, a few [clink=BallisticCalculator.BcAtMach]BcAtMach[/clink] knots
+    (Mach and the effective BC there), and the ammunition metadata. Then run the resulting
+    table with a ballistic coefficient of [c]1.0[/c] and table [c]GC[/c].
+
+    @example
+        @title=Synthesizing a curve from three BC points
+        @highlight=cs
+       !// a 3-point multi-BC profile for a 220 gr .308 bullet on the G7 base curve
+       !var entry = new AmmunitionLibraryEntry
+       !{
+       !    Name = "220 gr .308",
+       !    Ammunition = new Ammunition(
+       !        weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
+       !        ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
+       !        muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond),
+       !        bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch)),
+       !};
+       !
+       !var curve = new[]
+       !{
+       !    new BcAtMach(1.20, 0.307),
+       !    new BcAtMach(1.65, 0.301),
+       !    new BcAtMach(2.25, 0.318),
+       !};
+       !
+       !DrgDragTable table = DrgDragTableFactory.Build(entry, DragTableId.G7, curve);
+       !// table.Save("220gr-308.drg");   // optional: persist for reuse
+       !
+       !var ammo = new Ammunition(
+       !    weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
+       !    ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
+       !    muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond));
+       !
+       !var rifle = new Rifle(
+       !    sight: new Sight(new Measurement<DistanceUnit>(1.5, DistanceUnit.Inch),
+       !                     Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+       !    zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null));
+       !
+       !var atmosphere = new Atmosphere();
+       !var calc = new TrajectoryCalculator();
+       !var shot = new ShotParameters
+       !{
+       !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+       !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table),
+       !};
+       !
+       !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, null, table))
+       !    Console.WriteLine($"{p.Distance.In(DistanceUnit.Yard),5:N0} " +
+       !        $"{p.Drop.In(DistanceUnit.Inch),8:N1}");
+    @end
+
+    The table below compares the drop from the single published BC (0.325 G7) with the drop
+    from the 3-point multi-BC curve. The difference grows downrange, where a single BC is
+    least accurate:
+
+    |!dist (yd)| single-BC drop (in)| multi-BC drop (in)|
+    | 0 | -1.5 | -1.5 |
+    | 200 | -4.2 | -4.3 |
+    | 400 | -32.7 | -32.9 |
+    | 600 | -93.6 | -94.6 |
+    | 800 | -195.8 | -199.3 |
+    | 1,000 | -351.7 | -361.0 |
+@end
