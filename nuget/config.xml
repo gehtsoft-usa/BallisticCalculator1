@@ -2,7 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
-  <version id="1.1.8">Improved accuracy (0.2->0.05moa vs leading calculators), multi-BC support</version>
+  <version id="1.1.8">Improved accuracy (0.2->0.1moa vs leading calculators), multi-BC support</version>
   <version id="1.1.7.2">Optimization performance for trajectory calculations</version>
   <version id="1.1.7.1">Fix defects that mach and windage distance is not saved to trajectory</version>
   <version id="1.1.6">Fix calculations for shot angle != 0, now it also perfectly matches competitors</version>

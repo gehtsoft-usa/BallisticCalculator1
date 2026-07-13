@@ -18,13 +18,13 @@ Changes made since porting original C sources:
 
 * Drift calculation is added using Liltz's formulas
 
-* Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern calculators.
+* Accuracy of the calculation is withing 0.05%/0.1moa (less than 1inch per 1000 yards) of the most modern calculators.
 
 Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)
 
 You can get the latest official release from [nuget.org](https://www.nuget.org/packages/BallisticCalculator)
 
-If you want to use the latest development version of the package, use [Gehtsoft public nuget channel](https://proget.gehtsoft.com/feeds/public-nuget)
+If you want to use the latest development version of the package, use [Gehtsoft public nuget channel](https://www.myget.org/F/gehtsoft-public/api/v3/index.json)
 
 The library is available in
 

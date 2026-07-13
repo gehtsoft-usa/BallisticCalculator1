@@ -5,7 +5,7 @@
   </PropertyGroup>
 
  <ItemGroup>
-  <PackageReference Include="Gehtsoft.Build.Nuget" Version="0.1.9" PrivateAssets="All" />
+  <PackageReference Include="Gehtsoft.Build.Nuget" Version="0.1.10" PrivateAssets="All" />
  </ItemGroup>
 
  <Target Name="Prepare">

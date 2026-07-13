@@ -1,1 +1,1 @@
-forfiles /m *.nupkg /c "cmd /c nuget sign -CertificateFingerprint %SM_THUMBPRINT% -Timestamper http://time.certum.pl @path"
+forfiles /m *.nupkg /c "cmd /c nuget sign -CertificateFingerprint %CERTUM_CERTIFICATE% -Timestamper http://time.certum.pl @path"
