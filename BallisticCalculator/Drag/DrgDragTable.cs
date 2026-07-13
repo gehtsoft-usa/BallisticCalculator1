@@ -28,6 +28,15 @@ namespace BallisticCalculator
         }
 
         /// <summary>
+        /// Constructs a custom table from pre-computed points and ammunition metadata
+        /// (used by <see cref="DrgDragTableFactory"/>).
+        /// </summary>
+        internal DrgDragTable(DragTableDataPoint[] points, AmmunitionLibraryEntry ammunition) : base(points)
+        {
+            Ammunition = ammunition;
+        }
+
+        /// <summary>
         /// Reads the drag file from a stream
         /// </summary>
         /// <param name="stream"></param>
@@ -111,6 +120,36 @@ namespace BallisticCalculator
         {
             using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
             return Open(fs, encoding);
+        }
+
+        /// <summary>
+        /// Writes the drag table to a stream in the CFM .drg format (symmetric with <see cref="Open(Stream, Encoding)"/>).
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="encoding"></param>
+        public void Save(Stream stream, Encoding encoding = null)
+        {
+            using var w = new StreamWriter(stream, encoding ?? Encoding.ASCII, 4096, true);
+
+            var ammo = Ammunition?.Ammunition;
+            double weightKg = ammo != null ? ammo.Weight.In(WeightUnit.Kilogram) : 0.0;
+            double diameterM = ammo?.BulletDiameter?.In(DistanceUnit.Meter) ?? 0.0;
+            string name = (Ammunition?.Name ?? "custom").Replace(',', ' ');
+
+            w.WriteLine(string.Format(CultureInfo.InvariantCulture, "CFM,{0},{1:R},{2:R},0,0", name, weightKg, diameterM));
+            for (int i = 0; i < Count; i++)
+                w.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0:R} {1:R}", this[i].DragCoefficient, this[i].Mach));
+        }
+
+        /// <summary>
+        /// Writes the drag table to a file in the CFM .drg format (symmetric with <see cref="Open(string, Encoding)"/>).
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="encoding"></param>
+        public void Save(string fileName, Encoding encoding = null)
+        {
+            using var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+            Save(fs, encoding);
         }
     }
 }

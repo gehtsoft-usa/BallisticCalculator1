@@ -12,6 +12,7 @@
     <None Remove="resources\g1_nowind.txt" />
     <None Remove="resources\g1_nowind_up.txt" />
     <None Remove="resources\g1_nowind_up_supersonic.txt" />
+    <None Remove="resources\sierra_168_brl.drg" />
     <None Remove="resources\g1_twist.txt" />
     <None Remove="resources\g1_wind.txt" />
     <None Remove="resources\g1_wind_cold.txt" />
@@ -25,6 +26,7 @@
     <EmbeddedResource Include="resources\drg2.txt" />
     <EmbeddedResource Include="resources\g1_nowind_up.txt" />
     <EmbeddedResource Include="resources\g1_nowind_up_supersonic.txt" />
+    <EmbeddedResource Include="resources\sierra_168_brl.drg" />
     <EmbeddedResource Include="resources\g1_twist.txt" />
     <EmbeddedResource Include="resources\g7_nowind.txt" />
     <EmbeddedResource Include="resources\g1_nowind.txt" />
