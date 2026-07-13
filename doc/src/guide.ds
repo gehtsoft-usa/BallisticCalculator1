@@ -28,7 +28,8 @@
     [c]Measurement<T>[/c], so you choose the unit when you read it (for example
     [c]point.Velocity.In(VelocityUnit.FeetPerSecond)[/c]).
 
-    |!30%,Property | Meaning |
+    | Property | Meaning |
+    |---|---|
     | `Time` | Time of flight to the point. |
     | `Distance` | Distance along the line of sight (the sight axis). |
     | `DistanceFlat` | Horizontal distance from the muzzle. |
@@ -49,6 +50,7 @@
     @example
         @title=Reading every column
         @highlight=cs
+        @show=yes
        !var ammo = new Ammunition(
        !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
        !    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
@@ -76,7 +78,8 @@
        !        $"{p.DropAdjustment.In(AngularUnit.MOA),6:N2}");
     @end
 
-    |!time (s)| dist (yd)| vel (fps)| mach| drop (in)| energy (ft-lb)| drop (MOA)|
+    | time (s) | dist (yd) | vel (fps) | mach | drop (in) | energy (ft-lb) | drop (MOA) |
+    |---|---|---|---|---|---|---|
     | 0.000 | 0 | 2,700 | 2.42 | -1.5 | 2,719 | 0.00 |
     | 0.241 | 200 | 2,303 | 2.06 | -4.1 | 1,979 | -1.95 |
     | 0.524 | 400 | 1,943 | 1.74 | -33.2 | 1,408 | -7.91 |
@@ -103,6 +106,7 @@
     @example
         @title=A bare trajectory
         @highlight=cs
+        @show=yes
        !var ammo = new Ammunition(
        !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
        !    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
@@ -131,7 +135,8 @@
 
     Output (every 200 yd):
 
-    |!dist (yd)| vel (fps)| drop (in)|
+    | dist (yd) | vel (fps) | drop (in) |
+    |---|---|---|
     | 0 | 2,700 | -1.5 |
     | 200 | 2,303 | -4.1 |
     | 400 | 1,943 | -33.2 |
@@ -173,6 +178,7 @@
     @example
         @title=Altitude, two wind zones, and a right-hand twist
         @highlight=cs
+        @show=yes
        !var ammo = new Ammunition(
        !    weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
        !    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
@@ -218,7 +224,8 @@
 
     Output (every 200 yd). Windage combines wind drift and spin drift:
 
-    |!dist (yd)| vel (fps)| drop (in)| windage (in)|
+    | dist (yd) | vel (fps) | drop (in) | windage (in) |
+    |---|---|---|---|
     | 0 | 2,700 | -2.0 | 0.0 |
     | 200 | 2,357 | -3.5 | 2.4 |
     | 400 | 2,041 | -30.1 | 10.5 |
@@ -247,6 +254,7 @@
     @example
         @title=Running a custom GC curve
         @highlight=cs
+        @show=yes
        !class MyDrag : DragTable
        !{
        !    public override DragTableId TableId => DragTableId.GC;
@@ -290,7 +298,8 @@
 
     Output (every 200 yd):
 
-    |!dist (yd)| vel (fps)| drop (in)|
+    | dist (yd) | vel (fps) | drop (in) |
+    |---|---|---|
     | 0 | 2,700 | -1.5 |
     | 200 | 2,499 | -3.6 |
     | 400 | 2,305 | -28.1 |
@@ -307,6 +316,7 @@
     @example
         @title=Loading a .drg file
         @highlight=cs
+        @show=yes
        !var table = DrgDragTable.Open("308-168gr.drg");
        !// then use `table` the same way as a custom DragTable
     @end
@@ -332,6 +342,7 @@
     @example
         @title=Synthesizing a curve from three BC points
         @highlight=cs
+        @show=yes
        !// a 3-point multi-BC profile for a 220 gr .308 bullet on the G7 base curve
        !var entry = new AmmunitionLibraryEntry
        !{
@@ -381,7 +392,8 @@
     from the 3-point multi-BC curve. The difference grows downrange, where a single BC is
     least accurate:
 
-    |!dist (yd)| single-BC drop (in)| multi-BC drop (in)|
+    | dist (yd) | single-BC drop (in) | multi-BC drop (in) |
+    |---|---|---|
     | 0 | -1.5 | -1.5 |
     | 200 | -4.2 | -4.3 |
     | 400 | -32.7 | -32.9 |
