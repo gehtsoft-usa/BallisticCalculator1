@@ -33,8 +33,13 @@ inclined geometry. Our in-flight altitude tracking is **correct** (Hornady track
 verified by a temporary freeze experiment on two bullets) — so **no "static atmosphere" mode is
 needed** for accuracy.
 
-Still open: b1 (drag-data / BC(M) curve synthesis — the real accuracy story), b2 spin-drift
-recalibration, b4 aerodynamic jump, b5 downrange Sg.
+**b1 (drag-data / BC(M) curve synthesis) — DONE.** `DrgDragTableFactory` synthesizes a per-bullet
+custom drag curve from a multi-BC(Mach) profile; brings ELD bullets to ~0.05 MOA vs 4DOF (from
+0.9–1.6 MOA published-BC), BTHP to ~1.2 MOA (from 5–9). Full pipeline, math, data provenance,
+and regeneration recipe: **`CLAUDE/B1_MULTIBC.md`**.
+
+Still open: b2 spin-drift recalibration, b4 aerodynamic jump (the wind-case drop term), b5
+downrange Sg.
 
 ---
 

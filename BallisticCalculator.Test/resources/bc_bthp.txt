@@ -1,0 +1,6 @@
+# BTHP 75gr .224 — multi-BC (Mach -> effective BC), base table then "mach;bc" knots.
+# 3-point form (Strelok-style), derived from the Hornady 4DOF baseline (B0-3, regenerated).
+G1
+0.95;0.206
+1.30;0.299
+2.05;0.344

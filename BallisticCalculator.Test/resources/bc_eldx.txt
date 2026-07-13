@@ -1,0 +1,6 @@
+# ELD-X 220gr .308 — multi-BC (Mach -> effective BC), base table then "mach;bc" knots.
+# 3-point form (Strelok-style), derived from the Hornady 4DOF baseline (B1_baseline_01).
+G7
+1.20;0.307
+1.65;0.301
+2.25;0.318
