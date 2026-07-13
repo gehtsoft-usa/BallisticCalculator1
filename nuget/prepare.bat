@@ -1,3 +1,3 @@
-msbuild ../BallisticCalculator.sln /p:Configuration=Release
-msbuild nuget.proj -t:Prepare
-msbuild nuget.proj -t:NuSpec,NuPack
+dotnet build ../BallisticCalculator.sln /p:Configuration=Release
+dotnet build nuget.proj -t:Prepare
+dotnet build nuget.proj -t:NuSpec,NuPack

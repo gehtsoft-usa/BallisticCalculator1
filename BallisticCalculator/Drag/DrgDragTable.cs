@@ -28,8 +28,7 @@ namespace BallisticCalculator
         }
 
         /// <summary>
-        /// Constructs a custom table from pre-computed points and ammunition metadata
-        /// (used by <see cref="DrgDragTableFactory"/>).
+        /// Constructs a custom table from pre-computed points and ammunition metadata (used by the factory).
         /// </summary>
         internal DrgDragTable(DragTableDataPoint[] points, AmmunitionLibraryEntry ammunition) : base(points)
         {
@@ -123,7 +122,7 @@ namespace BallisticCalculator
         }
 
         /// <summary>
-        /// Writes the drag table to a stream in the CFM .drg format (symmetric with <see cref="Open(Stream, Encoding)"/>).
+        /// Writes the drag table to a stream in the CFM .drg format (symmetric with Open).
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="encoding"></param>
@@ -142,7 +141,7 @@ namespace BallisticCalculator
         }
 
         /// <summary>
-        /// Writes the drag table to a file in the CFM .drg format (symmetric with <see cref="Open(string, Encoding)"/>).
+        /// Writes the drag table to a file in the CFM .drg format (symmetric with Open).
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="encoding"></param>

@@ -1,1 +1,1 @@
-msbuild nuget.proj -t:NuPush
+dotnet build nuget.proj -t:NuPush

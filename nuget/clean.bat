@@ -1,1 +1,1 @@
-msbuild nuget.proj -t:NuClean
+dotnet build nuget.proj -t:NuClean

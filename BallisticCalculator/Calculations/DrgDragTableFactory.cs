@@ -5,25 +5,19 @@ using System.Linq;
 namespace BallisticCalculator
 {
     /// <summary>
-    /// <para>Synthesizes a custom (<see cref="DragTableId.GC"/>) drag table from a standard base
-    /// drag curve and an effective ballistic-coefficient-vs-Mach profile.</para>
-    /// <para>The synthesized curve is <c>Cd_custom(M) = Cd_base(M) / BC(M)</c>, where <c>BC(M)</c>
-    /// is interpolated from the supplied knots. The resulting table must be run with an
-    /// ammunition whose ballistic coefficient is <c>new BallisticCoefficient(1.0, DragTableId.GC)</c>
-    /// so the engine applies exactly the intended per-Mach drag.</para>
+    /// <para>Synthesizes a custom drag table from a standard base drag curve and an effective ballistic-coefficient-vs-Mach profile.</para>
+    /// <para>The synthesized curve is [c]Cd_custom(M) = Cd_base(M) / BC(M)[/c], where [c]BC(M)[/c] is interpolated from the supplied knots.</para>
+    /// <para>The result is a custom [c]GC[/c] table; run it with a [clink=BallisticCalculator.BallisticCoefficient]BallisticCoefficient[/clink] value of 1.0 and table GC so the engine applies exactly the intended per-Mach drag.</para>
     /// </summary>
     public static class DrgDragTableFactory
     {
         /// <summary>
-        /// Builds a custom drag table from a base curve and a Mach-&gt;BC profile.
+        /// Builds a custom drag table from a base curve and a Mach-to-BC profile.
         /// </summary>
-        /// <param name="ammunition">Ammunition metadata (name, weight, diameter) attached to the
-        /// resulting table; supplied by the caller.</param>
-        /// <param name="baseTable">The standard drag curve to scale (e.g. G1 or G7). Must not be GC.</param>
-        /// <param name="bcCurve">The Mach-&gt;effective-BC knots. Order does not matter; at least one
-        /// knot is required. BC is interpolated piecewise-linearly between knots and held flat
-        /// beyond the end knots.</param>
-        /// <returns>A custom <see cref="DrgDragTable"/> on the base curve's Mach grid.</returns>
+        /// <param name="ammunition">Ammunition metadata (name, weight, diameter) attached to the resulting table.</param>
+        /// <param name="baseTable">The standard drag curve to scale (for example G1 or G7). Must not be GC.</param>
+        /// <param name="bcCurve">The Mach-to-effective-BC knots. Order does not matter and at least one knot is required. BC is interpolated linearly between knots and held flat beyond the end knots.</param>
+        /// <returns>A custom drag table on the base curve's Mach grid.</returns>
         public static DrgDragTable Build(AmmunitionLibraryEntry ammunition, DragTableId baseTable, IEnumerable<BcAtMach> bcCurve)
         {
             if (ammunition == null)
