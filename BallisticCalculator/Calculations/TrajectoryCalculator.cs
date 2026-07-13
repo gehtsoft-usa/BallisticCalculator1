@@ -157,6 +157,8 @@ namespace BallisticCalculator
 
                     while (dragTableNode.Mach > currentMach)
                         dragTableNode = dragTableNode.Previous;
+                    while (dragTableNode.Next != null && dragTableNode.Next.Mach <= currentMach)
+                        dragTableNode = dragTableNode.Next;
 
                     double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityMag;
                     double factor = dt * drag;
@@ -285,7 +287,7 @@ namespace BallisticCalculator
                 Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
                 VelocityUnit.MetersPerSecond, velUnit);
 
-            double maximumRangeMeters = rangeToMeters + calcStepMeters;
+            double maximumRangeMeters = rangeToMeters + calcStepMeters / lineOfSightCos;
             double maximumDropMeters = MaximumDrop.In(DistanceUnit.Meter);
             double minimumVelocity = MinimumVelocity.In(velUnit);       // velUnit
 
@@ -305,7 +307,7 @@ namespace BallisticCalculator
 
             DragTableNode dragTableNode = null;
             int currentItem = 0;
-            TimeSpan time = new TimeSpan(0);
+            double timeSeconds = 0;     // accumulated flight time in seconds (double; converted to TimeSpan at output)
 
             atmosphere.AtAltitude(new Measurement<DistanceUnit>(altValue, altUnit), out densityFactor, out Measurement<VelocityUnit> machMeasurement);
             machInVelUnit = machMeasurement.In(velUnit);
@@ -348,7 +350,7 @@ namespace BallisticCalculator
                 {
                     double windage_m = rz;
                     if (calculateDrift)
-                        windage_m += driftFactor * Math.Pow(time.TotalSeconds, 1.83) * driftDirection * inchToMeter;
+                        windage_m += driftFactor * Math.Pow(timeSeconds, 1.83) * driftDirection * inchToMeter * lineOfSightCos;
 
                     var windageMeas = new Measurement<DistanceUnit>(windage_m, DistanceUnit.Meter);
                     var distanceMeas = new Measurement<DistanceUnit>(distanceMeters, DistanceUnit.Meter);
@@ -356,6 +358,13 @@ namespace BallisticCalculator
                     double drop_m = ry;
                     if (hasShotAngle)
                     {
+                        // Drop for inclined fire is measured perpendicular to the line of sight.
+                        // The sightHeight is added in the vertical frame but the final subtraction
+                        // is in the rotated frame; the resulting sightHeight*(cos-1) term is
+                        // intentional: it pins the muzzle drop to exactly -sightHeight (matching the
+                        // reference model), while every other point uses the perpendicular rotation.
+                        // Verified best-of-3 conventions against the reference (a7): dropping this
+                        // term worsens accuracy and breaks the exact muzzle match. Do not "simplify".
                         double y = ry + sightHeightMeters;
                         double y_rotated = -rx * lineOfSightSin + y * lineOfSightCos;
                         drop_m = y_rotated - sightHeightMeters;
@@ -368,7 +377,7 @@ namespace BallisticCalculator
                     var velocityOut = new Measurement<VelocityUnit>(velocityMag, velUnit);
 
                     trajectoryPoints[currentItem] = new TrajectoryPoint(
-                        time: time,
+                        time: TimeSpan.FromSeconds(timeSeconds),
                         distance: distanceMeas,
                         distanceFlat: new Measurement<DistanceUnit>(rx, DistanceUnit.Meter),
                         velocity: velocityOut,
@@ -407,6 +416,8 @@ namespace BallisticCalculator
 
                 while (dragTableNode.Mach > currentMach)
                     dragTableNode = dragTableNode.Previous;
+                while (dragTableNode.Next != null && dragTableNode.Next.Mach <= currentMach)
+                    dragTableNode = dragTableNode.Next;
 
                 // Apply drag deceleration and gravity
                 double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityAdj;
@@ -431,7 +442,7 @@ namespace BallisticCalculator
 
                 velocityMag = Math.Sqrt(vx * vx + vy * vy + vz * vz);  // velUnit (reused at top of next iteration)
                 double drMag = Math.Sqrt(drx * drx + dry * dry + drz * drz);
-                time = time.Add(TimeSpan.FromSeconds(drMag / (velocityMag / mpsToVel)));
+                timeSeconds += dt;
             }
 
             return trajectoryPoints;

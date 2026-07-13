@@ -61,13 +61,20 @@ namespace BallisticCalculator.Test.Calculator
         }
 
         [Theory]
-        [InlineData("g1_nowind", 0.005, 0.2, 0.2)]
-        [InlineData("g1_nowind_up", 0.005, 0.4, 0.4)]
-        [InlineData("g1_twist", 0.005, 0.2, 0.02)]
-        [InlineData("g7_nowind", 0.005, 0.2, 0.2)]
-        [InlineData("g1_wind", 0.005, 0.2, 0.2)]
-        [InlineData("g1_wind_hot", 0.005, 0.2, 0.2)]
-        [InlineData("g1_wind_cold", 0.005, 0.2, 0.2)]
+        [InlineData("g1_nowind", 0.0015, 0.10, 0.05)]
+        // g1_nowind_up (10° up, G1 0.365/65gr/2600) and g1_nowind_up_supersonic (10° up,
+        // G1 0.447/165gr/3100) both reference Hornady's 3DOF calculator. The supersonic case
+        // stays above Mach 1.2 to 1000 yd and matches us tightly (drop 0.10). g1_nowind_up
+        // goes transonic/subsonic by 1000 yd, where the G1 drag-curve shape diverges from
+        // Hornady's radar-derived drag (see CLAUDE/DROP_WINDAGE.md, PLAN0 §b1) — that residual
+        // is drag-data, not algorithm, so its drop tolerance is relaxed to 0.20.
+        [InlineData("g1_nowind_up", 0.0015, 0.20, 0.05)]
+        [InlineData("g1_nowind_up_supersonic", 0.0015, 0.10, 0.05)]
+        [InlineData("g1_twist", 0.0015, 0.10, 0.015)]
+        [InlineData("g7_nowind", 0.0015, 0.10, 0.05)]
+        [InlineData("g1_wind", 0.0015, 0.10, 0.10)]
+        [InlineData("g1_wind_hot", 0.0015, 0.10, 0.10)]
+        [InlineData("g1_wind_cold", 0.0015, 0.10, 0.05)]
         public void TrajectoryTest(string name, double velocityAccuracyInPercent, double dropAccuracyInMOA, double windageAccuracyInMOA)
         {
             TableLoader template = TableLoader.FromResource(name);

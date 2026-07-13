@@ -176,7 +176,7 @@ namespace BallisticCalculator
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double CalculateSoundVelocity(double temperature)
         {
-            return 331 * Math.Sqrt(temperature / 273);
+            return 331.3 * Math.Sqrt(temperature / 273.15);
         }
 
         //https://www.mide.com/air-pressure-at-altitude-calculator

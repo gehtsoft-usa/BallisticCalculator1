@@ -10,3 +10,5 @@ TestResults/
 *.nupkg
 nuget/*.nuspec
 sonar.bat
+Experiment-*/
+CLAUDE/data/
