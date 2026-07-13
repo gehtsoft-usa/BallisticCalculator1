@@ -28,8 +28,7 @@
     [c]Measurement<T>[/c], so you choose the unit when you read it (for example
     [c]point.Velocity.In(VelocityUnit.FeetPerSecond)[/c]).
 
-    | Property | Meaning |
-    |---|---|
+    |!, Property | Meaning |
     | `Time` | Time of flight to the point. |
     | `Distance` | Distance along the line of sight (the sight axis). |
     | `DistanceFlat` | Horizontal distance from the muzzle. |
@@ -78,8 +77,7 @@
        !        $"{p.DropAdjustment.In(AngularUnit.MOA),6:N2}");
     @end
 
-    | time (s) | dist (yd) | vel (fps) | mach | drop (in) | energy (ft-lb) | drop (MOA) |
-    |---|---|---|---|---|---|---|
+    |!, time (s) | dist (yd) | vel (fps) | mach | drop (in) | energy (ft-lb) | drop (MOA) |
     | 0.000 | 0 | 2,700 | 2.42 | -1.5 | 2,719 | 0.00 |
     | 0.241 | 200 | 2,303 | 2.06 | -4.1 | 1,979 | -1.95 |
     | 0.524 | 400 | 1,943 | 1.74 | -33.2 | 1,408 | -7.91 |
@@ -135,8 +133,7 @@
 
     Output (every 200 yd):
 
-    | dist (yd) | vel (fps) | drop (in) |
-    |---|---|---|
+    |!, dist (yd) | vel (fps) | drop (in) |
     | 0 | 2,700 | -1.5 |
     | 200 | 2,303 | -4.1 |
     | 400 | 1,943 | -33.2 |
@@ -224,8 +221,7 @@
 
     Output (every 200 yd). Windage combines wind drift and spin drift:
 
-    | dist (yd) | vel (fps) | drop (in) | windage (in) |
-    |---|---|---|---|
+    |!, dist (yd) | vel (fps) | drop (in) | windage (in) |
     | 0 | 2,700 | -2.0 | 0.0 |
     | 200 | 2,357 | -3.5 | 2.4 |
     | 400 | 2,041 | -30.1 | 10.5 |
@@ -298,8 +294,7 @@
 
     Output (every 200 yd):
 
-    | dist (yd) | vel (fps) | drop (in) |
-    |---|---|---|
+    |!, dist (yd) | vel (fps) | drop (in) |
     | 0 | 2,700 | -1.5 |
     | 200 | 2,499 | -3.6 |
     | 400 | 2,305 | -28.1 |
@@ -392,8 +387,7 @@
     from the 3-point multi-BC curve. The difference grows downrange, where a single BC is
     least accurate:
 
-    | dist (yd) | single-BC drop (in) | multi-BC drop (in) |
-    |---|---|---|
+    |!, dist (yd) | single-BC drop (in) | multi-BC drop (in) |
     | 0 | -1.5 | -1.5 |
     | 200 | -4.2 | -4.3 |
     | 400 | -32.7 | -32.9 |
