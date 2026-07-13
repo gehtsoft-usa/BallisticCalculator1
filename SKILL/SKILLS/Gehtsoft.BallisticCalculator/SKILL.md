@@ -1,13 +1,20 @@
 ---
 name: ballistic-calculator
 description: >
-  Use when writing .NET code against the BallisticCalculator NuGet package — computing
-  a projectile trajectory (drop, velocity, energy, windage, spin drift, time of flight)
-  for rifles, air rifles, bows, or artillery. Covers the full public API (Ammunition,
-  Rifle, Atmosphere, Wind, ShotParameters, TrajectoryCalculator, TrajectoryPoint, drag
-  tables including custom .drg and multi-BC synthesis), the Gehtsoft.Measurements unit
-  types every value uses, conventions, and runnable examples. Self-contained: no access
-  to the library source or binaries is required.
+  Use whenever writing, reviewing, or debugging .NET/C# code that uses the BallisticCalculator
+  NuGet package (namespace BallisticCalculator) or its Gehtsoft.Measurements unit types — even
+  when the user doesn't name the package explicitly but is clearly doing external/interior
+  ballistics in .NET (bullet drop, velocity, energy, windage, spin drift, time of flight, zeroing
+  a scope) for rifles, air rifles, bows, or artillery. Covers the full public API (Ammunition,
+  Rifle, Atmosphere, Wind, ShotParameters, TrajectoryCalculator, TrajectoryPoint); standard,
+  custom, .drg, and multi-BC drag tables; saving/loading data and building your own file format
+  around it (BXml and System.Text.Json serialization); and building or rendering scope reticles
+  (e.g. to SVG). Also use it for this library's Gehtsoft.Measurements Measurement<T> unit types
+  (DistanceUnit, VelocityUnit, AngularUnit, WeightUnit, PressureUnit, …). Skip for: generic physics
+  or projectile-motion exercises, a different ballistics library (e.g. GNU/JBM), game-engine or Unity
+  projectile motion, plain unit conversions, and non-code ballistics questions (load-data or
+  forensics advice). Self-contained: no access to the library source or binaries is required —
+  prefer this over scanning the package to rediscover the API.
 ---
 
 # BallisticCalculator
@@ -43,10 +50,14 @@ double raw    = d.Value;                                       // value in its o
 DistanceUnit u = d.Unit;                                       // DistanceUnit.Yard
 var zero = Measurement<DistanceUnit>.ZERO;                     // 0
 double mm = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Inch, DistanceUnit.Meter); // static double->double
+
+var d3 = 100.As(DistanceUnit.Yard);                            // extension sugar: (double|int).As(unit)
+var d4 = DistanceUnit.Yard.New(100);                           // unit-first sugar: unit.New(value)
 ```
 
 Operators: `+` `-` (same unit), `*` `/` by a scalar, and comparisons. Nullable `Measurement<T>?`
-marks optional inputs.
+marks optional inputs. The three construction forms above (`new`, `.As`, `.New`) are equivalent —
+use whichever reads best.
 
 **Unit enums** (use the exact member names):
 
@@ -276,72 +287,16 @@ var trajectory = calc.Calculate(ammo, rifle, atmosphere, shot, wind);
 
 ## 6. Custom drag curves
 
-Standard curves come from `DragTable.Get(DragTableId.G7)` and are used automatically when the BC
-names a standard table. For a measured or custom curve, use table id **`GC`** and pass the
-`DragTable` to **both** `SightAngle` and `Calculate`.
+Standard `G1..RA4` curves are applied automatically when the BC names a standard table — nothing
+extra to do. **If, and only if, the task involves a *non-standard* drag curve — a custom/measured
+drag table, a radar `.drg` file, or a multi-BC (BC-vs-Mach) profile — read
+[`references/custom-drag.md`](references/custom-drag.md) and follow it.** That file has the full,
+copy-pasteable recipes for all three (`DragTable` subclass, `DrgDragTable.Open`, and
+`DrgDragTableFactory.Build` with `BcAtMach`), including the exact signatures. Do not reconstruct
+this API from memory or hand-roll a drag table — the helpers exist and the reference has them.
 
-### A. A custom drag table in code
-```csharp
-class MyDrag : DragTable
-{
-    public override DragTableId TableId => DragTableId.GC;
-    private static readonly DragTableDataPoint[] Points =   // (Mach, drag coefficient), ascending Mach
-    {
-        new DragTableDataPoint(0.00, 0.180), new DragTableDataPoint(0.90, 0.177),
-        new DragTableDataPoint(1.00, 0.427), new DragTableDataPoint(1.20, 0.429),
-        new DragTableDataPoint(2.00, 0.339), new DragTableDataPoint(3.00, 0.250),
-    };
-    public MyDrag() : base(Points) { }
-}
-
-var table = new MyDrag();
-var ammo  = new Ammunition(weight, new BallisticCoefficient(0.5, DragTableId.GC), muzzleVelocity);
-shot.SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table);
-var traj = calc.Calculate(ammo, rifle, atmosphere, shot, null, table);
-```
-
-### B. A radar `.drg` file
-```csharp
-DrgDragTable table = DrgDragTable.Open("308-168gr.drg");   // also Open(Stream)
-// use `table` exactly like the custom table above (pass to SightAngle and Calculate)
-table.Save("copy.drg");                                    // also Save(Stream)
-```
-
-### C. Multi-BC → synthesized drag table (`DrgDragTableFactory`)
-Turn a 2–3 point BC-vs-Mach profile (as published for many bullets) into a custom curve. It scales a
-standard base curve by the BC at each Mach. Run the result with a BC of **1.0** and table **`GC`**.
-```csharp
-var entry = new AmmunitionLibraryEntry
-{
-    Name = "220 gr .308",
-    Ammunition = new Ammunition(
-        weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
-        ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
-        muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond),
-        bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch)),
-};
-
-var curve = new[]                                       // Mach -> effective BC
-{
-    new BcAtMach(1.20, 0.307),
-    new BcAtMach(1.65, 0.301),
-    new BcAtMach(2.25, 0.318),
-};
-
-DrgDragTable table = DrgDragTableFactory.Build(entry, DragTableId.G7, curve);
-// table.Save("220gr-308.drg");  // optional
-
-var ammo = new Ammunition(
-    weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
-    ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
-    muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond));
-shot.SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table);
-var traj = calc.Calculate(ammo, rifle, atmosphere, shot, null, table);
-```
-
-Signatures: `DragTable.Get(DragTableId)`, `DrgDragTable.Open(string|Stream)`,
-`DrgDragTable.Save(string|Stream)`, `DrgDragTableFactory.Build(AmmunitionLibraryEntry, DragTableId, IEnumerable<BcAtMach>)`,
-`new BcAtMach(double mach, double bc)`, `new DragTableDataPoint(double mach, double dragCoefficient)`.
+All three techniques use table id **`GC`** and require passing the `DragTable` instance to **both**
+`SightAngle` and `Calculate` (`DragTable.Get(GC)` throws — you supply the instance).
 
 ---
 
@@ -358,3 +313,18 @@ Signatures: `DragTable.Get(DragTableId)`, `DrgDragTable.Open(string|Stream)`,
   `DragTable.Get(DragTableId.GC)` throws — you must supply the instance.
 - The returned array may contain **fewer rows** than requested (subsonic/steep runs stop early).
 - No aerodynamic (vertical wind) jump term is modelled; a pure crosswind affects windage, not drop.
+
+---
+
+## 8. Specialized topics (reference files)
+
+These live in `references/` and load only when the task needs them — read the matching file and follow
+it rather than reconstructing the API from memory:
+
+- **Custom / non-standard drag curves** (custom `DragTable`, radar `.drg`, multi-BC synthesis) →
+  [`references/custom-drag.md`](references/custom-drag.md) (see §6).
+- **Serialization & persistence** — saving/loading `Ammunition`/`Rifle`/`Atmosphere`/libraries via BXml
+  or `System.Text.Json`, embedding library objects in your own file format, and decorating your own
+  classes for the BXml serializer → [`references/serialization.md`](references/serialization.md).
+- **Reticles** — building a reticle definition in code and rendering it (e.g. to SVG), including
+  bullet-drop-compensator markers → [`references/reticle.md`](references/reticle.md).

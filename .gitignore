@@ -12,3 +12,4 @@ nuget/*.nuspec
 sonar.bat
 Experiment-*/
 CLAUDE/data/
+SKILL/SKILLS/ballistic-calculator-workspace/
