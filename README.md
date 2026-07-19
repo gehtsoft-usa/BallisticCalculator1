@@ -23,6 +23,10 @@ Changes made since porting original C sources:
   firing bearing (0° = North, clockwise) used only to orient this effect — it no longer tilts the
   trajectory (a change from earlier behavior; previously azimuth near 90° also broke the calculation).
 
+* Aerodynamic (crosswind) jump — the vertical deflection a spin-stabilized bullet gets from a
+  horizontal crosswind — is added using Litz's *Applied Ballistics* formula (needs rifling twist and
+  bullet dimensions, like spin drift). It matched Hornady's 4DOF reference to ~0.1 MOA.
+
 * Accuracy of the calculation is withing 0.05%/0.1moa (less than 1inch per 1000 yards) of the most modern calculators.
 
 Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)

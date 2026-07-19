@@ -339,6 +339,26 @@ namespace BallisticCalculator
                 ? 1.0 - 2.0 * coriolisOmega * cosLat * barrelAzSin * v0mps / 9.80665
                 : 1.0;
 
+            // Pre-compute aerodynamic (crosswind) jump — Litz, Applied Ballistics Eq 5.4
+            // (CLAUDE/AERO_JUMP.md). A horizontal crosswind gives a spin-stabilized bullet a
+            // vertical come-up imparted at the muzzle, then constant in angle at all ranges:
+            //   Y[MOA per mph] = 0.01*Sg - 0.0024*L_calibers + 0.032
+            // Gated exactly like spin drift (needs Sg + twist + bullet dims). Up for a wind from
+            // the right with a right-hand twist (sign flips for left twist / wind from the left).
+            double aeroJumpAngleRad = 0;
+            if (calculateDrift && wind != null && wind.Length >= 1)
+            {
+                double lengthCalibers = ammunition.BulletLength.Value.In(DistanceUnit.Inch)
+                                      / ammunition.BulletDiameter.Value.In(DistanceUnit.Inch);
+                double aeroJumpMoaPerMph = 0.01 * stabilityCoefficient - 0.0024 * lengthCalibers + 0.032;
+                // Muzzle crosswind, positive = from the right (wind Direction 90°); the jump is
+                // imparted at the muzzle, so use the first wind zone.
+                double crossFromRightMph = (wind[0].Velocity * wind[0].Direction.Sin()).In(VelocityUnit.MilesPerHour);
+                int verticalJumpSign = rifle.Rifling.Direction == TwistDirection.Right ? 1 : -1;
+                double aeroJumpMoa = aeroJumpMoaPerMph * crossFromRightMph * verticalJumpSign;
+                aeroJumpAngleRad = Measurement<AngularUnit>.Convert(aeroJumpMoa, AngularUnit.MOA, AngularUnit.Radian);
+            }
+
             // velUnit->m/s divisor: use division (not multiply by reciprocal) to match
             // Measurement<T>.In(MPS) which internally divides by this constant
             double mpsToVel = Measurement<VelocityUnit>.Convert(1, VelocityUnit.MetersPerSecond, velUnit);
@@ -406,6 +426,15 @@ namespace BallisticCalculator
                         double y = ryEffective + sightHeightMeters;
                         double y_rotated = -rx * lineOfSightSin + y * lineOfSightCos;
                         drop_m = y_rotated - sightHeightMeters;
+                    }
+
+                    // Aerodynamic (crosswind) jump: a constant angle ⇒ a vertical offset linear in
+                    // range (positive = up ⇒ less drop). Independent of and additive to the Eötvös
+                    // scaling above and to spin drift (which is horizontal). CLAUDE/AERO_JUMP.md.
+                    if (aeroJumpAngleRad != 0)
+                    {
+                        drop_m += aeroJumpAngleRad * distanceMeters;
+                        dropFlat_m += aeroJumpAngleRad * rx;
                     }
 
                     var windageMeas = new Measurement<DistanceUnit>(windage_m, DistanceUnit.Meter);

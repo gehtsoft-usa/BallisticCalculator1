@@ -264,6 +264,19 @@ Kestrel, which agree to ~0.4%); see `CLAUDE/CORIOLIS.md`. Constants `Ω = 7.2921
 - **Not applied in `SightAngle`** (zeroing stays purely ballistic; effect at a 100 yd zero is
   <0.02 MOA). Accuracy vs BE: windage ~exact, drop within ~0.16% (drag-baseline-limited).
 
+### Aerodynamic (crosswind) jump (only if `Rifling + BulletDiameter + BulletLength`, i.e. same gate as spin drift)
+Vertical deflection from a **horizontal crosswind** on a spin-stabilized bullet — Litz *Applied
+Ballistics* Eq 5.4 (`CLAUDE/AERO_JUMP.md`). A **constant angle at all ranges** (imparted at the muzzle),
+folded into `Drop`/`DropFlat` (the vertical mirror of how spin drift folds into `Windage`):
+- `Y[MOA per mph] = 0.01·Sg − 0.0024·L + 0.032`, `Sg` = Miller stability, `L` = bullet length in
+  calibers (`BulletLength/BulletDiameter`). Both reuse the spin-drift intermediates — no new inputs.
+- Applied as `drop += aeroJumpAngleRad · distance` (range-linear), after the Eötvös scaling. Muzzle
+  crosswind only (first wind zone). **Up** for a wind from the right with a **right** twist; sign flips
+  for left twist / wind from the left. Not applied in `SightAngle`.
+- Validated against Hornady 4DOF: cuts the wind-case drop error ~0.83 MOA → ~0.11 MOA (residual is
+  Eq 5.4 with our Miller `Sg` running ~14% above 4DOF's effective jump). Inclined-fire `cos` projection
+  not yet applied (deferred).
+
 ### Wind vector (`WindVectorRaw`)
 Decomposes wind into range/cross components using the shot's sight+shot angle and cant; a
 crosswind with a shot angle produces a small vertical component.
@@ -273,7 +286,7 @@ crosswind with a shot angle produces a small vertical component.
 ## 6. Other physics constants & formulas
 - Air density (`Atmosphere.CalculateDensity`): humid-air model via Herman Wobus saturated-vapor
   polynomial; dry const 287.058, vapor const 461.495 J/(kg·K).
-- Sound velocity: `331·sqrt(T_K/273)` m/s (note divisor **273**, not 273.15).
+- Sound velocity: `331.3·sqrt(T_K/273.15)` m/s (`Atmosphere.CalculateSoundVelocity`; corrected in `48d1209` from the old `331·sqrt(T_K/273)`).
 - Pressure vs altitude: barometric with lapse `−0.0065 K/m`, `g=9.80665`, `M=0.0289644`,
   `R=8.31432`.
 - `OptimalGameWeight = w_gr² · v_fps³ · 1.5e-12` (lb) (`BallisticMath.cs`).
@@ -292,6 +305,9 @@ crosswind with a shot angle produces a small vertical component.
   separable from the output alone.
 - **Coriolis needs `Latitude`** (N +, S −); `BarrelAzimuth` (0° = N clockwise) no longer tilts the
   path — it only orients the Eötvös term. Coriolis is skipped in `SightAngle` by design.
+- **Aerodynamic (crosswind) jump** rides on the **same gate as spin drift** (`Rifling` +
+  `BulletDiameter` + `BulletLength`): with those set, a crosswind adds a vertical term to `Drop` too,
+  not just windage. So enabling spin-drift inputs also changes `Drop` under wind.
 - **`SightAngle` must be computed and put on `ShotParameters.SightAngle`** before `Calculate`;
   `ShotAngle` is *added* to barrel elevation inside `Calculate`.
 - **`GC` custom BC** requires passing the `DragTable` to both `SightAngle` and `Calculate`.

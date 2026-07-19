@@ -35,6 +35,7 @@
     <None Remove="resources\be_coriolis_west.txt" />
     <None Remove="resources\be_coriolis_pole.txt" />
     <None Remove="resources\be_coriolis_south.txt" />
+    <None Remove="resources\b1_eldx_wind_twist.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,6 +69,7 @@
     <EmbeddedResource Include="resources\be_coriolis_west.txt" />
     <EmbeddedResource Include="resources\be_coriolis_pole.txt" />
     <EmbeddedResource Include="resources\be_coriolis_south.txt" />
+    <EmbeddedResource Include="resources\b1_eldx_wind_twist.txt" />
   </ItemGroup>
 
   <ItemGroup>

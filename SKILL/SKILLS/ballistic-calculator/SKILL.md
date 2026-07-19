@@ -160,6 +160,9 @@ var shot = new ShotParameters
   `−Ω·sinφ·Range·TOF` (right in N hemisphere), and drop is scaled by `1 − 2Ω·cosφ·sin(azimuth)·V₀/g`
   (East ⇒ less drop, West ⇒ more). `BarrelAzimuth` only orients this — it does not tilt the path.
   Coriolis is not applied during `SightAngle` (zeroing stays purely ballistic).
+- Aerodynamic (crosswind) jump adds a vertical term to `Drop` under a crosswind. It is enabled by the
+  same inputs as spin drift (`Rifling` + `BulletDiameter` + `BulletLength`); with those set, a crosswind
+  affects `Drop`, not just `Windage`. Up for a wind from the right with a right-hand twist.
 
 ---
 
