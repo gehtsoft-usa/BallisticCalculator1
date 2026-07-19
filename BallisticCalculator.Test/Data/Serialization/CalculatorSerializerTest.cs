@@ -22,6 +22,7 @@ namespace BallisticCalculator.Test.Data.Serialization
             point.OptimalGameWeight.In(WeightUnit.Pound).Should().BeApproximately(65, 0.5);
             point.DropAdjustment.Should().Be(new Measurement<AngularUnit>(1.54, AngularUnit.InchesPer100Yards));
             point.WindageAdjustment.Should().Be(new Measurement<AngularUnit>(-2.55, AngularUnit.InchesPer100Yards));
+            point.GyroscopicStability.Should().BeNull();
 
             SerializerRoundtrip serializer = new SerializerRoundtrip();
             var xml = serializer.Serialize(point);
@@ -37,6 +38,31 @@ namespace BallisticCalculator.Test.Data.Serialization
             point2.DropAdjustment.Should().Be(point.DropAdjustment);
             point2.Windage.Should().Be(point.Windage);
             point2.WindageAdjustment.Should().Be(point.WindageAdjustment);
+            point2.GyroscopicStability.Should().BeNull();
+        }
+
+        [Fact]
+        public void Roundtrip_TrajectoryPoint_WithStability()
+        {
+            var point = new TrajectoryPoint(TimeSpan.FromMilliseconds(1.5),
+                new Measurement<DistanceUnit>(500, DistanceUnit.Yard),
+                new Measurement<DistanceUnit>(500, DistanceUnit.Yard),
+                new Measurement<VelocityUnit>(1800, VelocityUnit.FeetPerSecond), 1.61,
+                new Measurement<DistanceUnit>(-60, DistanceUnit.Inch), new Measurement<DistanceUnit>(-60, DistanceUnit.Inch),
+                new Measurement<AngularUnit>(-11, AngularUnit.MOA),
+                Measurement<DistanceUnit>.ZERO, Measurement<DistanceUnit>.ZERO,
+                new Measurement<DistanceUnit>(3, DistanceUnit.Inch), new Measurement<AngularUnit>(0.5, AngularUnit.MOA),
+                new Measurement<EnergyUnit>(1500, EnergyUnit.FootPound),
+                new Measurement<WeightUnit>(9, WeightUnit.Pound),
+                gyroscopicStability: 2.91);
+
+            point.GyroscopicStability.Should().Be(2.91);
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(point);
+            var point2 = serializer.Deserialize<TrajectoryPoint>(xml);
+
+            point2.GyroscopicStability.Should().Be(2.91);
         }
 
         [Fact]

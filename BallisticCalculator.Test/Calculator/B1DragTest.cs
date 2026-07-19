@@ -159,6 +159,34 @@ namespace BallisticCalculator.Test.Calculator
             head20.Should().BeApproximately(0, 1e-6, "a pure head/tailwind has no crosswind component ⇒ no jump");
         }
 
+        // Aerodynamic jump is a muzzle transient, so it must be driven by the wind zone at the
+        // muzzle (the first zone) and be unaffected by downrange zones.
+        [Fact]
+        public void AerodynamicJump_UsesMuzzleWindZone()
+        {
+            double JumpAt1000(Wind[] winds)
+            {
+                var on  = RunSynth(LoadTrajectory("b1_eldx_wind_twist"), winds);
+                var off = RunSynth(LoadTrajectory("b1_eldx_wind"), winds);
+                int i = Array.FindIndex(on, p => Math.Abs(p.Distance.In(DistanceUnit.Yard) - 1000) < 1);
+                return MoaOf(on[i].Drop.In(DistanceUnit.Inch) - off[i].Drop.In(DistanceUnit.Inch), 1000);
+            }
+            var deg90 = new Measurement<AngularUnit>(90, AngularUnit.Degree);
+            var to200 = new Measurement<DistanceUnit>(200, DistanceUnit.Yard);
+            Wind W(double mph, Measurement<DistanceUnit>? max = null) =>
+                new Wind(VelocityUnit.MilesPerHour.New(mph), deg90, max);
+
+            double single      = JumpAt1000(new[] { W(20) });
+            double muzzleWindy = JumpAt1000(new[] { W(20, to200), W(0) });   // windy to 200 yd, calm after
+            double muzzleCalm  = JumpAt1000(new[] { W(0, to200),  W(20) });  // calm to 200 yd, windy after
+
+            single.Should().BeGreaterThan(0.5, "sanity: the muzzle-windy jump is a real, sizable value");
+            muzzleWindy.Should().BeApproximately(single, 0.005,
+                "jump is set by the muzzle wind zone; a downrange zone must not change it");
+            muzzleCalm.Should().BeApproximately(0, 1e-6,
+                "no crosswind at the muzzle ⇒ no aerodynamic jump, even if a later zone is windy");
+        }
+
         // Miller stability with Litz's velocity + temp/pressure corrections (mirrors the engine's
         // CalculateStabilityCoefficient) — used to predict Eq 5.4 in the test above.
         private static double MillerSg(double grains, double diaIn, double twistIn, double lenIn, double mvFps, double presInHg, double tempF)

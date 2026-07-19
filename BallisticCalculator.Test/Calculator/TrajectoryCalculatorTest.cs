@@ -171,6 +171,53 @@ namespace BallisticCalculator.Test.Calculator
             }
         }
 
+        // Gyroscopic stability output: present and growing downrange when rifling + bullet dims are
+        // supplied (spin decays more slowly than velocity); null otherwise.
+        [Fact]
+        public void GyroscopicStabilityOutput()
+        {
+            var cal = new TrajectoryCalculator();
+            var atmo = new Atmosphere();
+            var sight = new Sight(DistanceUnit.Inch.New(2.0), Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO);
+            var zero = new ZeroingParameters(DistanceUnit.Yard.New(100), null, null);
+
+            // With rifling + bullet dimensions ⇒ stability is populated.
+            var ammoFull = new Ammunition(
+                weight: WeightUnit.Grain.New(220), ballisticCoefficient: new BallisticCoefficient(0.325, DragTableId.G7),
+                muzzleVelocity: VelocityUnit.FeetPerSecond.New(2600),
+                bulletDiameter: DistanceUnit.Inch.New(0.308), bulletLength: DistanceUnit.Inch.New(1.630));
+            var rifleFull = new Rifle(sight, zero, new Rifling(DistanceUnit.Inch.New(7), TwistDirection.Right));
+            var shot = new ShotParameters
+            {
+                Step = DistanceUnit.Yard.New(100),
+                MaximumDistance = DistanceUnit.Yard.New(1000),
+                SightAngle = cal.SightAngle(ammoFull, rifleFull, atmo),
+            };
+            var traj = cal.Calculate(ammoFull, rifleFull, atmo, shot);
+
+            traj[0].GyroscopicStability.Should().NotBeNull();
+            traj[0].GyroscopicStability.Value.Should().BeApproximately(2.78, 0.03, "muzzle Sg matches Miller");
+            // Sg grows as the bullet slows.
+            var last = traj[traj.Length - 1];
+            last.GyroscopicStability.Value.Should().BeGreaterThan(traj[0].GyroscopicStability.Value);
+            for (int i = 1; i < traj.Length; i++)
+                traj[i].GyroscopicStability.Value.Should().BeGreaterThanOrEqualTo(traj[i - 1].GyroscopicStability.Value);
+
+            // Without bullet dimensions / rifling ⇒ stability is null.
+            var ammoBare = new Ammunition(weight: WeightUnit.Grain.New(220),
+                ballisticCoefficient: new BallisticCoefficient(0.325, DragTableId.G7),
+                muzzleVelocity: VelocityUnit.FeetPerSecond.New(2600));
+            var rifleBare = new Rifle(sight, zero);
+            var shot2 = new ShotParameters
+            {
+                Step = DistanceUnit.Yard.New(100),
+                MaximumDistance = DistanceUnit.Yard.New(1000),
+                SightAngle = cal.SightAngle(ammoBare, rifleBare, atmo),
+            };
+            var traj2 = cal.Calculate(ammoBare, rifleBare, atmo, shot2);
+            traj2[traj2.Length - 1].GyroscopicStability.Should().BeNull();
+        }
+
         [Fact]
         public void CustomTable()
         {

@@ -107,6 +107,14 @@ namespace BallisticCalculator
         public Measurement<WeightUnit> OptimalGameWeight { get; }
 
         /// <summary>
+        /// <para>Gyroscopic (Miller) stability factor at this point.</para>
+        /// <para>Null when the rifling and bullet dimensions needed to compute it were not supplied. It grows downrange as velocity falls, because spin decays more slowly than speed.</para>
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty(Name = "gyro-stability", Optional = true)]
+        public double? GyroscopicStability { get; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="time"></param>
@@ -203,6 +211,7 @@ namespace BallisticCalculator
         /// <param name="windage"></param>
         /// <param name="energy"></param>
         /// <param name="optimalGameWeight"></param>
+        /// <param name="gyroscopicStability"></param>
         [JsonConstructor]
         [BXmlConstructor]
         public TrajectoryPoint(TimeSpan time,
@@ -218,7 +227,8 @@ namespace BallisticCalculator
                                Measurement<DistanceUnit> windage,
                                Measurement<AngularUnit> windageAdjustment,
                                Measurement<EnergyUnit> energy,
-                               Measurement<WeightUnit> optimalGameWeight)
+                               Measurement<WeightUnit> optimalGameWeight,
+                               double? gyroscopicStability = null)
         {
             Time = time;
             Distance = distance;
@@ -234,6 +244,7 @@ namespace BallisticCalculator
             WindageAdjustment = windageAdjustment;
             Energy = energy;
             OptimalGameWeight = optimalGameWeight;
+            GyroscopicStability = gyroscopicStability;
         }
     }
 }

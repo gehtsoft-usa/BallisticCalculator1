@@ -43,6 +43,10 @@ Engine source, by concern (read the specific dir, not the whole tree):
 - `BallisticCalculator/Serialization/` — custom `BXml` XML serialization (classes also carry
   `System.Text.Json` attributes, so they serialize to both XML and JSON).
 - `BallisticCalculator/Reticle/` — reticle model. `Resources/Calibers.csv` — embedded caliber data.
+- `BallisticCalculator/Tools/` (namespace `BallisticCalculator.Tools`) — standalone helper utilities that
+  don't touch the integrator: `BallisticCoefficientConverter` (G1↔G7 etc., table-driven & velocity-aware),
+  `BarrelTwist` (Miller stability forward/inverse: `Stability`, `RecommendedTwist`, `Recommend` →
+  min/optimal/max `TwistRecommendation`).
 
 Engine dependencies (`BallisticCalculator/BallisticCalculator.csproj`):
 - **`Gehtsoft.Measurements` 1.1.16** — strongly-typed units (all physics quantities). See §2.
@@ -182,7 +186,8 @@ Read-only properties: `Time` (TimeSpan), `Distance` (along LoS), `DistanceFlat`,
 `Velocity`, `Mach`, `Drop` (vs line of sight), `DropFlat` (vs muzzle), `Windage`
 (**left +, right −**; includes spin drift when drift is enabled and Coriolis when `Latitude` is set), `Energy`,
 `LineOfSightElevation`, `LineOfDepartureElevation`, `DropAdjustment` (angular),
-`WindageAdjustment` (angular), `OptimalGameWeight`. `Drop` at the muzzle = −sight height.
+`WindageAdjustment` (angular), `OptimalGameWeight`, `GyroscopicStability` (nullable — Miller Sg at the
+point, `Sg₀·(v₀/v)^1.25`; null unless rifling + bullet dims supplied). `Drop` at the muzzle = −sight height.
 
 ---
 

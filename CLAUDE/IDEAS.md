@@ -289,8 +289,8 @@ So:
 
 | # | Feature | Take their code? | Priority | Reason |
 |---|---------|------------------|----------|--------|
-| 4 | Recommended twist rate | Reimplement (math is standard) | High | Inverse of stability we already own; low risk |
-| 5 | Transonic analysis | Reimplement (trivial) | High | Post-process our superior trajectory |
+| 4 | Recommended twist rate | Reimplement (math is standard) | **DONE** | `Tools/BarrelTwist` — inverse Miller; `Recommend` gives min/optimal/max `TwistRecommendation`; note: our formula fixes BulletDesigner's backwards `(2800/V)^⅙` (correct is `(V/2800)^⅙` — faster MV ⇒ can use a slower twist) |
+| 5 | Transonic analysis | Reimplement (trivial) | Partial | Downrange Sg output shipped (`TrajectoryPoint.GyroscopicStability = Sg₀·(v₀/v)^1.25`); the transonic entry/exit + stability-verdict pass is still open |
 | 3 | BC by shape | **No** — concept only | Medium (R&D) | Real gap, but their impl is unsourced fudge |
-| 1 | G1⇄G7 converter | **No** | Low | Do it table-driven & velocity-aware, not a constant |
+| 1 | G1⇄G7 converter | **No** | **DONE** | `Tools/BallisticCoefficientConverter` — table-driven & velocity-aware (`BC_to = BC_from·Cd_to(M)/Cd_from(M)`), not a constant |
 | 2 | Compare calculators | n/a | Done | Ours strictly better; found their √f_tp Sg bug |

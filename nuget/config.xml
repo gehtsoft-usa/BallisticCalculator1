@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.10">Twist rate calculator, G1/G7 converter, Aerodynamic jump, stability in trace output</version>
   <version id="1.1.9">Coriolis effect support</version>
   <version id="1.1.8">Improved accuracy (0.2->0.1moa vs leading calculators), multi-BC support</version>
   <version id="1.1.7.2">Optimization performance for trajectory calculations</version>

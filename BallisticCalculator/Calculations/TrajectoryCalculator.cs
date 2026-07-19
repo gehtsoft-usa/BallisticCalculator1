@@ -458,7 +458,12 @@ namespace BallisticCalculator
                         lineOfDepartureElevation: new Measurement<DistanceUnit>(rx * lineOfDepartureTan - sightHeightMeters, DistanceUnit.Meter),
                         windage: windageMeas,
                         energy: MeasurementMath.KineticEnergy(ammunition.Weight, velocityOut),
-                        optimalGameWeight: BallisticMath.OptimalGameWeight(ammunition.Weight, velocityOut));
+                        optimalGameWeight: BallisticMath.OptimalGameWeight(ammunition.Weight, velocityOut),
+                        // Downrange gyroscopic stability: Sg grows as (v0/v)^1.25 because spin decays
+                        // more slowly than velocity (PLAN0 b5). Null unless drift/stability inputs exist.
+                        gyroscopicStability: calculateDrift
+                            ? stabilityCoefficient * Math.Pow(vel0 / velocityMag, 1.25)
+                            : (double?)null);
 
                     nextRangeDistMeters += stepMeters;
                     currentItem++;

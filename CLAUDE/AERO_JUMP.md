@@ -203,8 +203,9 @@ Same discipline as Coriolis (`CLAUDE/CORIOLIS.md` §6):
 - **Angular-constant model vs our per-output frame:** AJ is a fixed muzzle angle; we apply it as
   `angle·range`. Confirm the reference also treats it as range-independent MOA (it does, per Litz) so the
   linear-in-range application is faithful.
-- **Multi-zone wind:** AJ uses the *muzzle* crosswind only; a wind that starts downrange should produce
-  little/no AJ. Decide behavior if the first zone has zero wind but a later zone does.
+- **Multi-zone wind:** RESOLVED — AJ uses the *muzzle* (first) wind zone only, since the jump is a
+  muzzle transient; downrange zones do not change it, and a calm muzzle zone gives zero jump even if a
+  later zone is windy. Locked by `AerodynamicJump_UsesMuzzleWindZone`.
 - **Data honesty:** this is an empirical field-tool match (like Coriolis), *not* first-principles 6DOF —
   the rigorous McCoy form needs aero data we don't carry. Document as a deliberate approximation.
 - **Interaction with inclined fire:** spin drift is `×cos(shotAngle)`; decide whether AJ needs an
@@ -224,8 +225,8 @@ Same discipline as Coriolis (`CLAUDE/CORIOLIS.md` §6):
 - [x] §5.4 `SightAngle` left AJ-free (it takes no wind; nothing to do).
 - [x] §6 Hornady acceptance (0.83→0.11 MOA) + structural (sign/linearity/range-independence) + Eq 5.4
   magnitude guard; full suite green (237).
-- [ ] §7 Inclined-fire `cos` projection and multi-zone-wind behavior — **deferred** (level supersonic is
-  ~90% of use; documented).
+- [x] §7 Multi-zone wind resolved (muzzle-zone only; `AerodynamicJump_UsesMuzzleWindZone`).
+- [ ] §7 Inclined-fire `cos` projection — **deferred** (level supersonic is ~90% of use; documented).
 - [x] Update `CLAUDE.md` §5 + §7 + README + SKILL + `CHANGES_TO_PORT.md`.
 
 ---
