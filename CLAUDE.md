@@ -167,14 +167,20 @@ new ShotParameters {
     Step, MaximumDistance,               // output table granularity & extent
     SightAngle,                          // REQUIRED — get from TrajectoryCalculator.SightAngle
     ShotAngle = null,                    // line-of-sight incline, + up / - down
-    CantAngle = null, BarrelAzimuth = null
+    CantAngle = null,
+    BarrelAzimuth = null,                // compass bearing, 0°=N clockwise→E; scalar into Coriolis only
+    Latitude = null                      // geographic latitude (N +, S −); null ⇒ no Earth rotation
 }
 ```
+- `BarrelAzimuth` **does not tilt the trajectory** (it did, buggily, pre-Coriolis) — the bullet is
+  always integrated along the line of fire. It and `Latitude` only orient the Coriolis/Eötvös terms.
+- `Latitude` set (with `BarrelAzimuth` optional) enables Coriolis (§5 Coriolis subsection). Both `null`
+  and `Az ∈ {0, null}` are exact no-ops vs the pre-Coriolis engine.
 
 ### TrajectoryPoint (`Calculations/TrajectoryPoint.cs`) — one output row
 Read-only properties: `Time` (TimeSpan), `Distance` (along LoS), `DistanceFlat`,
 `Velocity`, `Mach`, `Drop` (vs line of sight), `DropFlat` (vs muzzle), `Windage`
-(**left +, right −**; includes spin drift when drift is enabled), `Energy`,
+(**left +, right −**; includes spin drift when drift is enabled and Coriolis when `Latitude` is set), `Energy`,
 `LineOfSightElevation`, `LineOfDepartureElevation`, `DropAdjustment` (angular),
 `WindageAdjustment` (angular), `OptimalGameWeight`. `Drop` at the muzzle = −sight height.
 
@@ -240,6 +246,24 @@ Tunable properties: `MaximumCalculationStepSize` (default **0.1 m**). Static:
 - ⚠️ Spin drift is **folded into `Windage`** — there is no separate spin-drift output.
 - **No aerodynamic (crosswind) jump term** is modeled.
 
+### Coriolis / Eötvös (only if `ShotParameters.Latitude != null`)
+Earth-rotation deflection, applied as **per-output-point closed-form corrections** (not per-step
+integration — TOF/velocity/range are untouched). Matches the field references (Ballistic Explorer +
+Kestrel, which agree to ~0.4%); see `CLAUDE/CORIOLIS.md`. Constants `Ω = 7.2921159e-5 rad/s`,
+`g = 9.80665 m/s²`. `φ = Latitude` (N +, S −), `AZ = BarrelAzimuth` (0° = N, clockwise → E, scalar).
+- **Azimuth is decoupled from the trajectory** (`:261-263`): the bullet is always integrated along
+  `x` (`vz = 0`); azimuth/latitude only feed the terms below. This also removed the old
+  `BarrelAzimuth ≈ 90°` divide-by-zero. Inert (bit-identical) when `Latitude = null`, and for
+  `Az ∈ {0, null}`.
+- **Horizontal** (folded into `Windage`, alongside spin drift): `Δwindage = −Ω·sinφ·Range·TOF`
+  (right in N hemisphere ⇒ negative in our left +/right − sign). Azimuth-independent.
+- **Vertical Eötvös** (modelled as modified gravity `g_eff = g − 2Ω·cosφ·sinAZ·V₀`): scales the
+  **gravitational fall below the vacuum bore line** by `vRatio = g_eff/g`, leaving launch/sight
+  geometry (hence the exact −sightHeight muzzle drop) untouched. East ⇒ less drop, West ⇒ more;
+  hemisphere-symmetric (`cos φ`). Applied to both `Drop` and `DropFlat`.
+- **Not applied in `SightAngle`** (zeroing stays purely ballistic; effect at a 100 yd zero is
+  <0.02 MOA). Accuracy vs BE: windage ~exact, drop within ~0.16% (drag-baseline-limited).
+
 ### Wind vector (`WindVectorRaw`)
 Decomposes wind into range/cross components using the shot's sight+shot angle and cant; a
 crosswind with a shot angle produces a small vertical component.
@@ -264,7 +288,10 @@ crosswind with a shot angle produces a small vertical component.
 - **Drift needs all three**: `Rifling` + `BulletDiameter` + `BulletLength`, else windage is
   wind-only and no spin drift / gyro.
 - **Windage sign**: left positive, right negative. **Drop** at muzzle = −sight height.
-- **`Windage` includes spin drift** when drift is on — not separable from the output alone.
+- **`Windage` includes spin drift** when drift is on, **and Coriolis** when `Latitude` is set — not
+  separable from the output alone.
+- **Coriolis needs `Latitude`** (N +, S −); `BarrelAzimuth` (0° = N clockwise) no longer tilts the
+  path — it only orients the Eötvös term. Coriolis is skipped in `SightAngle` by design.
 - **`SightAngle` must be computed and put on `ShotParameters.SightAngle`** before `Calculate`;
   `ShotAngle` is *added* to barrel elevation inside `Calculate`.
 - **`GC` custom BC** requires passing the `DragTable` to both `SightAngle` and `Calculate`.

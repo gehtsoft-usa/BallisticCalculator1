@@ -115,6 +115,62 @@ namespace BallisticCalculator.Test.Calculator
             }
         }
 
+        // Coriolis / Eötvös absolute acceptance against Ballistic Explorer (CORIOLIS.md §6.2/§6.6).
+        // Templates be_coriolis_* carry BE's config plus per-run latitude/azimuth (see TableLoader),
+        // with drop = BE "Path" (vs line of sight, ↔ our Drop) and windage = −(BE "Drift") mapped
+        // to our sign (left +, right −). Runs to 2000 yd through the transonic zone, so drop uses a
+        // wider MOA window than the ≤1000 yd G1 templates — our absolute drop tracks BE to ~0.35 MOA
+        // (~0.16% / ~7 in) at 2000 yd, which is the documented G1-vs-BE drag-baseline divergence
+        // (present Coriolis-off too), not a Coriolis error; 0.4 MOA leaves margin. The Eötvös swing
+        // (~1.9 MOA east/west at 2000 yd) is far larger than that window, so the azimuth cases still
+        // fail loudly if Eötvös is dropped. Windage matches BE almost exactly (≤0.03 in at 2000 yd).
+        [Theory]
+        [InlineData("be_coriolis_off", 0.005, 0.4, 0.05)]     // Coriolis off (lat/az null) — baseline
+        [InlineData("be_coriolis_north", 0.005, 0.4, 0.05)]   // lat 45, azimuth null ⇒ windage only, no Eötvös
+        [InlineData("be_coriolis_east", 0.005, 0.4, 0.05)]    // lat 45 az 90 (E) — Eötvös lifts
+        [InlineData("be_coriolis_west", 0.005, 0.4, 0.05)]    // lat 45 az 270 (W) — Eötvös lowers
+        [InlineData("be_coriolis_pole", 0.005, 0.4, 0.05)]    // lat 90 — max windage, no Eötvös
+        [InlineData("be_coriolis_south", 0.005, 0.4, 0.05)]   // lat −45 — S hemisphere, windage flips
+        public void CoriolisTrajectoryTest(string name, double velocityAccuracyInPercent, double dropAccuracyInMOA, double windageAccuracyInMOA)
+        {
+            TableLoader template = TableLoader.FromResource(name);
+
+            var cal = new TrajectoryCalculator();
+
+            ShotParameters shot = new ShotParameters()
+            {
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(2000, DistanceUnit.Yard),
+                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere),
+                ShotAngle = template.ShotParameters?.ShotAngle,
+                CantAngle = template.ShotParameters?.CantAngle,
+                BarrelAzimuth = template.ShotParameters?.BarrelAzimuth,
+                Latitude = template.ShotParameters?.Latitude,
+            };
+
+            var trajectory = cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot);
+
+            trajectory.Length.Should().Be(template.Trajectory.Count);
+
+            for (int i = 0; i < trajectory.Length; i++)
+            {
+                var point = trajectory[i];
+                var templatePoint = template.Trajectory[i];
+
+                point.Distance.In(templatePoint.Distance.Unit).Should().BeApproximately(templatePoint.Distance.Value, templatePoint.Distance.Value * velocityAccuracyInPercent, $"@{point.Distance:N0}");
+                point.Velocity.In(templatePoint.Velocity.Unit).Should().BeApproximately(templatePoint.Velocity.Value, templatePoint.Velocity.Value * velocityAccuracyInPercent, $"@{point.Distance:N0}");
+
+                var dropAccuracyInInch = Measurement<AngularUnit>.Convert(dropAccuracyInMOA, AngularUnit.MOA, AngularUnit.InchesPer100Yards) * templatePoint.Distance.In(DistanceUnit.Yard) / 100;
+                var windageAccuracyInInch = Measurement<AngularUnit>.Convert(windageAccuracyInMOA, AngularUnit.MOA, AngularUnit.InchesPer100Yards) * templatePoint.Distance.In(DistanceUnit.Yard) / 100;
+                if (dropAccuracyInInch < 0.001)
+                    dropAccuracyInInch = 0.001;
+                if (windageAccuracyInInch < 0.001)
+                    windageAccuracyInInch = 0.001;
+                point.Drop.In(DistanceUnit.Inch).Should().BeApproximately(templatePoint.Drop.In(DistanceUnit.Inch), dropAccuracyInInch, $"@{point.Distance:N0}");
+                point.Windage.In(DistanceUnit.Inch).Should().BeApproximately(templatePoint.Windage.In(DistanceUnit.Inch), windageAccuracyInInch, $"@{point.Distance:N0}");
+            }
+        }
+
         [Fact]
         public void CustomTable()
         {

@@ -254,13 +254,17 @@ namespace BallisticCalculator
 
             double barrelElevCos = barrelElevation.Cos();
             double barrelElevSin = barrelElevation.Sin();
-            double barrelAzCos = barrelAzimuth.Cos();
             double barrelAzSin = barrelAzimuth.Sin();
 
-            // Velocity vector: x = towards target, y = vertical, z = lateral — in velUnit
-            double vx = vel0 * barrelElevCos * barrelAzCos;
+            // Velocity vector: x = towards target, y = vertical, z = lateral — in velUnit.
+            // Azimuth no longer tilts the muzzle vector into z: the bullet is always integrated
+            // along x, and BarrelAzimuth becomes a pure scalar into the Coriolis terms (see the
+            // Coriolis block below). This also removes the old azimuth-90 divide-by-zero, where
+            // vx (and thus dt = step/vx) collapsed when the line of fire pointed along z
+            // (CORIOLIS.md §3).
+            double vx = vel0 * barrelElevCos;
             double vy = vel0 * barrelElevSin;
-            double vz = vel0 * barrelElevCos * barrelAzSin;
+            double vz = 0;
 
             // Range vector: x = towards target, y = drop, z = windage — in meters
             double rx = 0, ry = -sightHeightMeters, rz = 0;
@@ -317,6 +321,24 @@ namespace BallisticCalculator
             double driftFactor = calculateDrift ? 1.25 * (stabilityCoefficient + 1.2) : 0;
             double inchToMeter = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Inch, DistanceUnit.Meter);
 
+            // Pre-compute Coriolis / Eötvös constants (CORIOLIS.md §4/§5.2). Earth rotation is
+            // applied as per-output-point closed-form corrections that match the field references
+            // (Ballistic Explorer + Kestrel), not as a per-step -2Ω×v integration — so it does not
+            // perturb time-of-flight, velocity, or range.
+            bool coriolis = shot.Latitude != null;
+            const double coriolisOmega = 7.2921159e-5;                  // Earth rotation, rad/s
+            double sinLat = coriolis ? shot.Latitude.Value.Sin() : 0;
+            double cosLat = coriolis ? shot.Latitude.Value.Cos() : 0;
+            // Horizontal (windage) coefficient: Δwindage_m = coriolisHCoef * Range_m * TOF_s,
+            // deflecting right in the N hemisphere (sign carried by sin(latitude)); azimuth-independent.
+            double coriolisHCoef = coriolisOmega * sinLat;
+            // Vertical Eötvös as a gravity ratio g_eff/g (dimensionless, constant per shot):
+            // East (sin az > 0) lifts the bullet (less drop), West lowers it (more drop).
+            double v0mps = ammunition.MuzzleVelocity.In(VelocityUnit.MetersPerSecond);
+            double coriolisVRatio = coriolis
+                ? 1.0 - 2.0 * coriolisOmega * cosLat * barrelAzSin * v0mps / 9.80665
+                : 1.0;
+
             // velUnit->m/s divisor: use division (not multiply by reciprocal) to match
             // Measurement<T>.In(MPS) which internally divides by this constant
             double mpsToVel = Measurement<VelocityUnit>.Convert(1, VelocityUnit.MetersPerSecond, velUnit);
@@ -352,10 +374,26 @@ namespace BallisticCalculator
                     if (calculateDrift)
                         windage_m += driftFactor * Math.Pow(timeSeconds, 1.83) * driftDirection * inchToMeter * lineOfSightCos;
 
-                    var windageMeas = new Measurement<DistanceUnit>(windage_m, DistanceUnit.Meter);
                     var distanceMeas = new Measurement<DistanceUnit>(distanceMeters, DistanceUnit.Meter);
 
-                    double drop_m = ry;
+                    // Effective vertical position. Coriolis/Eötvös modifies gravity, which acts only
+                    // on the *gravitational fall* — the deviation below the vacuum (no-gravity) bore
+                    // line — not on the launch/sight geometry. So scale the fall by g_eff/g and
+                    // rebuild, leaving the bore line (hence the exact −sightHeight muzzle drop where
+                    // fall = 0) untouched. Integrator state (ry) is never mutated. CORIOLIS.md §4/§5.2.
+                    double ryEffective = ry;
+                    if (coriolis)
+                    {
+                        // Horizontal deflects right in the N hemisphere; our Windage is left +,
+                        // right − ⇒ subtract. Azimuth-independent (∝ sin φ only).
+                        windage_m -= coriolisHCoef * distanceMeters * timeSeconds;
+                        // Vacuum bore line at rx (== LineOfDepartureElevation): the trajectory with no gravity.
+                        double boreLine = rx * lineOfDepartureTan - sightHeightMeters;
+                        ryEffective = boreLine + (ry - boreLine) * coriolisVRatio;
+                    }
+
+                    double dropFlat_m = ryEffective;    // drop vs the muzzle (vertical frame)
+                    double drop_m = ryEffective;        // drop vs the line of sight (perpendicular)
                     if (hasShotAngle)
                     {
                         // Drop for inclined fire is measured perpendicular to the line of sight.
@@ -365,11 +403,12 @@ namespace BallisticCalculator
                         // reference model), while every other point uses the perpendicular rotation.
                         // Verified best-of-3 conventions against the reference (a7): dropping this
                         // term worsens accuracy and breaks the exact muzzle match. Do not "simplify".
-                        double y = ry + sightHeightMeters;
+                        double y = ryEffective + sightHeightMeters;
                         double y_rotated = -rx * lineOfSightSin + y * lineOfSightCos;
                         drop_m = y_rotated - sightHeightMeters;
                     }
 
+                    var windageMeas = new Measurement<DistanceUnit>(windage_m, DistanceUnit.Meter);
                     var dropMeas = new Measurement<DistanceUnit>(drop_m, DistanceUnit.Meter);
                     var dropAdjustment = BallisticMath.CalculateAdjustment(dropMeas, distanceMeas);
                     var windageAdjustment = BallisticMath.CalculateAdjustment(windageMeas, distanceMeas);
@@ -383,7 +422,7 @@ namespace BallisticCalculator
                         velocity: velocityOut,
                         mach: velocityMag / machInVelUnit,
                         drop: dropMeas,
-                        dropFlat: new Measurement<DistanceUnit>(ry, DistanceUnit.Meter),
+                        dropFlat: new Measurement<DistanceUnit>(dropFlat_m, DistanceUnit.Meter),
                         dropAdjustment: dropAdjustment,
                         windageAdjustment: windageAdjustment,
                         lineOfSightElevation: new Measurement<DistanceUnit>(rx * lineOfSightTan, DistanceUnit.Meter),

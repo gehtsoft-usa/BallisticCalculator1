@@ -152,9 +152,14 @@ var shot = new ShotParameters
     SightAngle      = /* from TrajectoryCalculator.SightAngle — REQUIRED */,
     ShotAngle       = null,   // Measurement<AngularUnit>? line-of-sight incline, + up / - down
     CantAngle       = null,   // Measurement<AngularUnit>?
-    BarrelAzimuth   = null,   // Measurement<AngularUnit>?
+    BarrelAzimuth   = null,   // Measurement<AngularUnit>? firing bearing (0°=N, clockwise→E); Coriolis only
+    Latitude        = null,   // Measurement<AngularUnit>? geographic latitude (N +, S −); enables Coriolis
 };
 ```
+- `Latitude` enables the Earth-rotation (Coriolis / Eötvös) deflection: `Windage` gains
+  `−Ω·sinφ·Range·TOF` (right in N hemisphere), and drop is scaled by `1 − 2Ω·cosφ·sin(azimuth)·V₀/g`
+  (East ⇒ less drop, West ⇒ more). `BarrelAzimuth` only orients this — it does not tilt the path.
+  Coriolis is not applied during `SightAngle` (zeroing stays purely ballistic).
 
 ---
 

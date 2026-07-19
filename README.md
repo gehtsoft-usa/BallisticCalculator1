@@ -18,6 +18,11 @@ Changes made since porting original C sources:
 
 * Drift calculation is added using Liltz's formulas
 
+* Coriolis / Eötvös (Earth-rotation) deflection is added via `ShotParameters.Latitude`, matching the
+  field references (Ballistic Explorer and Kestrel). Note: `ShotParameters.BarrelAzimuth` is now the
+  firing bearing (0° = North, clockwise) used only to orient this effect — it no longer tilts the
+  trajectory (a change from earlier behavior; previously azimuth near 90° also broke the calculation).
+
 * Accuracy of the calculation is withing 0.05%/0.1moa (less than 1inch per 1000 yards) of the most modern calculators.
 
 Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)

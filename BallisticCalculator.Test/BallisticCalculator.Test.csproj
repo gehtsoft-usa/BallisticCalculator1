@@ -29,6 +29,12 @@
     <None Remove="resources\g1_wind_cold.txt" />
     <None Remove="resources\g1_wind_hot.txt" />
     <None Remove="resources\g7_nowind.txt" />
+    <None Remove="resources\be_coriolis_off.txt" />
+    <None Remove="resources\be_coriolis_north.txt" />
+    <None Remove="resources\be_coriolis_east.txt" />
+    <None Remove="resources\be_coriolis_west.txt" />
+    <None Remove="resources\be_coriolis_pole.txt" />
+    <None Remove="resources\be_coriolis_south.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,6 +62,12 @@
     <EmbeddedResource Include="resources\g1_wind_hot.txt" />
     <EmbeddedResource Include="resources\g1_wind.txt" />
     <EmbeddedResource Include="resources\drg.txt" />
+    <EmbeddedResource Include="resources\be_coriolis_off.txt" />
+    <EmbeddedResource Include="resources\be_coriolis_north.txt" />
+    <EmbeddedResource Include="resources\be_coriolis_east.txt" />
+    <EmbeddedResource Include="resources\be_coriolis_west.txt" />
+    <EmbeddedResource Include="resources\be_coriolis_pole.txt" />
+    <EmbeddedResource Include="resources\be_coriolis_south.txt" />
   </ItemGroup>
 
   <ItemGroup>

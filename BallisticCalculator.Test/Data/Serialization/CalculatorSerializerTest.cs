@@ -320,6 +320,58 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
+        public void Roundtrip_ShotParameters_WithAzimuthAndLatitude()
+        {
+            var shot = new ShotParameters()
+            {
+                SightAngle = new Measurement<AngularUnit>(5.5, AngularUnit.MOA),
+                ShotAngle = new Measurement<AngularUnit>(10, AngularUnit.Degree),
+                CantAngle = new Measurement<AngularUnit>(3, AngularUnit.Degree),
+                BarrelAzimuth = new Measurement<AngularUnit>(90, AngularUnit.Degree),
+                Latitude = new Measurement<AngularUnit>(45, AngularUnit.Degree),
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+            };
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(shot);
+            var shot2 = serializer.Deserialize<ShotParameters>(xml);
+
+            shot2.Should().NotBeNull();
+            shot2.SightAngle.Should().Be(shot.SightAngle);
+            shot2.ShotAngle.Should().Be(shot.ShotAngle);
+            shot2.CantAngle.Should().Be(shot.CantAngle);
+            shot2.BarrelAzimuth.Should().Be(shot.BarrelAzimuth);
+            shot2.Latitude.Should().Be(shot.Latitude);
+            shot2.Step.Should().Be(shot.Step);
+            shot2.MaximumDistance.Should().Be(shot.MaximumDistance);
+        }
+
+        [Fact]
+        public void Roundtrip_ShotParameters_NoNullableValues()
+        {
+            var shot = new ShotParameters()
+            {
+                SightAngle = new Measurement<AngularUnit>(5.5, AngularUnit.MOA),
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+            };
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(shot);
+            var shot2 = serializer.Deserialize<ShotParameters>(xml);
+
+            shot2.Should().NotBeNull();
+            shot2.SightAngle.Should().Be(shot.SightAngle);
+            shot2.ShotAngle.Should().BeNull();
+            shot2.CantAngle.Should().BeNull();
+            shot2.BarrelAzimuth.Should().BeNull();
+            shot2.Latitude.Should().BeNull();
+            shot2.Step.Should().Be(shot.Step);
+            shot2.MaximumDistance.Should().Be(shot.MaximumDistance);
+        }
+
+        [Fact]
         public void Roundtrip_Wind1()
         {
             var wind = new Wind()

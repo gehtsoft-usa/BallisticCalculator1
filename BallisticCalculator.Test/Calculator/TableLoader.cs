@@ -89,6 +89,12 @@ namespace BallisticCalculator.Test.Calculator
                         ShotAngle = new Measurement<AngularUnit>(csv[1]),
                         CantAngle = new Measurement<AngularUnit>(csv[2]),
                     };
+                    // Optional Coriolis fields: shot;<shotAngle>;<cantAngle>;<azimuth>;<latitude>.
+                    // Either may be left blank (e.g. "shot;0°;0°;;45°" ⇒ azimuth null, latitude 45°).
+                    if (csv.FieldsCount > 3 && !string.IsNullOrWhiteSpace(csv[3]))
+                        ShotParameters.BarrelAzimuth = new Measurement<AngularUnit>(csv[3]);
+                    if (csv.FieldsCount > 4 && !string.IsNullOrWhiteSpace(csv[4]))
+                        ShotParameters.Latitude = new Measurement<AngularUnit>(csv[4]);
                 }
                 else
                 {
