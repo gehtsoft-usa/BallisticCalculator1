@@ -1,0 +1,36 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>DrgDragTableFactory</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>class <b>DrgDragTableFactory</b></code></h1>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parents</b></td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>object</code></p>
+    </td>
+  </tr>
+</table>
+<h2>Brief</h2>
+<p>Synthesizes a custom drag table from a standard base drag curve and an effective ballistic-coefficient-vs-Mach profile.</p>
+<h2>Details</h2><p>The synthesized curve is <code class="ctag">Cd_custom(M) = Cd_base(M) / BC(M)</code>, where <code class="ctag">BC(M)</code> is interpolated from the supplied knots.</p>
+<p>The result is a custom <code class="ctag">GC</code> table; run it with a <a href="BallisticCalculator.BallisticCoefficient.html"><code>BallisticCoefficient</code></a> value of 1.0 and table GC so the engine applies exactly the intended per-Mach drag.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Static Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.DrgDragTableFactory.Build.AF6.html">Build</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Builds a custom drag table from a base curve and a Mach-to-BC profile.</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="BallisticCalculator.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

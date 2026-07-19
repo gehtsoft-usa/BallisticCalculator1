@@ -1,0 +1,145 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Understanding the output</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Understanding the output</h1>
+<h2>Brief</h2>
+<p>What a trajectory point contains and how to read it.</p>
+<h2>Details</h2><p><a href="BallisticCalculator.TrajectoryCalculator.html"><code>TrajectoryCalculator</code></a>.Calculate
+returns an array of <a href="BallisticCalculator.TrajectoryPoint.html"><code>TrajectoryPoint</code></a>,
+one per output step. Every physical value is a
+<code class="ctag">Measurement&lt;T&gt;</code>, so you choose the unit when you read it (for example
+<code class="ctag">point.Velocity.In(VelocityUnit.FeetPerSecond)</code>).</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Property</p></td>
+    <td class="thdr"><p>Meaning</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Time</code></p></td>
+    <td class="tmain"><p>Time of flight to the point.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Distance</code></p></td>
+    <td class="tmain"><p>Distance along the line of sight (the sight axis).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">DistanceFlat</code></p></td>
+    <td class="tmain"><p>Horizontal distance from the muzzle.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Velocity</code></p></td>
+    <td class="tmain"><p>Projectile speed.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Mach</code></p></td>
+    <td class="tmain"><p>Speed relative to the local speed of sound.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Drop</code></p></td>
+    <td class="tmain"><p>Vertical position relative to the line of sight. At the muzzle it equals minus the sight height.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">DropFlat</code></p></td>
+    <td class="tmain"><p>Vertical position relative to the muzzle.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Windage</code></p></td>
+    <td class="tmain"><p>Horizontal deflection. Left is positive, right is negative. Includes spin drift when it is modelled.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Energy</code></p></td>
+    <td class="tmain"><p>Kinetic energy.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">DropAdjustment</code></p></td>
+    <td class="tmain"><p>Angular correction for the drop at this distance (scope come-up).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">WindageAdjustment</code></p></td>
+    <td class="tmain"><p>Angular correction for the windage at this distance.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">OptimalGameWeight</code></p></td>
+    <td class="tmain"><p>Litz optimal game weight estimate.</p></td>
+  </tr>
+</table><p>A crossed reference: <code class="ctag">Drop</code> is measured from the sighting line, so it is negative
+below the line of sight and around zero at the zero range; <code class="ctag">DropFlat</code> is measured from
+the bore line and is almost always negative downrange.</p><div id="open1" style="display:none">
+  <p>Reading every column&nbsp;<a href="javascript: showdiv('close1'); hidediv('open1');" onclick="javascript: showdiv('close1'); hidediv('open1');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close1" style="display:inline">
+  <p>Reading every column&nbsp;<a href="javascript: showdiv('open1'); hidediv('close1');" onclick="javascript: showdiv('open1'); hidediv('close1');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example1"><code class="cs">var ammo = new Ammunition(
+    weight: new Measurement&lt;WeightUnit&gt;(168, WeightUnit.Grain),
+    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
+    muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(2700, VelocityUnit.FeetPerSecond));
+ 
+var rifle = new Rifle(
+    sight: new Sight(new Measurement&lt;DistanceUnit&gt;(1.5, DistanceUnit.Inch),
+                     Measurement&lt;AngularUnit&gt;.ZERO, Measurement&lt;AngularUnit&gt;.ZERO),
+    zero: new ZeroingParameters(new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard), null, null));
+ 
+var atmosphere = new Atmosphere();
+var calc = new TrajectoryCalculator();
+ 
+var shot = new ShotParameters
+{
+    MaximumDistance = new Measurement&lt;DistanceUnit&gt;(600, DistanceUnit.Yard),
+    Step = new Measurement&lt;DistanceUnit&gt;(200, DistanceUnit.Yard),
+    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+};
+ 
+foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot))
+    Console.WriteLine($&quot;{p.Time.TotalSeconds:0.000} {p.Distance.In(DistanceUnit.Yard),4:N0} &quot; +
+        $&quot;{p.Velocity.In(VelocityUnit.FeetPerSecond),5:N0} {p.Mach,4:N2} &quot; +
+        $&quot;{p.Drop.In(DistanceUnit.Inch),7:N1} {p.Energy.In(EnergyUnit.FootPound),5:N0} &quot; +
+        $&quot;{p.DropAdjustment.In(AngularUnit.MOA),6:N2}&quot;);</code></pre>
+</div><table class="tmain">
+  <tr>
+    <td class="thdr"><p>time (s)</p></td>
+    <td class="thdr"><p>dist (yd)</p></td>
+    <td class="thdr"><p>vel (fps)</p></td>
+    <td class="thdr"><p>mach</p></td>
+    <td class="thdr"><p>drop (in)</p></td>
+    <td class="thdr"><p>energy (ft-lb)</p></td>
+    <td class="thdr"><p>drop (MOA)</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0.000</p></td>
+    <td class="tmain"><p>0</p></td>
+    <td class="tmain"><p>2,700</p></td>
+    <td class="tmain"><p>2.42</p></td>
+    <td class="tmain"><p>-1.5</p></td>
+    <td class="tmain"><p>2,719</p></td>
+    <td class="tmain"><p>0.00</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0.241</p></td>
+    <td class="tmain"><p>200</p></td>
+    <td class="tmain"><p>2,303</p></td>
+    <td class="tmain"><p>2.06</p></td>
+    <td class="tmain"><p>-4.1</p></td>
+    <td class="tmain"><p>1,979</p></td>
+    <td class="tmain"><p>-1.95</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0.524</p></td>
+    <td class="tmain"><p>400</p></td>
+    <td class="tmain"><p>1,943</p></td>
+    <td class="tmain"><p>1.74</p></td>
+    <td class="tmain"><p>-33.2</p></td>
+    <td class="tmain"><p>1,408</p></td>
+    <td class="tmain"><p>-7.91</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0.863</p></td>
+    <td class="tmain"><p>600</p></td>
+    <td class="tmain"><p>1,613</p></td>
+    <td class="tmain"><p>1.44</p></td>
+    <td class="tmain"><p>-99.5</p></td>
+    <td class="tmain"><p>970</p></td>
+    <td class="tmain"><p>-15.84</p></td>
+  </tr>
+</table><p>
+  <center><a href="guide.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

@@ -1,0 +1,104 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Multi-BC drag tables</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Multi-BC drag tables</h1>
+<h2>Brief</h2>
+<p>Turn a few BC-vs-Mach points into a custom drag curve automatically.</p>
+<h2>Details</h2><p>A single published ballistic coefficient is a compromise: the real drag of a bullet
+changes with speed. Many sources publish a <b>multi-BC</b> instead - a BC value for two or
+three velocity (Mach) bands.
+<a href="BallisticCalculator.DrgDragTableFactory.html"><code>DrgDragTableFactory</code></a> turns such a
+profile into a custom drag table for you: it scales a standard base curve by the BC at
+each Mach, so no changes to the trajectory engine are needed.</p>
+<p>Give it the base table, a few <a href="BallisticCalculator.BcAtMach.html"><code>BcAtMach</code></a> knots
+(Mach and the effective BC there), and the ammunition metadata. Then run the resulting
+table with a ballistic coefficient of <code class="ctag">1.0</code> and table <code class="ctag">GC</code>.</p><div id="open6" style="display:none">
+  <p>Synthesizing a curve from three BC points&nbsp;<a href="javascript: showdiv('close6'); hidediv('open6');" onclick="javascript: showdiv('close6'); hidediv('open6');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close6" style="display:inline">
+  <p>Synthesizing a curve from three BC points&nbsp;<a href="javascript: showdiv('open6'); hidediv('close6');" onclick="javascript: showdiv('open6'); hidediv('close6');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example6"><code class="cs">// a 3-point multi-BC profile for a 220 gr .308 bullet on the G7 base curve
+var entry = new AmmunitionLibraryEntry
+{
+    Name = &quot;220 gr .308&quot;,
+    Ammunition = new Ammunition(
+        weight: new Measurement&lt;WeightUnit&gt;(220, WeightUnit.Grain),
+        ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
+        muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(2600, VelocityUnit.FeetPerSecond),
+        bulletDiameter: new Measurement&lt;DistanceUnit&gt;(0.308, DistanceUnit.Inch)),
+};
+ 
+var curve = new[]
+{
+    new BcAtMach(1.20, 0.307),
+    new BcAtMach(1.65, 0.301),
+    new BcAtMach(2.25, 0.318),
+};
+ 
+DrgDragTable table = DrgDragTableFactory.Build(entry, DragTableId.G7, curve);
+// table.Save(&quot;220gr-308.drg&quot;);   // optional: persist for reuse
+ 
+var ammo = new Ammunition(
+    weight: new Measurement&lt;WeightUnit&gt;(220, WeightUnit.Grain),
+    ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
+    muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(2600, VelocityUnit.FeetPerSecond));
+ 
+var rifle = new Rifle(
+    sight: new Sight(new Measurement&lt;DistanceUnit&gt;(1.5, DistanceUnit.Inch),
+                     Measurement&lt;AngularUnit&gt;.ZERO, Measurement&lt;AngularUnit&gt;.ZERO),
+    zero: new ZeroingParameters(new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard), null, null));
+ 
+var atmosphere = new Atmosphere();
+var calc = new TrajectoryCalculator();
+var shot = new ShotParameters
+{
+    MaximumDistance = new Measurement&lt;DistanceUnit&gt;(1000, DistanceUnit.Yard),
+    Step = new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard),
+    SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table),
+};
+ 
+foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, null, table))
+    Console.WriteLine($&quot;{p.Distance.In(DistanceUnit.Yard),5:N0} &quot; +
+        $&quot;{p.Drop.In(DistanceUnit.Inch),8:N1}&quot;);</code></pre>
+</div><p>The table below compares the drop from the single published BC (0.325 G7) with the drop
+from the 3-point multi-BC curve. The difference grows downrange, where a single BC is
+least accurate:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>dist (yd)</p></td>
+    <td class="thdr"><p>single-BC drop (in)</p></td>
+    <td class="thdr"><p>multi-BC drop (in)</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0</p></td>
+    <td class="tmain"><p>-1.5</p></td>
+    <td class="tmain"><p>-1.5</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>200</p></td>
+    <td class="tmain"><p>-4.2</p></td>
+    <td class="tmain"><p>-4.3</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>400</p></td>
+    <td class="tmain"><p>-32.7</p></td>
+    <td class="tmain"><p>-32.9</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>600</p></td>
+    <td class="tmain"><p>-93.6</p></td>
+    <td class="tmain"><p>-94.6</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>800</p></td>
+    <td class="tmain"><p>-195.8</p></td>
+    <td class="tmain"><p>-199.3</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>1,000</p></td>
+    <td class="tmain"><p>-351.7</p></td>
+    <td class="tmain"><p>-361.0</p></td>
+  </tr>
+</table><p>
+  <center><a href="guide.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

@@ -1,0 +1,244 @@
+a, p, h1, h2, h3, h4, h5, h6, table, td, tr, li, ul, ol {
+    font-family: Verdana, Trebuchet MS, Arial;
+}
+
+a, p, td, tr, ul, ol, li {
+    font-size: 12pt;
+}
+
+h3 {
+    font-size: 13pt;
+}
+
+h2 {
+    font-size: 13pt;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+body {
+    color: #444444;
+    background-color: white;
+}
+
+A:link {
+    color: #0065b3;
+    cursor: pointer;
+}
+
+A:visited {
+    color: #0068be;
+    cursor: pointer;
+}
+
+a.action {
+  background-color: #0065b3;
+  color: white;
+  font-size: 10pt;
+  padding: 2px 2px;
+  width: 50pt;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: none;
+  display: inline-block;
+  border-radius: 3px;
+}
+
+.side-icon {
+    float: left;
+}
+
+a.action [class*="dripicons-"]:before {
+    padding: 0 2px 0 0;
+    font-size: 12pt;
+    vertical-align: text-bottom;
+}
+
+.side-icon:after {
+  content: "";
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  border-left: 1.5px solid white;
+  transform: translate(-50%);
+}
+
+a.actiontab {
+  font-size: 10pt;
+  padding: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border-radius: 3px 3px 0 0;
+}
+
+pre, code, code a {
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+    font-size: 12pt;
+}
+
+code.ctag {
+    background-color: #f1f1f1;
+    padding: .1em .2em;
+    border-radius: 3px;
+}
+
+pre {
+    background-color: white;
+}
+
+pre.example {
+    background-color: #f1f1f1;
+}
+
+ul {
+    list-style-type: disc;
+    margin-left: 18pt;
+}
+
+ol {
+    list-style-type: decimal;
+    margin-left: 18pt;
+}
+
+ul.hhc {
+    list-style-type: none;
+    margin-left: 1em;
+    padding: 0;
+    padding-left: 0;
+    text-indent: 0;
+}
+
+li.hhc {
+    margin-left: 0;
+    padding: 0;
+    padding-left: 0;
+    text-indent: 0;
+}
+
+table {
+  border-spacing: 0;
+  border-color: #dfe3e7;
+}
+
+tr + tr td {
+   border-top: 0;
+}
+
+tr td + td {
+  border-left: 0;
+}
+
+td {
+  border: 1px solid;
+  border-color: #dfe3e7;
+}
+
+tr:first-child td:first-child {
+   border-radius: 0.2em 0 0 0;
+}
+
+tr:first-child td:last-child {
+  border-radius: 0 0.2em 0 0;
+}
+
+tr:first-child td:only-child {
+  border-radius: 0.2em 0.2em 0 0;
+}
+
+tr:last-child td:first-child {
+    border-radius: 0 0 0 0.2em;
+}
+
+tr:last-child td:last-child {
+    border-radius: 0 0 0.2em 0;
+}
+
+tr:last-child td:only-child {
+    border-radius: 0 0 0.2em 0.2em;
+}
+
+tr:only-child td:only-child {
+    border-radius: 0.2em 0.2em 0.2em 0.2em;
+}
+
+tr:only-child td:first-child {
+   border-radius: 0.2em 0 0 0.2em;
+}
+
+tr:only-child td:last-child {
+  border-radius: 0 0.2em 0.2em 0;
+}
+
+
+td.tmain, td.tmain_nw, td.thdr {
+    background-color: rgb(255, 255, 255);
+    vertical-align: top;
+    padding: 3px;
+}
+
+td.tmain p, td.tmain_nw p, td.thdr p {
+    margin-top: 3pt;
+    margin-bottom: 3pt;
+}
+
+td.tmain_nw {
+    white-space: nowrap;
+}
+
+td.thdr {
+    background-color: #e3e3e3;
+}
+
+table.decl {
+    border: 0px none;
+    border: collapse;
+    background-color: rgb(192, 192, 192);
+    vertical-align: top;
+    padding: 3px;
+    width: 100%;
+}
+
+table.decl td {
+    border: 0px none;
+    border: collapse;
+    background-color: rgb(192, 192, 192);
+}
+
+div.note-quote {
+    border-left: 10px solid #ccc;
+    padding: 1em 10px .1em 10px;
+    margin: 1.5em 10px;
+    background-color: rgb(224, 224, 224);
+}
+
+div.note-note {
+    position: relative;
+    padding: .0rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+div.note-warning {
+    position: relative;
+    padding: .0rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+
+    color: #fff;
+    background-color: #ff6358;
+}
+div.note-warning code.ctag {
+    color: black;
+}

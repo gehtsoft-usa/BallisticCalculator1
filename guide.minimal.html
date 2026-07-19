@@ -1,0 +1,83 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Minimalistic calculation</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Minimalistic calculation</h1>
+<h2>Brief</h2>
+<p>The smallest program that computes a trajectory.</p>
+<h2>Details</h2><p>The minimum you need is an <a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>
+(a ballistic coefficient, a bullet weight, and a muzzle velocity), a
+<a href="BallisticCalculator.Rifle.html"><code>Rifle</code></a> (a sight height and a zero range), and
+an <a href="BallisticCalculator.Atmosphere.html"><code>Atmosphere</code></a>. The default atmosphere is
+a reasonable sea-level standard.</p>
+<p>Compute the sight angle for the zero range with
+<a href="BallisticCalculator.TrajectoryCalculator.html"><code>TrajectoryCalculator</code></a>.SightAngle,
+put it on the <a href="BallisticCalculator.ShotParameters.html"><code>ShotParameters</code></a>, and call
+Calculate.</p><div id="open2" style="display:none">
+  <p>A bare trajectory&nbsp;<a href="javascript: showdiv('close2'); hidediv('open2');" onclick="javascript: showdiv('close2'); hidediv('open2');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close2" style="display:inline">
+  <p>A bare trajectory&nbsp;<a href="javascript: showdiv('open2'); hidediv('close2');" onclick="javascript: showdiv('open2'); hidediv('close2');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example2"><code class="cs">var ammo = new Ammunition(
+    weight: new Measurement&lt;WeightUnit&gt;(168, WeightUnit.Grain),
+    ballisticCoefficient: new BallisticCoefficient(0.223, DragTableId.G7),
+    muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(2700, VelocityUnit.FeetPerSecond));
+ 
+var rifle = new Rifle(
+    sight: new Sight(new Measurement&lt;DistanceUnit&gt;(1.5, DistanceUnit.Inch),
+                     Measurement&lt;AngularUnit&gt;.ZERO, Measurement&lt;AngularUnit&gt;.ZERO),
+    zero: new ZeroingParameters(new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard), null, null));
+ 
+var atmosphere = new Atmosphere();
+var calc = new TrajectoryCalculator();
+ 
+var shot = new ShotParameters
+{
+    MaximumDistance = new Measurement&lt;DistanceUnit&gt;(1000, DistanceUnit.Yard),
+    Step = new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard),
+    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+};
+ 
+foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot))
+    Console.WriteLine($&quot;{p.Distance.In(DistanceUnit.Yard),5:N0} &quot; +
+        $&quot;{p.Velocity.In(VelocityUnit.FeetPerSecond),6:N0} &quot; +
+        $&quot;{p.Drop.In(DistanceUnit.Inch),8:N1}&quot;);</code></pre>
+</div><p>Output (every 200 yd):</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>dist (yd)</p></td>
+    <td class="thdr"><p>vel (fps)</p></td>
+    <td class="thdr"><p>drop (in)</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0</p></td>
+    <td class="tmain"><p>2,700</p></td>
+    <td class="tmain"><p>-1.5</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>200</p></td>
+    <td class="tmain"><p>2,303</p></td>
+    <td class="tmain"><p>-4.1</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>400</p></td>
+    <td class="tmain"><p>1,943</p></td>
+    <td class="tmain"><p>-33.2</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>600</p></td>
+    <td class="tmain"><p>1,612</p></td>
+    <td class="tmain"><p>-99.6</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>800</p></td>
+    <td class="tmain"><p>1,310</p></td>
+    <td class="tmain"><p>-220.4</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>1,000</p></td>
+    <td class="tmain"><p>1,066</p></td>
+    <td class="tmain"><p>-423.7</p></td>
+  </tr>
+</table><p>
+  <center><a href="guide.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>
