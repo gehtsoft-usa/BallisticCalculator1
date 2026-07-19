@@ -82,10 +82,9 @@ namespace BallisticCalculator
         }
 
         /// <summary>
-        /// Return the ballistic coefficient
-        /// 
-        /// It the BC specified is a coefficient, the method simply returns the corresponding value.
-        /// If the BC specified is a form factor, the method calculates BC using form factor and sectional density.
+        /// <para>Returns the ballistic coefficient.</para>
+        /// <para>If the BC specified is a coefficient, the method simply returns the corresponding value.
+        /// If the BC specified is a form factor, the method calculates BC using form factor and sectional density.</para>
         /// </summary>
         /// <returns></returns>
         /// <exception cref="ArgumentException">The exception is thrown only when form-factor is used. The exception will be thrown if form factor, bullet weight or bullet diamter is not specified or is 0</exception>

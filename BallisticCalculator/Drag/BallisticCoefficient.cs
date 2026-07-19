@@ -12,23 +12,16 @@ namespace BallisticCalculator
     public enum BallisticCoefficientValueType
     {
         /// <summary>
-        /// Coefficient.
-        ///
-        /// The typical BC value.
-        ///
-        /// It is proportion of the bullet sectional density to
-        /// the sectional density of the original table's bullet
+        /// <para>Coefficient.</para>
+        /// <para>The typical BC value.</para>
+        /// <para>It is proportion of the bullet sectional density to the sectional density of the original table's bullet.</para>
         /// </summary>
         Coefficient,
 
         /// <summary>
-        /// The form factor
-        ///
-        /// The coefficient showing how the bullet's behavior rely to
-        /// the the original bullet.
-        ///
-        /// If you use form factor, make sure that the bullet diameter and
-        /// bullet weight are specified.
+        /// <para>The form factor.</para>
+        /// <para>The coefficient showing how the bullet's behavior relates to the original bullet.</para>
+        /// <para>If you use form factor, make sure that the bullet diameter and bullet weight are specified.</para>
         /// </summary>
         FormFactor,
     }

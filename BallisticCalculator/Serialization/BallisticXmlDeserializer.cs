@@ -83,10 +83,10 @@ namespace BallisticCalculator.Serialization
         }
 
         /// <summary>
-        /// Deserialize object from the element using the specified type
-        /// <param name="element"/>
-        /// <param name="type"/>
+        /// Deserialize an object from the element using the specified type.
         /// </summary>
+        /// <param name="element"></param>
+        /// <param name="type"></param>
         public object Deserialize(XmlElement element, Type type) => Deserialize(element, type, null);
 
         interface IReader

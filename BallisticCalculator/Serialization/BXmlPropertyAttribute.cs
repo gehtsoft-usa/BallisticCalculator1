@@ -36,17 +36,10 @@ namespace BallisticCalculator.Serialization
         public bool ChildElement { get; set; } = false;
 
         /// <summary>
-        /// <para>
-        /// Flag indicating that the properties of the child
-        /// element must be saved as attributes of the containing element.
-        /// </para>
+        /// <para>Flag indicating that the properties of the child element must be saved as attributes of the containing element.</para>
         /// <para>
         /// The name of the property will be used as a prefix for the
         /// attributes of the child element.
-        /// </para>
-        /// <para>
-        /// DO NOT use this flag for child elements that contains collections
-        /// or child elements themselves
         /// </para>
         /// </summary>
         public bool FlattenChild { get; set; } = false;

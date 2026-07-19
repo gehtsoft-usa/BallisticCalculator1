@@ -33,9 +33,8 @@ namespace BallisticCalculator
         public Measurement<DistanceUnit> Distance { get; set; }
 
         /// <summary>
-        /// The vertical offset of the zero impact point from aim point
-        /// 
-        /// Positive values are up, negative values are down
+        /// <para>The vertical offset of the zero impact point from the aim point.</para>
+        /// <para>Positive values are up, negative values are down.</para>
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BXmlProperty("vertical-offset", Optional = true)]
