@@ -12,4 +12,5 @@ nuget/*.nuspec
 sonar.bat
 Experiment-*/
 CLAUDE/data/
-SKILL/SKILLS/ballistic-calculator-workspace/
+SKILL/SKILLS/ballistic-calculator-workspace/coverage.xml
+.sonar.config

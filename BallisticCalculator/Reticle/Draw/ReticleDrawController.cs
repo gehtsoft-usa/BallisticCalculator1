@@ -114,7 +114,7 @@ namespace BallisticCalculator.Reticle.Draw
                 DrawElement(element);
         }
 
-        private IEnumerable<ReticleElement> CalculateBdc(ReticleDefinition reticle, IEnumerable<TrajectoryPoint> trajectory, Measurement<DistanceUnit> zero, bool closeBdc, DistanceUnit distanceUnits, string color)
+        private static IEnumerable<ReticleElement> CalculateBdc(ReticleDefinition reticle, IEnumerable<TrajectoryPoint> trajectory, Measurement<DistanceUnit> zero, bool closeBdc, DistanceUnit distanceUnits, string color)
         {
             TrajectoryPoint previousPoint = null;
             foreach (var point in trajectory)

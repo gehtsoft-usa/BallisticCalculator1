@@ -49,8 +49,7 @@ namespace BallisticCalculator.Serialization
         /// <returns></returns>
         public XmlElement Serialize(object value, string forceName = null)
         {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
 
             if (forceName != null && string.IsNullOrWhiteSpace(forceName))
                 throw new ArgumentException("The forced name of the attribute must not be an empty string if specified", nameof(forceName));
@@ -208,7 +207,7 @@ namespace BallisticCalculator.Serialization
         /// <param name="property"></param>
         /// <param name="propertyAttribute"></param>
         /// <param name="attributePrefix"></param>
-        private void AddAttribute(XmlElement element, object targetObject, object value, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
+        private static void AddAttribute(XmlElement element, object targetObject, object value, PropertyInfo property, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {
             var type = SerializerTools.RemoveNullabilityFromType(property.PropertyType);
 

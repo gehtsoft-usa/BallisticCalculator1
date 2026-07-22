@@ -26,7 +26,7 @@ Claimed accuracy: within ~0.5% / 0.2 MOA of modern calculators. Full algorithm: 
 
 | Project | Path | TFM | Purpose |
 |---|---|---|---|
-| BallisticCalculator | `BallisticCalculator/` | netstandard2.0 | the engine (library) |
+| BallisticCalculator | `BallisticCalculator/` | net8.0 | the engine (library) |
 | BallisticCalculator.Test | `BallisticCalculator.Test/` | net8.0 | xUnit tests + reference-trajectory templates |
 | BallisticCalculator.Debug | `BallisticCalculator.Debug/` | — | scratch/debug host |
 
@@ -49,11 +49,11 @@ Engine source, by concern (read the specific dir, not the whole tree):
   min/optimal/max `TwistRecommendation`).
 
 Engine dependencies (`BallisticCalculator/BallisticCalculator.csproj`):
-- **`Gehtsoft.Measurements` 1.1.16** — strongly-typed units (all physics quantities). See §2.
+- **`Gehtsoft.Measurements` 1.1.17** — strongly-typed units (all physics quantities). See §2.
 - `System.Runtime` 4.3.1.
 - Embedded resource `Resources/Calibers.csv`.
 
-Test stack: xUnit 2.9.3, **AwesomeAssertions** 9.3.0 (not FluentAssertions), Moq, NReco.Csv.
+Test stack: **xUnit v3** (`xunit.v3` 3.2.2; test project is an `Exe`), **AwesomeAssertions** 9.5.0 (not FluentAssertions), Moq, NReco.Csv.
 Canonical API usage: `BallisticCalculator.Test/Calculator/TrajectoryCalculatorTest.cs` (incl.
 custom `DragTable` and `DrgDragTable.Open`); reference-template loading in `TableLoader.cs`.
 
@@ -70,7 +70,7 @@ custom `DragTable` and `DrgDragTable.Open`); reference-template loading in `Tabl
 
 Everything physical is a `Measurement<TUnit>` (a struct wrapping `double Value` + `TUnit Unit`).
 - **Source** (sibling repo, read when this section isn't enough): `../Gehtsoft.Measurements/`.
-- Compiled + XML docs: `~/.nuget/packages/gehtsoft.measurements/1.1.16/lib/netstandard2.0/`.
+- Compiled + XML docs: `~/.nuget/packages/gehtsoft.measurements/1.1.17/lib/netstandard2.0/`.
 
 **Construction & access**
 ```csharp
@@ -125,8 +125,9 @@ new BallisticCoefficient(0.325, DragTableId.G7)                              // 
 new BallisticCoefficient(1.0, DragTableId.GC, BallisticCoefficientValueType.FormFactor)
 ```
 - Fields: `Value`, `Table` (`DragTableId`), `ValueType` (`Coefficient` | `FormFactor`).
-- Text form parses/serializes like `"0.325G7"` or `"F1GC"` (leading `F` = form factor,
-  last 2 chars = table id).
+- Text form parses/serializes like `"0.325G7"`, `"F1GC"`, or `"0.132RA4"` (leading `F` = form
+  factor; the trailing table id is the longest matching `DragTableId` name, so 3-char ids like
+  `RA4` round-trip — not a fixed 2 chars).
 
 ### Rifle / Sight / Rifling / ZeroingParameters
 ```csharp

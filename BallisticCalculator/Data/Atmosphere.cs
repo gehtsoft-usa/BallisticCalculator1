@@ -174,7 +174,7 @@ namespace BallisticCalculator
         /// <param name="temperature">The temperature in Kelvins</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double CalculateSoundVelocity(double temperature)
+        private static double CalculateSoundVelocity(double temperature)
         {
             return 331.3 * Math.Sqrt(temperature / 273.15);
         }

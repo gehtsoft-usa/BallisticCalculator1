@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,10 @@
     <None Remove="resources\be_coriolis_pole.txt" />
     <None Remove="resources\be_coriolis_south.txt" />
     <None Remove="resources\b1_eldx_wind_twist.txt" />
+    <None Remove="resources\ref_ra4.txt" />
+    <None Remove="resources\ref_gi.txt" />
+    <None Remove="resources\ref_g5.txt" />
+    <None Remove="resources\ref_g6.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,20 +75,24 @@
     <EmbeddedResource Include="resources\be_coriolis_pole.txt" />
     <EmbeddedResource Include="resources\be_coriolis_south.txt" />
     <EmbeddedResource Include="resources\b1_eldx_wind_twist.txt" />
+    <EmbeddedResource Include="resources\ref_ra4.txt" />
+    <EmbeddedResource Include="resources\ref_gi.txt" />
+    <EmbeddedResource Include="resources\ref_g5.txt" />
+    <EmbeddedResource Include="resources\ref_g6.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NReco.Csv" Version="1.0.3" />
-    <PackageReference Include="AwesomeAssertions" Version="9.3.0" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="AwesomeAssertions" Version="9.5.0" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

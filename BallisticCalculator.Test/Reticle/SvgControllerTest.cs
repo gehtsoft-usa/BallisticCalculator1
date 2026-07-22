@@ -106,6 +106,72 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Fact]
+        public void Rectangle_Filled()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Rectangle(10, 20, 60, 90, 4, true, "green");
+            var s = canvas.ToSvg();
+            var document = XDocument.Parse(s);
+            document.Root.Should().HaveElement(Name("rect"))
+                .Which
+                .Should()
+                .BeOfType<XElement>()
+                .And.HaveAttribute("x", "10")
+                .And.HaveAttribute("y", "20")
+                .And.HaveAttribute("width", "50")
+                .And.HaveAttribute("height", "70")
+                .And.HaveAttribute("stroke", "green")
+                .And.HaveAttribute("fill", "green")
+                .And.HaveAttribute("stroke-width", "4")
+                .And.Match(xe => xe.Parent.Name == Name("svg"));
+        }
+
+        [Fact]
+        public void Rectangle_NotFilled_ForcesMinimumStrokeWidth()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Rectangle(10, 20, 60, 90, 0, false, "green");
+            var s = canvas.ToSvg();
+            var document = XDocument.Parse(s);
+            document.Root.Should().HaveElement(Name("rect"))
+                .Which
+                .Should()
+                .BeOfType<XElement>()
+                .And.HaveAttribute("fill", "none")
+                .And.HaveAttribute("stroke-width", "1");
+        }
+
+        [Fact]
+        public void Factory_CreateAndToSvg()
+        {
+            var canvas = SvgCanvasFactory.Create("factory", "3in", "3in");
+            var s = SvgCanvasFactory.ToSvg(canvas);
+            var document = XDocument.Parse(s);
+            document.Root.Name.Should().Be(Name("svg"));
+            document.Root.Should().HaveElement(Name("title")).Which.Should().HaveValue("factory");
+        }
+
+        [Fact]
+        public void Factory_ToSvg_RejectsForeignCanvas()
+        {
+            var foreign = new Moq.Mock<IReticleCanvas>().Object;
+            ((System.Action)(() => SvgCanvasFactory.ToSvg(foreign)))
+                .Should().Throw<System.ArgumentException>();
+        }
+
+        [Fact]
+        public void Path_FillNotClosed_Throws()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            var path = canvas.CreatePath();
+            path.MoveTo(0, 0);
+            path.LineTo(100, 100);
+            // no Close() -> filling an open path is invalid
+            ((System.Action)(() => canvas.Path(path, 1, true, "red")))
+                .Should().Throw<System.ArgumentException>();
+        }
+
+        [Fact]
         public void Path()
         {
             SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");

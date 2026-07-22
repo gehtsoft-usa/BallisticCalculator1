@@ -38,7 +38,7 @@ namespace BallisticCalculator.Reticle.Data
         protected override string ToStringInternal(string format, IFormatProvider formatProvider)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("M")
+            sb.Append('M')
                 .Append(Position.ToString(format, formatProvider));
             return sb.ToString();
         }

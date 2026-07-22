@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <LangVersion>default</LangVersion>
     <DocumentationFile>bin/doc.xml</DocumentationFile>
   </PropertyGroup>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Gehtsoft.Measurements" Version="1.1.16" />
+    <PackageReference Include="Gehtsoft.Measurements" Version="1.1.17" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 

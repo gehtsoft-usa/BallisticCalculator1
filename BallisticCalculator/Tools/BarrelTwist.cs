@@ -130,8 +130,7 @@ namespace BallisticCalculator.Tools
 
         private static void ValidateBullet(Ammunition ammunition)
         {
-            if (ammunition == null)
-                throw new ArgumentNullException(nameof(ammunition));
+            ArgumentNullException.ThrowIfNull(ammunition);
             if (ammunition.BulletDiameter == null || ammunition.BulletLength == null)
                 throw new ArgumentException("Bullet diameter and length are required to compute gyroscopic stability", nameof(ammunition));
         }

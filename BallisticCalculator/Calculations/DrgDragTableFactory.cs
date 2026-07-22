@@ -20,10 +20,8 @@ namespace BallisticCalculator
         /// <returns>A custom drag table on the base curve's Mach grid.</returns>
         public static DrgDragTable Build(AmmunitionLibraryEntry ammunition, DragTableId baseTable, IEnumerable<BcAtMach> bcCurve)
         {
-            if (ammunition == null)
-                throw new ArgumentNullException(nameof(ammunition));
-            if (bcCurve == null)
-                throw new ArgumentNullException(nameof(bcCurve));
+            ArgumentNullException.ThrowIfNull(ammunition);
+            ArgumentNullException.ThrowIfNull(bcCurve);
             if (baseTable == DragTableId.GC)
                 throw new ArgumentException("The base table must be a standard drag curve, not GC", nameof(baseTable));
 

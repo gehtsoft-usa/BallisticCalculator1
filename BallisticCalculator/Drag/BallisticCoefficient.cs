@@ -139,10 +139,22 @@ namespace BallisticCalculator
                 valueType = BallisticCoefficientValueType.FormFactor;
             }
 
-            string tableName = text.Substring(text.Length - 2);
-            if (!Enum.TryParse<DragTableId>(tableName, out table))
+            // The table id is the trailing letters/digits of the text (e.g. "G7", "RA4").
+            // Table ids are not all two characters long, so match the longest known id that
+            // the text ends with instead of assuming a fixed length.
+            int idLength = 0;
+            foreach (string name in Enum.GetNames(typeof(DragTableId)))
+            {
+                if (name.Length > idLength && text.EndsWith(name, StringComparison.Ordinal))
+                {
+                    table = (DragTableId)Enum.Parse(typeof(DragTableId), name);
+                    idLength = name.Length;
+                }
+            }
+            if (idLength == 0)
                 return false;
-            string v = text.Substring(0, text.Length - 2);
+
+            string v = text.Substring(0, text.Length - idLength);
             return double.TryParse(v, NumberStyles.Float, cultureInfo, out value);
         }
 
@@ -190,6 +202,22 @@ namespace BallisticCalculator
                 return Equals(bc);
             return false;
         }
+
+        /// <summary>
+        /// Checks whether two ballistic coefficients are equal.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator ==(BallisticCoefficient left, BallisticCoefficient right) => left.Equals(right);
+
+        /// <summary>
+        /// Checks whether two ballistic coefficients are not equal.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator !=(BallisticCoefficient left, BallisticCoefficient right) => !left.Equals(right);
 
         /// <summary>
         /// Returns the object hash code

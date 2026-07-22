@@ -208,9 +208,10 @@ Same discipline as Coriolis (`CLAUDE/CORIOLIS.md` §6):
   later zone is windy. Locked by `AerodynamicJump_UsesMuzzleWindZone`.
 - **Data honesty:** this is an empirical field-tool match (like Coriolis), *not* first-principles 6DOF —
   the rigorous McCoy form needs aero data we don't carry. Document as a deliberate approximation.
-- **Interaction with inclined fire:** spin drift is `×cos(shotAngle)`; decide whether AJ needs an
-  analogous projection (it's a vertical effect on an inclined LoS — likely `×cos` on the perpendicular
-  component; confirm against reference or derive).
+- **Interaction with inclined fire:** whether the vertical jump needs a look-angle projection is
+  **open** — full validation plan and exact test cases in **§9**. First-principles suggests it is
+  ~incline-independent for a horizontal crosswind (contrary to the naive spin-drift `×cos` analogy), but
+  that must be settled with reference data, not assumed.
 
 ---
 
@@ -226,12 +227,87 @@ Same discipline as Coriolis (`CLAUDE/CORIOLIS.md` §6):
 - [x] §6 Hornady acceptance (0.83→0.11 MOA) + structural (sign/linearity/range-independence) + Eq 5.4
   magnitude guard; full suite green (237).
 - [x] §7 Multi-zone wind resolved (muzzle-zone only; `AerodynamicJump_UsesMuzzleWindZone`).
-- [ ] §7 Inclined-fire `cos` projection — **deferred** (level supersonic is ~90% of use; documented).
+- [ ] §9 Inclined-fire (look-angle) projection — **deferred**; validation plan + exact test cases in §9.
+  Collect the Hornady 4DOF look-angle sweep, decide flat vs `cos`, then implement + test.
 - [x] Update `CLAUDE.md` §5 + §7 + README + SKILL + `CHANGES_TO_PORT.md`.
 
 ---
 
-## 9. Sources
+## 9. Inclined-fire (look-angle) validation plan — the deferred projection question
+
+### 9.1 The question
+For a shot at look angle `θ` (line-of-sight inclination, + up / − down) with a horizontal crosswind, does
+the reported vertical jump change with `θ`? Two candidate corrections:
+- **Effective crosswind:** the jump is driven by the crosswind component perpendicular to the *bore*. A
+  full-value (90°) horizontal crosswind stays lateral (the z-axis) while the bore tilts in the vertical
+  plane, so it remains **fully perpendicular to the bore at any `θ`** — no reduction.
+- **Projection into `Drop`:** the jump is a muzzle kick perpendicular to the bore, in the vertical plane
+  of fire; our `Drop` is perpendicular to the *line of sight*. Bore and LoS differ only by the sight
+  angle (a few MOA), **not** by `θ` — so it projects ~1:1.
+
+⇒ First-principles lean: crosswind AJ is **nearly incline-independent** (NO `cos θ`), **unlike spin
+drift** (`×cos θ`), because AJ is a muzzle kick ⊥ bore, not a ground-plane accumulation. This is a
+derivation, so it must be confirmed against a field reference before we either leave the code as-is or
+add a factor.
+
+### 9.2 Reference data to collect (Hornady 4DOF)
+Fixed config — identical to `b1_eldx_wind_twist` so it composes with the existing tests:
+- **Bullet/rifle:** 30 cal 220 gr ELD-X, 0.325 G7 (run on the synthesized b1 curve), MV 2600, twist
+  1:7" right, bore 0.308", sight 1.5", 100 yd zero. Atmosphere: 0 ft / 29.92 inHg / 59 °F / 0 %.
+- **Wind:** 20 mph, 90° (full-value, from the right).
+- **Sweep look angle `θ`:** `0°, +15°, +30°, +45°` and `−15°, −30°, −45°` (up and down).
+- **Range:** 0→1000 yd @ 50 yd. **Cap at 1000 yd to stay supersonic** (ELD-X is ~Mach 1.2 there);
+  beyond that the 4DOF jump column goes nonlinear/sign-flips transonic (PLAN0 `B2_wind_08`) and would
+  contaminate the fit.
+- **Capture per run:** the 4DOF `VerticalWindJump` column (LoS-referenced, inches) — that is
+  `jump(θ, range)` directly — plus `ComeUp`/Path (drop) for the absolute acceptance check.
+- **Source:** hornady.com/4dof via the existing Playwright automation (see the site-automation memory);
+  add look-angle rows to `CLAUDE/hornady/config.csv`. Store as templates
+  `aj_incline_00.txt … aj_incline_45.txt` (+ negatives), shot row carrying `ShotAngle = θ`, drop column =
+  4DOF Path/ComeUp with the wind on. Kestrel/AB is a good second reference but harder to script.
+
+### 9.3 Decision rule
+From the captured data compute `r(θ) = jump(θ) / jump(0°)` at 500 / 750 / 1000 yd:
+- `r ≈ 1` at all `θ` ⇒ **incline-independent** — leave the code unchanged; add a regression test locking it.
+- `r ≈ cos θ` ⇒ add `× Math.Cos(lookAngle)` to `aeroJumpAngleRad` (lookAngle = `shot.ShotAngle`, the LoS
+  inclination — *not* barrelElevation). One line, after §3.2's precompute.
+- otherwise ⇒ fit the observed law and document it.
+Also compute `(jump for +θ)` vs `(jump for −θ)` — a horizontal crosswind's jump should be **even in `θ`**
+(up/down symmetric); a mismatch means the model is more complex.
+
+### 9.4 Exact test cases to develop
+
+**Reference templates (new resources, from §9.2 capture):**
+`aj_incline_00 / _15 / _30 / _45 / _m15 / _m30 / _m45` — one per look angle; embed like the
+`be_coriolis_*` set. (`TableLoader` shot row already parses `ShotAngle` as `csv[1]` — no loader change.)
+
+**C# tests (new `AerodynamicJumpInclineTest`, or extend `B1DragTest`):**
+1. **`AerodynamicJump_Incline_MatchesHornady`** `[Theory]` over `θ ∈ {0,15,30,45}` (and negatives):
+   load `aj_incline_<θ>` for the reference drop; run our synth-curve engine with `ShotAngle = θ` on the
+   twist template; assert `Drop` matches the reference wind-on drop within ~0.25 MOA at every range.
+   (Acceptance across incline — the incline analog of `AerodynamicJump_ClosesHornadyWindDropGap`.)
+2. **`AerodynamicJump_Incline_ScalingLaw`** (structural, pins the projection): for each `θ`, our
+   `jump(θ) = Drop(withDims, θ) − Drop(noDims, θ)` at 500/1000 yd; assert `jump(θ)/jump(0°)` equals the
+   law adopted in §9.3 (constant `1.0`, or `cos θ`) within ~0.02. This is device-independent and guards
+   against silent regressions.
+3. **`AerodynamicJump_Incline_UpDownSymmetric`**: `jump(+θ)` ≈ `jump(−θ)` (even in `θ`).
+4. **`AerodynamicJump_Incline_NoSpuriousHorizontal`**: under incline + crosswind our `Windage` equals the
+   non-AJ windage (AJ contributes nothing horizontal) — or, if the reference shows an induced horizontal
+   jump, capture it and add it as a separate documented term.
+
+**Implementation change (conditional on §9.3):** if `cos` is confirmed, one line in
+`TrajectoryCalculator` — `aeroJumpAngleRad *= MeasurementMath.Cos(shot.ShotAngle ?? ZERO)` at precompute;
+if flat is confirmed, no code change and test #2 asserts `r ≈ 1`. Either way `SightAngle` stays AJ-free.
+
+### 9.5 Caveats
+- **Stay supersonic** (≤ ~1000 yd for this config): the 4DOF `VerticalWindJump` column is only clean while
+  supersonic.
+- **Pure 90° wind only.** An oblique wind under incline mixes head/tail components and is a separate study.
+- **Up/down** must both be captured — do not assume symmetry; verify it (test #3).
+
+---
+
+## 10. Sources
 - R. L. McCoy, *Modern Exterior Ballistics* (2nd ed.), pp. 267–272; BRL Report MR-3877 (1990) — rigorous
   crosswind-AJ formula (§3.1).
 - B. Litz, *Applied Ballistics for Long-Range Shooting*, **Equation 5.4** `Y = 0.01·SG − 0.0024·L + 0.032`

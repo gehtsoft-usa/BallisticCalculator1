@@ -202,7 +202,7 @@ namespace BallisticCalculator.Test.Calculator
         // from the template; `winds` overrides the scenario wind (defaults to the template's own);
         // `twistOverride` flips only the twist direction (reusing the template's step) for the
         // sign-under-test case.
-        private TrajectoryPoint[] RunSynth(TableLoader template, Wind[] winds = null, TwistDirection? twistOverride = null)
+        private static TrajectoryPoint[] RunSynth(TableLoader template, Wind[] winds = null, TwistDirection? twistOverride = null)
         {
             var cal = new TrajectoryCalculator();
             var (baseTable, knots) = LoadBcCurve("bc_eldx");

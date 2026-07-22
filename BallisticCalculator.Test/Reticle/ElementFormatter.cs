@@ -86,6 +86,50 @@ namespace BallisticCalculator.Test.Reticle
         }
 
         [Fact]
+        public void Rectangle_NullOptionals()
+        {
+            ReticleRectangle rectangle = new ReticleRectangle()
+            {
+                TopLeft = new ReticlePosition(1.2345, 6.789, AngularUnit.Mil),
+                Size = new ReticlePosition(5.4321, 9.876, AngularUnit.Mil),
+                LineWidth = null,
+                Color = null,
+                Fill = null,
+            };
+
+            rectangle.ToString().Should().Be("Rectangle(p=(1.2345mil:6.789mil),s=(5.4321mil:9.876mil),w=null,c=null,f=null)");
+        }
+
+        [Fact]
+        public void Line_NullOptionals()
+        {
+            ReticleLine line = new ReticleLine()
+            {
+                Start = new ReticlePosition(1.2345, 6.789, AngularUnit.Mil),
+                End = new ReticlePosition(5.4321, 9.876, AngularUnit.Mil),
+                LineWidth = null,
+                Color = null,
+            };
+
+            line.ToString().Should().Be("Line(s=(1.2345mil:6.789mil),e=(5.4321mil:9.876mil),w=null,c=null)");
+        }
+
+        [Fact]
+        public void Text_NullColor_WithAnchor()
+        {
+            ReticleText text = new ReticleText()
+            {
+                Position = new ReticlePosition(1.2345, 6.789, AngularUnit.Mil),
+                TextHeight = AngularUnit.Mil.New(1),
+                Color = null,
+                Text = "123",
+                Anchor = TextAnchor.Right,
+            };
+
+            text.ToString().Should().Be("Text(p=(1.2345mil:6.789mil),h=1mil,t=123,c=null,a=Right)");
+        }
+
+        [Fact]
         public void Move()
         {
             ReticlePathElementMoveTo m = new ReticlePathElementMoveTo()

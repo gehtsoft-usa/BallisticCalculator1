@@ -103,7 +103,7 @@ namespace BallisticCalculator.Reticle.Data
                         sb.Append(',');
                     sb.Append(Elements[i].ToString());
                 }
-                sb.Append("]");
+                sb.Append(']');
             }
             sb.Append(')');
             return sb.ToString();

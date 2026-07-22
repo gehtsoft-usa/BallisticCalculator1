@@ -317,7 +317,9 @@ namespace BallisticCalculator
             machInVelUnit = machMeasurement.In(velUnit);
 
             // Pre-compute drift constants
-            int driftDirection = calculateDrift ? (rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1) : 0;
+            int driftDirection = 0;
+            if (calculateDrift)
+                driftDirection = rifle.Rifling.Direction == TwistDirection.Right ? -1 : 1;
             double driftFactor = calculateDrift ? 1.25 * (stabilityCoefficient + 1.2) : 0;
             double inchToMeter = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Inch, DistanceUnit.Meter);
 
@@ -514,7 +516,6 @@ namespace BallisticCalculator
                 altMeters += dry;                                       // meters (shadow for threshold check)
 
                 velocityMag = Math.Sqrt(vx * vx + vy * vy + vz * vz);  // velUnit (reused at top of next iteration)
-                double drMag = Math.Sqrt(drx * drx + dry * dry + drz * drz);
                 timeSeconds += dt;
             }
 

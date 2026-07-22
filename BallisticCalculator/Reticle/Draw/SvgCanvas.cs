@@ -103,7 +103,7 @@ namespace BallisticCalculator.Reticle.Draw
         public void Clear()
         {
             document = new XmlDocument();
-            XmlNode root = document.CreateElement("svg");
+            XmlElement root = document.CreateElement("svg");
 
             AppendAttribute(root, "xmlns", "http://www.w3.org/2000/svg");
             AppendAttribute(root, "version", "1.1");
@@ -114,7 +114,7 @@ namespace BallisticCalculator.Reticle.Draw
 
             if (!string.IsNullOrEmpty(Title))
             {
-                XmlNode title = document.CreateElement("title");
+                XmlElement title = document.CreateElement("title");
                 title.AppendChild(document.CreateTextNode(Title));
                 root.AppendChild(title);
             }
@@ -209,7 +209,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="anchor"></param>
         public void Text(float x, float y, float height, string text, string color, TextAnchor anchor)
         {
-            XmlNode element = document.CreateElement("text");
+            XmlElement element = document.CreateElement("text");
             AppendAttribute(element, "x", x);
             AppendAttribute(element, "y", y);
             AppendAttribute(element, "font-family", "Verdana");

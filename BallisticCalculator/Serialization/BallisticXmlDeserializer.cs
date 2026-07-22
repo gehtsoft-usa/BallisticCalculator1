@@ -217,7 +217,7 @@ namespace BallisticCalculator.Serialization
                 throw new InvalidOperationException($"The value of the property {type.FullName}.{property.Name} is not found but the property is not optional");
         }
 
-        private bool ReadAttributeProperty(XmlElement element, Type type, BXmlPropertyAttribute propertyAttribute, string attributePrefix, PropertyInfo property, IReader reader)
+        private static bool ReadAttributeProperty(XmlElement element, Type type, BXmlPropertyAttribute propertyAttribute, string attributePrefix, PropertyInfo property, IReader reader)
         {
             object propertyValue = ReadAttribute(type, element, property.Name, property.PropertyType, propertyAttribute, attributePrefix);
             if (propertyValue != null)
@@ -321,14 +321,14 @@ namespace BallisticCalculator.Serialization
             if (reader.CanSet(property))
             {
                 if (property.PropertyType.IsArray)
-                    collection = collection.GetType().GetMethod("ToArray", new Type[] { }).Invoke(collection, Array.Empty<object>());
+                    collection = collection.GetType().GetMethod("ToArray", Array.Empty<Type>()).Invoke(collection, Array.Empty<object>());
                 reader.Set(property, collection);
             }
 
             return true;
         }
 
-        private object ReadCollectionProperty_InitializeCollection(PropertyInfo property, Type targetType, IReader reader)
+        private static object ReadCollectionProperty_InitializeCollection(PropertyInfo property, Type targetType, IReader reader)
         {
             object collection = null;
             if (reader.CanSet(property))
@@ -348,7 +348,7 @@ namespace BallisticCalculator.Serialization
             return collection;
         }
 
-        private Type GetReadTargetType(BXmlPropertyAttribute propertyAttribute, PropertyInfo property)
+        private static Type GetReadTargetType(BXmlPropertyAttribute propertyAttribute, PropertyInfo property)
         {
             Type targetType = null;
             if (propertyAttribute.Collection)
@@ -371,7 +371,7 @@ namespace BallisticCalculator.Serialization
             return targetType;
         }
 
-        private string ElementPath(XmlElement element)
+        private static string ElementPath(XmlElement element)
         {
             var path = new List<XmlElement>();
             while (element != null)
@@ -383,14 +383,14 @@ namespace BallisticCalculator.Serialization
             var builder = new StringBuilder();
             for (int i = path.Count - 1; i >= 0; i--)
             {
-                builder.Append("\\");
+                builder.Append('\\');
                 builder.Append(path[i].Name);
             }
 
             return builder.ToString();
         }
 
-        private XmlElement FindChildElement(XmlElement parent, string name)
+        private static XmlElement FindChildElement(XmlElement parent, string name)
         {
             foreach (XmlNode node in parent.ChildNodes)
             {
@@ -400,7 +400,7 @@ namespace BallisticCalculator.Serialization
             return null;
         }
 
-        private Type ScanTypesForElements(Type[] possibleTypes, string typeName)
+        private static Type ScanTypesForElements(Type[] possibleTypes, string typeName)
         {
             foreach (Type type in possibleTypes)
             {
@@ -540,7 +540,7 @@ namespace BallisticCalculator.Serialization
         /// <param name="propertyAttribute"></param>
         /// <param name="attributePrefix"></param>
         /// <returns></returns>
-        private object ReadAttribute(Type type, XmlElement element, string propertyName, Type propertyType, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
+        private static object ReadAttribute(Type type, XmlElement element, string propertyName, Type propertyType, BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {
             string name = GetAttributeName(propertyAttribute, attributePrefix);
             string propertyText = element.Attributes[name]?.Value;
@@ -558,7 +558,7 @@ namespace BallisticCalculator.Serialization
             throw new InvalidOperationException($"The type {propertyType.FullName} of the property {type.FullName}.{propertyName} is not supported");
         }
 
-        private string GetAttributeName(BXmlPropertyAttribute propertyAttribute, string attributePrefix)
+        private static string GetAttributeName(BXmlPropertyAttribute propertyAttribute, string attributePrefix)
         {
             if (string.IsNullOrEmpty(attributePrefix))
                 return propertyAttribute.Name;
@@ -679,8 +679,7 @@ namespace BallisticCalculator.Serialization
         /// <returns></returns>
         public static AmmunitionLibraryEntry ReadLegacyAmmunitionLibraryEntry(XmlElement legacyEntry)
         {
-            if (legacyEntry == null)
-                throw new ArgumentNullException(nameof(legacyEntry));
+            ArgumentNullException.ThrowIfNull(legacyEntry);
 
             var entry = new AmmunitionLibraryEntry()
             {

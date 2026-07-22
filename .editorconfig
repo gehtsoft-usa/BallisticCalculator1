@@ -29,3 +29,8 @@ dotnet_diagnostic.S4136.severity = none
 
 # S1206: "Equals(Object)" and "GetHashCode()" should be overridden in pairs
 dotnet_diagnostic.S1206.severity = none
+
+# CA1822: only suggest 'mark as static' for non-public members. Some public APIs
+# (e.g. BallisticXmlDeserializer's instance Deserialize/ReadFrom* methods) are
+# intentionally instance methods and cannot be made static without breaking callers.
+dotnet_code_quality.CA1822.api_surface = private, internal
