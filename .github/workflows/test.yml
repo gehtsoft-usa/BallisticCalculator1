@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       config: 'Release'
-      gs-nuget: https://proget.gehtsoft.com/nuget/public-nuget
+      gs_nuget: https://www.myget.org/F/gehtsoft-public/api
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.414
 
@@ -31,18 +31,13 @@ jobs:
     - name: Build
       run: dotnet build --configuration $config --no-restore
 
-    - name: set pr build number (if pr)
-      id: PRNUMBER
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: kkak10/pr-number-action@v1.3
-
       # set report file and title
     - name: Set Test Title
       run: |
             if ${{ github.event_name == 'pull_request' }}
             then
-              echo "title=Test Run for PR #${{steps.PRNUMBER.outputs.pr}} (${{github.run_number}})" >> $GITHUB_ENV
-              echo "file_name=TestReport.${{steps.PRNUMBER.outputs.pr}}.${{github.run_number}}.md" >> $GITHUB_ENV
+              echo "title=Test Run for PR #${{github.event.pull_request.number}} (${{github.run_number}})" >> $GITHUB_ENV
+              echo "file_name=TestReport.${{github.event.pull_request.number}}.${{github.run_number}}.md" >> $GITHUB_ENV
             else
               echo "title=Test Run ${{github.run_number}}" >> $GITHUB_ENV
               echo "file_name=TestReport.${{github.run_number}}.md" >> $GITHUB_ENV
@@ -54,7 +49,7 @@ jobs:
 
       # upload report as build artifact
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: ${{always()}}
       with:
         name: test-run-${{env.file_name}}
