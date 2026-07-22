@@ -17,9 +17,9 @@ jobs:
       gs_nuget: https://www.myget.org/F/gehtsoft-public/api
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 8.0.414
 
@@ -49,7 +49,7 @@ jobs:
 
       # upload report as build artifact
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: ${{always()}}
       with:
         name: test-run-${{env.file_name}}
