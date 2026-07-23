@@ -29,6 +29,13 @@ Changes made since porting original C sources:
 
 * Accuracy of the calculation is withing 0.05%/0.1moa (less than 1inch per 1000 yards) of the most modern calculators.
 
+* A midpoint (RK2) integrator and a set of analysis tools (maximum point-blank range / danger space,
+  moving-target lead, Monte-Carlo hit probability / WEZ, and a custom drag curve derived from radar
+  velocities) were added in 1.1.11, together with a new zeroing API (`CalculateZeroParameters`).
+
+**Upgrading?** 1.1.11 has breaking changes (zeroing, `BarrelAzimuth`, sight adjustments) — see
+[BREAKING_CHANGES.md](BREAKING_CHANGES.md) for what changed and how to migrate.
+
 Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)
 
 You can get the latest official release from [nuget.org](https://www.nuget.org/packages/BallisticCalculator)
