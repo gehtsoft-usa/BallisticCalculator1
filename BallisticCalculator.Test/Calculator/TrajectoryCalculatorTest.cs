@@ -30,7 +30,7 @@ namespace BallisticCalculator.Test.Calculator
 
             Atmosphere atmosphere = new Atmosphere();       //default atmosphere
 
-            var sightAngle1 = (new TrajectoryCalculator()).SightAngle(ammunition, rifle, atmosphere);
+            var sightAngle1 = (new TrajectoryCalculator()).CalculateZeroParameters(ammunition, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment;
             sightAngle1.In(sightAngleUnit).Should().BeApproximately(sightAngle, sightAngleAccuracy);
         }
 
@@ -56,7 +56,7 @@ namespace BallisticCalculator.Test.Calculator
 
             Atmosphere atmosphere = new Atmosphere();       //default atmosphere
 
-            var sightAngle1 = (new TrajectoryCalculator()).SightAngle(ammunition, rifle, atmosphere);
+            var sightAngle1 = (new TrajectoryCalculator()).CalculateZeroParameters(ammunition, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment;
             sightAngle1.In(AngularUnit.MOA).Should().BeApproximately(sightAngle, 5e-2);
         }
 
@@ -85,7 +85,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero).ZeroDropAdjustment,
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,
             };
@@ -141,7 +141,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(2000, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero).ZeroDropAdjustment,
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,
                 BarrelAzimuth = template.ShotParameters?.BarrelAzimuth,
@@ -191,7 +191,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = DistanceUnit.Yard.New(100),
                 MaximumDistance = DistanceUnit.Yard.New(1000),
-                SightAngle = cal.SightAngle(ammoFull, rifleFull, atmo),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(ammoFull, atmo, rifleFull, rifleFull.Zero).ZeroDropAdjustment,
             };
             var traj = cal.Calculate(ammoFull, rifleFull, atmo, shot);
 
@@ -212,7 +212,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = DistanceUnit.Yard.New(100),
                 MaximumDistance = DistanceUnit.Yard.New(1000),
-                SightAngle = cal.SightAngle(ammoBare, rifleBare, atmo),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(ammoBare, atmo, rifleBare, rifleBare.Zero).ZeroDropAdjustment,
             };
             var traj2 = cal.Calculate(ammoBare, rifleBare, atmo, shot2);
             traj2[traj2.Length - 1].GyroscopicStability.Should().BeNull();
@@ -234,7 +234,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere, table),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero, dragTable: table).ZeroDropAdjustment,
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,
             };
@@ -267,14 +267,14 @@ namespace BallisticCalculator.Test.Calculator
 
             var cal = new TrajectoryCalculator();
 
-            ((Action)(() => cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere)))
+            ((Action)(() => cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero)))
                 .Should().Throw<ArgumentNullException>();
 
             ShotParameters shot = new ShotParameters()
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
-                SightAngle = new Measurement<AngularUnit>(10, AngularUnit.MOA),
+                ZeroDropAdjustment = new Measurement<AngularUnit>(10, AngularUnit.MOA),
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,
             };
@@ -342,7 +342,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Meter),
                 MaximumDistance = new Measurement<DistanceUnit>(500, DistanceUnit.Meter),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere, table),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero, dragTable: table).ZeroDropAdjustment,
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,
             };
@@ -383,7 +383,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(100, DistanceUnit.Meter),
                 MaximumDistance = new Measurement<DistanceUnit>(1500, DistanceUnit.Meter),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere, table),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero, dragTable: table).ZeroDropAdjustment,
                 ShotAngle = template.ShotParameters?.ShotAngle,
                 CantAngle = template.ShotParameters?.CantAngle,
             };

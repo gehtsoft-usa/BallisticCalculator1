@@ -61,6 +61,9 @@ custom `DragTable` and `DrgDragTable.Open`); reference-template loading in `Tabl
 
 `CLAUDE/` holds **current plans and their working data** — not part of the shipped project.
 - `CLAUDE/PLAN0.md` — active plan (3DOF algorithm review vs the Hornady 4DOF reference set).
+- `CLAUDE/PLAN1.md` — candidate next round (2026-07-22 review): RK2 integrator + loop
+  extraction, transonic analysis, MPBR, BC truing, WEZ; incl. the measured proof that
+  `SightAngle` converges in 2–3 iterations and needs no optimization.
 - `CLAUDE/IDEAS.md` — feature backlog.
 - `CLAUDE/hornady/` — data for the current plan (Hornady 4DOF CSVs, `config.csv`, `DATA.md`).
 

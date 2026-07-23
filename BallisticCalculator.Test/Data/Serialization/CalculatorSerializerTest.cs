@@ -350,7 +350,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         {
             var shot = new ShotParameters()
             {
-                SightAngle = new Measurement<AngularUnit>(5.5, AngularUnit.MOA),
+                ZeroDropAdjustment = new Measurement<AngularUnit>(5.5, AngularUnit.MOA),
                 ShotAngle = new Measurement<AngularUnit>(10, AngularUnit.Degree),
                 CantAngle = new Measurement<AngularUnit>(3, AngularUnit.Degree),
                 BarrelAzimuth = new Measurement<AngularUnit>(90, AngularUnit.Degree),
@@ -364,7 +364,7 @@ namespace BallisticCalculator.Test.Data.Serialization
             var shot2 = serializer.Deserialize<ShotParameters>(xml);
 
             shot2.Should().NotBeNull();
-            shot2.SightAngle.Should().Be(shot.SightAngle);
+            shot2.ZeroDropAdjustment.Should().Be(shot.ZeroDropAdjustment);
             shot2.ShotAngle.Should().Be(shot.ShotAngle);
             shot2.CantAngle.Should().Be(shot.CantAngle);
             shot2.BarrelAzimuth.Should().Be(shot.BarrelAzimuth);
@@ -378,7 +378,7 @@ namespace BallisticCalculator.Test.Data.Serialization
         {
             var shot = new ShotParameters()
             {
-                SightAngle = new Measurement<AngularUnit>(5.5, AngularUnit.MOA),
+                ZeroDropAdjustment = new Measurement<AngularUnit>(5.5, AngularUnit.MOA),
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
             };
@@ -388,13 +388,43 @@ namespace BallisticCalculator.Test.Data.Serialization
             var shot2 = serializer.Deserialize<ShotParameters>(xml);
 
             shot2.Should().NotBeNull();
-            shot2.SightAngle.Should().Be(shot.SightAngle);
+            shot2.ZeroDropAdjustment.Should().Be(shot.ZeroDropAdjustment);
             shot2.ShotAngle.Should().BeNull();
             shot2.CantAngle.Should().BeNull();
             shot2.BarrelAzimuth.Should().BeNull();
             shot2.Latitude.Should().BeNull();
             shot2.Step.Should().Be(shot.Step);
             shot2.MaximumDistance.Should().Be(shot.MaximumDistance);
+        }
+
+        [Fact]
+        public void Roundtrip_ZeroCalculatedParameters()
+        {
+            var zero = new ZeroCalculatedParameters(
+                new Measurement<AngularUnit>(6.5, AngularUnit.MOA),
+                new Measurement<AngularUnit>(-1.25, AngularUnit.MOA));
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(zero);
+            var zero2 = serializer.Deserialize<ZeroCalculatedParameters>(xml);
+
+            zero2.Should().NotBeNull();
+            zero2.ZeroDropAdjustment.Should().Be(zero.ZeroDropAdjustment);
+            zero2.ZeroWindageAdjustment.Should().Be(zero.ZeroWindageAdjustment);
+        }
+
+        [Fact]
+        public void Roundtrip_ZeroCalculatedParameters_NullWindage()
+        {
+            var zero = new ZeroCalculatedParameters(new Measurement<AngularUnit>(5.5, AngularUnit.MOA));
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var xml = serializer.Serialize(zero);
+            var zero2 = serializer.Deserialize<ZeroCalculatedParameters>(xml);
+
+            zero2.Should().NotBeNull();
+            zero2.ZeroDropAdjustment.Should().Be(zero.ZeroDropAdjustment);
+            zero2.ZeroWindageAdjustment.Should().BeNull();
         }
 
         [Fact]

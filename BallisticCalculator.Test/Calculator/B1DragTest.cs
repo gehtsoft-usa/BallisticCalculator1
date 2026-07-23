@@ -45,7 +45,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(maxYd, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere, table),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero, dragTable: table).ZeroDropAdjustment,
             };
             var traj = cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot, winds, table);
 
@@ -73,7 +73,7 @@ namespace BallisticCalculator.Test.Calculator
                 {
                     Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                     MaximumDistance = new Measurement<DistanceUnit>(maxYd, DistanceUnit.Yard),
-                    SightAngle = cal.SightAngle(control.Ammunition, control.Rifle, control.Atmosphere),
+                    ZeroDropAdjustment = cal.CalculateZeroParameters(control.Ammunition, control.Atmosphere, control.Rifle, control.Rifle.Zero).ZeroDropAdjustment,
                 };
                 var ctrl = cal.Calculate(control.Ammunition, control.Rifle, control.Atmosphere, cshot, winds);
                 double maxCtrlDropMOA = 0;
@@ -220,7 +220,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(maxYd, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(template.Ammunition, rifle, template.Atmosphere, table),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment,
             };
             winds ??= template.Wind == null ? null : new[] { template.Wind };
             return cal.Calculate(template.Ammunition, rifle, template.Atmosphere, shot, winds, table);

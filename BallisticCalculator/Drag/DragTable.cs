@@ -7,15 +7,19 @@ namespace BallisticCalculator
     /// </summary>
     public abstract class DragTable
     {
-        private static DragTable gG1;
-        private static DragTable gG2;
-        private static DragTable gG5;
-        private static DragTable gG6;
-        private static DragTable gG7;
-        private static DragTable gG8;
-        private static DragTable gGI;
-        private static DragTable gGS;
-        private static DragTable gRA4;
+        // Standard drag tables are immutable once built (the node graph is constructed in the ctor
+        // and never mutated), so they are cached as process-wide singletons. Lazy<T> gives
+        // thread-safe one-time initialization with lock-free reads afterwards, so Get is safe to
+        // call concurrently (see the thread-safety note on TrajectoryCalculator).
+        private static readonly Lazy<DragTable> gG1 = new Lazy<DragTable>(() => new G1DragTable());
+        private static readonly Lazy<DragTable> gG2 = new Lazy<DragTable>(() => new G2DragTable());
+        private static readonly Lazy<DragTable> gG5 = new Lazy<DragTable>(() => new G5DragTable());
+        private static readonly Lazy<DragTable> gG6 = new Lazy<DragTable>(() => new G6DragTable());
+        private static readonly Lazy<DragTable> gG7 = new Lazy<DragTable>(() => new G7DragTable());
+        private static readonly Lazy<DragTable> gG8 = new Lazy<DragTable>(() => new G8DragTable());
+        private static readonly Lazy<DragTable> gGI = new Lazy<DragTable>(() => new GIDragTable());
+        private static readonly Lazy<DragTable> gGS = new Lazy<DragTable>(() => new GSDragTable());
+        private static readonly Lazy<DragTable> gRA4 = new Lazy<DragTable>(() => new RA4DragTable());
 
         /// <summary>
         /// Returns the drag table by its identifier
@@ -26,18 +30,16 @@ namespace BallisticCalculator
         {
             return id switch
             {
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
-                DragTableId.G1 => gG1 ??= new G1DragTable(),
-                DragTableId.G2 => gG2 ??= new G2DragTable(),
-                DragTableId.G5 => gG5 ??= new G5DragTable(),
-                DragTableId.G6 => gG6 ??= new G6DragTable(),
-                DragTableId.G7 => gG7 ??= new G7DragTable(),
-                DragTableId.G8 => gG8 ??= new G8DragTable(),
-                DragTableId.GI => gGI ??= new GIDragTable(),
-                DragTableId.GS => gGS ??= new GSDragTable(),
-                DragTableId.RA4 => gRA4 ??= new RA4DragTable(),
+                DragTableId.G1 => gG1.Value,
+                DragTableId.G2 => gG2.Value,
+                DragTableId.G5 => gG5.Value,
+                DragTableId.G6 => gG6.Value,
+                DragTableId.G7 => gG7.Value,
+                DragTableId.G8 => gG8.Value,
+                DragTableId.GI => gGI.Value,
+                DragTableId.GS => gGS.Value,
+                DragTableId.RA4 => gRA4.Value,
                 DragTableId.GC => throw new ArgumentException("Pass custom drag table directly to the target method", nameof(id)),
-#pragma warning restore S1121 // Assignments should not be made from within sub-expressions
                 _ => throw new ArgumentOutOfRangeException(nameof(id)),
             };
         }

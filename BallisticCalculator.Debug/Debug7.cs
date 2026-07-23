@@ -38,7 +38,7 @@ namespace BallisticCalculator.Debug
 
             var calc = new TrajectoryCalculator();
 
-            var angle = calc.SightAngle(ammo, rifle, atmo);
+            var angle = calc.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero).ZeroDropAdjustment;
 
             Console.WriteLine("Sight Angle {0}", angle.To(AngularUnit.MOA).ToString());
         }

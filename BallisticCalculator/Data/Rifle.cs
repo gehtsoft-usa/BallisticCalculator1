@@ -26,8 +26,8 @@ namespace BallisticCalculator
         /// <summary>
         /// <para>Zeroing parameters</para>
         /// <para>
-        /// These parameters are used only to calculate sight angle by
-        /// <see cref="BallisticCalculator.TrajectoryCalculator.SightAngle(BallisticCalculator.Ammunition,BallisticCalculator.Rifle,BallisticCalculator.Atmosphere,BallisticCalculator.DragTable,System.Nullable{Gehtsoft.Measurements.Measurement{Gehtsoft.Measurements.DistanceUnit}})">TrajectoryCaculator.SightAngle</see> method.
+        /// These parameters are used to calculate the zeroing adjustments by
+        /// [clink=BallisticCalculator.TrajectoryCalculator.CalculateZeroParameters.KD8]TrajectoryCalculator.CalculateZeroParameters[/clink].
         /// </para>
         /// </summary>
         [BXmlProperty(ChildElement = true)]

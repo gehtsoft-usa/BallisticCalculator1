@@ -110,7 +110,7 @@ namespace BallisticCalculator.Debug
                 MaximumDistance = new Measurement<DistanceUnit>(2000, DistanceUnit.Meter),
                 Step = new Measurement<DistanceUnit>(100, DistanceUnit.Meter),
                 //calculate sight angle for the specified zero distance
-                SightAngle = calc.SightAngle(ammo, rifle, atmosphere, id == DragTableId.GC ? dragTable : null)
+                ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: id == DragTableId.GC ? dragTable : null).ZeroDropAdjustment
             };
 
             //calculate trajectory

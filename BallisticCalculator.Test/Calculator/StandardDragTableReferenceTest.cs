@@ -123,7 +123,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(reference.Points[^1].RangeYd, DistanceUnit.Yard),
-                SightAngle = cal.SightAngle(ammo, rifle, atmo),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero).ZeroDropAdjustment,
             };
 
             var trajectory = cal.Calculate(ammo, rifle, atmo, shot);

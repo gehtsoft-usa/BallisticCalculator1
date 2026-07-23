@@ -14,6 +14,7 @@
     * [link=guide.atmosphere]Atmosphere, wind, and drift[/link]
     * [link=guide.customdrag]Custom drag: GC and .drg tables[/link]
     * [link=guide.multibc]Multi-BC drag tables[/link]
+    * [link=guide.hitprob]Hit probability on a target[/link]
 @end
 
 @article
@@ -67,7 +68,7 @@
        !{
        !    MaximumDistance = new Measurement<DistanceUnit>(600, DistanceUnit.Yard),
        !    Step = new Measurement<DistanceUnit>(200, DistanceUnit.Yard),
-       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+       !    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment,
        !};
        !
        !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot))
@@ -96,10 +97,11 @@
     an [clink=BallisticCalculator.Atmosphere]Atmosphere[/clink]. The default atmosphere is
     a reasonable sea-level standard.
 
-    Compute the sight angle for the zero range with
-    [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].SightAngle,
-    put it on the [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink], and call
-    Calculate.
+    Compute the zeroing adjustments for the zero range with
+    [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].CalculateZeroParameters,
+    put the [c]ZeroDropAdjustment[/c] on the
+    [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink] (or apply the whole result,
+    including windage, with its Apply method), and call Calculate.
 
     @example
         @title=A bare trajectory
@@ -122,7 +124,7 @@
        !{
        !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
        !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
-       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+       !    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment,
        !};
        !
        !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot))
@@ -209,7 +211,7 @@
        !{
        !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
        !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
-       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere),
+       !    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment,
        !};
        !
        !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, wind))
@@ -237,8 +239,8 @@
     @brief=Use a measured or custom drag curve instead of a standard G-table.
 
     When a standard G1/G7 curve does not describe a bullet well, supply your own drag curve.
-    A custom curve uses the [c]GC[/c] table id and is passed directly to both SightAngle and
-    Calculate.
+    A custom curve uses the [c]GC[/c] table id and is passed directly to both the zeroing
+    calculation and Calculate.
 
     ## A custom drag table in code
 
@@ -283,7 +285,7 @@
        !{
        !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
        !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
-       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table),
+       !    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment,
        !};
        !
        !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, null, table))
@@ -306,7 +308,7 @@
 
     A measured Doppler-radar curve is usually distributed as a [c].drg[/c] file. Load it with
     [clink=BallisticCalculator.DrgDragTable]DrgDragTable[/clink].Open and use it exactly like
-    the custom table above (pass it to SightAngle and Calculate):
+    the custom table above (pass it to CalculateZeroParameters and Calculate):
 
     @example
         @title=Loading a .drg file
@@ -375,7 +377,7 @@
        !{
        !    MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
        !    Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
-       !    SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table),
+       !    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment,
        !};
        !
        !foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, null, table))
@@ -394,4 +396,99 @@
     | 600 | -93.6 | -94.6 |
     | 800 | -195.8 | -199.3 |
     | 1,000 | -351.7 | -361.0 |
+@end
+
+@article
+    @key=guide.hitprob
+    @title=Hit probability on a target
+    @ingroup=guide
+    @brief=Monte Carlo over the shooter's error budget, plotted on the target.
+
+    [clink=BallisticCalculator.Tools.HitProbability]HitProbability[/clink] (in the
+    [c]BallisticCalculator.Tools[/c] namespace) answers a practical question: given my rifle,
+    my ammunition, and how well I can read the range and wind, how often do I hit? It runs a
+    Monte Carlo over five error sources - muzzle velocity spread, the shooter's group, range
+    estimation, wind estimation, and (through them) the trajectory itself - and returns the
+    simulated impacts, the single-shot hit probability, and the number of shots needed for a
+    given confidence.
+
+    ## Group size
+
+    [c]GroupSize[/c] is the per-axis standard deviation of the shooter's aim. Give it your best
+    group of up to about ten shots from a fully supported position - that is close to a
+    **one-standard-deviation** group. As capability tiers, **4 MOA** is an ordinary shooter and
+    rifle and **1 MOA** is a precision setup. The **extreme spread** of a large group runs about
+    four times larger, so the 4 MOA group used below produces a cloud spanning roughly 16 MOA
+    edge to edge. A shooting position widens that supported group per axis through
+    [c]HorizontalPositionMultiplier[/c] and [c]VerticalPositionMultiplier[/c] (roughly prone 2,
+    kneeling 3 to 4, standing 4 to 5); the example below is fired from full support.
+
+    @example
+        @title=A .223 at 300 yards, 4 MOA group, 20-inch target
+        @highlight=cs
+        @show=yes
+       !// using BallisticCalculator.Tools;
+       !var ammo = new Ammunition(
+       !    weight: new Measurement<WeightUnit>(55, WeightUnit.Grain),
+       !    ballisticCoefficient: new BallisticCoefficient(0.243, DragTableId.G1),
+       !    muzzleVelocity: new Measurement<VelocityUnit>(3200, VelocityUnit.FeetPerSecond),
+       !    bulletDiameter: new Measurement<DistanceUnit>(0.224, DistanceUnit.Inch),
+       !    bulletLength: new Measurement<DistanceUnit>(0.75, DistanceUnit.Inch));
+       !
+       !var rifle = new Rifle(
+       !    sight: new Sight(new Measurement<DistanceUnit>(2.6, DistanceUnit.Inch),
+       !                     Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+       !    zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null),
+       !    rifling: new Rifling(new Measurement<DistanceUnit>(8, DistanceUnit.Inch), TwistDirection.Right));
+       !
+       !var atmosphere = new Atmosphere();
+       !var calc = new TrajectoryCalculator();
+       !
+       !var shot = new ShotParameters
+       !{
+       !    Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+       !    MaximumDistance = new Measurement<DistanceUnit>(300, DistanceUnit.Yard),   // the target range
+       !    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment,
+       !};
+       !var wind = new[]
+       !{
+       !    new Wind(new Measurement<VelocityUnit>(10, VelocityUnit.MilesPerHour),
+       !             new Measurement<AngularUnit>(90, AngularUnit.Degree)),
+       !};
+       !
+       !var parameters = new HitProbabilityParameters
+       !{
+       !    TargetSize = new Measurement<DistanceUnit>(20, DistanceUnit.Inch),
+       !    MuzzleVelocityDeviationPercent = 5,    // 5% muzzle velocity standard deviation
+       !    GroupSize = new Measurement<AngularUnit>(4, AngularUnit.MOA),   // 4 MOA 1-sigma group (ordinary shooter/rifle)
+       !    DistanceErrorPercent = 10,             // 10% range estimation error
+       !    WindErrorPercent = 10,                 // 10% wind estimation error
+       !    Shots = 500,
+       !    Seed = 20250723,                       // fixed for a reproducible cloud
+       !};
+       !
+       !var result = HitProbability.Estimate(calc, ammo, atmosphere, rifle, shot, wind, parameters);
+       !
+       !Console.WriteLine($"Hit probability: {result.HitProbability:P1}");
+       !Console.WriteLine($"Shots for 95%:   {result.ShotsFor95Percent}");
+       !foreach (var s in result.Shots)   // each impact is relative to the point of aim
+       !    Plot(s.Horizontal.In(DistanceUnit.Inch), s.Vertical.In(DistanceUnit.Inch));
+    @end
+
+    Plotting the 500 impacts on the target (green inside the 20-inch zone, red outside):
+
+    [img=hitprob-223-300yd.svg]
+
+    The 4 MOA group dominates the spread, so the cloud is large and roughly round, with a slight
+    vertical stretch added by the range and muzzle-velocity errors. Most shots fall outside the
+    20-inch zone. The results:
+
+    |!, Result | Value |
+    | Single-shot hit probability | 20.8% |
+    | Shots for 50% / 75% / 90% | 3 / 6 / 10 |
+    | Shots for 95% / 98% | 13 / 17 |
+
+    A hit is scored inside a circular zone of the given [c]TargetSize[/c] (diameter). The
+    [c]ShotsForNN[/c] values come from the single-shot probability [c]p[/c] as the smallest
+    [c]n[/c] with [c]1 - (1-p)^n[/c] at least the target confidence.
 @end

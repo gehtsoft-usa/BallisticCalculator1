@@ -7,15 +7,46 @@ using System.Text;
 namespace BallisticCalculator
 {
     /// <summary>
-    /// The calculator for the projectile trajectory
+    /// Numerical integration scheme used when calculating a trajectory.
+    /// </summary>
+    public enum IntegrationMethod
+    {
+        /// <summary>Semi-implicit (symplectic) Euler, the original scheme.</summary>
+        Euler,
+        /// <summary>Midpoint (second-order Runge-Kutta): two drag evaluations per step, supporting a coarser step.</summary>
+        MidpointRK2,
+    }
+
+    /// <summary>
+    /// <para>The calculator for the projectile trajectory.</para>
+    /// <para>Thread safety: a single instance is safe for concurrent use from multiple threads,
+    /// provided its configuration ([clink=BallisticCalculator.TrajectoryCalculator.Integrator.5vC]Integrator[/clink]
+    /// and [clink=BallisticCalculator.TrajectoryCalculator.MaximumCalculationStepSize.fdE]MaximumCalculationStepSize[/clink])
+    /// is not changed while calculations are running. Configure the instance once, then share it:
+    /// the calculation methods keep no per-call state on the instance, all inputs are treated as
+    /// read-only, and the standard drag tables are cached as thread-safe singletons. To vary the
+    /// configuration per thread, use a separate instance per thread instead.</para>
     /// </summary>
     public class TrajectoryCalculator
     {
         /// <summary>
         /// <para>The maximum step size of the calculation.</para>
-        /// <para>The default value is 10cm</para>
+        /// <para>The default value is 1 m. Paired with the default midpoint integrator this runs about
+        /// ten times coarser than the historical 10 cm Euler cap at equal accuracy. Set
+        /// [clink=BallisticCalculator.TrajectoryCalculator.Integrator.5vC]Integrator[/clink] to
+        /// [clink=BallisticCalculator.IntegrationMethod.Euler.75B]Euler[/clink] if you lower this for a fine Euler run.</para>
         /// </summary>
-        public Measurement<DistanceUnit> MaximumCalculationStepSize { get; set; } = new Measurement<DistanceUnit>(0.1, DistanceUnit.Meter);
+        public Measurement<DistanceUnit> MaximumCalculationStepSize { get; set; } = new Measurement<DistanceUnit>(1.0, DistanceUnit.Meter);
+
+        /// <summary>
+        /// <para>Integration scheme used when calculating a trajectory, and by the zeroing solve that drives it.</para>
+        /// <para>Defaults to [clink=BallisticCalculator.IntegrationMethod.MidpointRK2.6S7]MidpointRK2[/clink]:
+        /// two drag evaluations per step buy second-order accuracy, so the step can be about ten times
+        /// coarser for a net speedup at equal accuracy. Use
+        /// [clink=BallisticCalculator.IntegrationMethod.Euler.75B]Euler[/clink] for the historical
+        /// semi-implicit scheme.</para>
+        /// </summary>
+        public IntegrationMethod Integrator { get; set; } = IntegrationMethod.MidpointRK2;
 
         /// <summary>
         /// The maximum drop value to stop further calculation
@@ -28,9 +59,17 @@ namespace BallisticCalculator
         public static Measurement<VelocityUnit> MinimumVelocity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new Measurement<VelocityUnit>(50, VelocityUnit.FeetPerSecond);
 
         /// <summary>
-        /// PIR = (PI/8)*(RHO0/144)
+        /// PIR = (PI/8)*(RHO0/144). Internal so drag-model tools (radar curve derivation) can invert the same drag law.
         /// </summary>
-        private const double PIR = 2.08551e-04;
+        internal const double PIR = 2.08551e-04;
+
+        /// <summary>
+        /// Line-of-sight tolerance (m) for emitting an output row: a step is shortened to land on
+        /// the requested range, and this lets the row emit when it lands a hair short (velocity
+        /// decay within the shortened step). 1 mm — far below any output tolerance, negligible at
+        /// the fine step the historical engine used.
+        /// </summary>
+        private const double RangeEmitEpsilonMeters = 1e-3;
 
         private static DragTable ValidateDragTable(Ammunition ammunition, DragTable dragTable)
         {
@@ -48,144 +87,90 @@ namespace BallisticCalculator
         //sonar: disable cognitive complexity warning. the suggested simplification will affect performance
         #pragma warning disable S3776
         /// <summary>
-        /// Calculates the sight angle for the specified zero distance
+        /// <para>Calculates the vertical and horizontal barrel adjustments that zero the rifle at the zero distance.</para>
+        /// <para>The impact is placed on the aim point, offset by the zeroing [c]VerticalOffset[/c] and
+        /// [c]HorizontalOffset[/c] when set. This drives the full
+        /// [clink=BallisticCalculator.TrajectoryCalculator.Calculate.LP7]Calculate[/clink] trajectory, so spin
+        /// drift, Coriolis and aerodynamic jump are all accounted for in the zero.</para>
+        /// <para>Wind is optional: pass [c]wind[/c] to zero under a known condition, folding in its deflection
+        /// and crosswind aerodynamic jump, or omit it to zero in calm air. The optional [c]shot[/c] contributes
+        /// only its shot angle, azimuth and latitude.</para>
         /// </summary>
-        /// <param name="ammunition">The ammunition used to zero</param>
-        /// <param name="rifle">The rifle zeroed</param>
-        /// <param name="atmosphere">The atmosphere of the time of zeroing</param>
-        /// <param name="dragTable">Custom dragTable (is DragTableId.GC is used)</param>
-        /// <param name="accuracy">Accuracy of calculation. Default accuracy is 0.1mm</param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException">Exception is thrown in case zeroing parameters cannot be found. Try to lower accuracy if you get this exception</exception>"
-        public Measurement<AngularUnit> SightAngle(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, DragTable dragTable = null, Measurement<DistanceUnit>? accuracy = null)
+        /// <param name="ammunition">Ammunition (overridden by the zeroing ammunition when set).</param>
+        /// <param name="atmosphere">Atmosphere (overridden by the zeroing atmosphere when set).</param>
+        /// <param name="rifle">The rifle (sight height and rifling).</param>
+        /// <param name="zero">The zeroing parameters (distance and impact offsets).</param>
+        /// <param name="shot">Optional shot parameters; only the shot angle, azimuth and latitude are used.</param>
+        /// <param name="wind">Optional wind at zeroing; when not set, zeroing is done in calm air.</param>
+        /// <param name="dragTable">Custom drag table (required when the ballistic coefficient table is GC).</param>
+        /// <param name="accuracy">Solve accuracy; default 0.1 mm.</param>
+        /// <returns>The calculated zeroing adjustments, ready for the shot's [clink=BallisticCalculator.ShotParameters.Apply.JkC]Apply[/clink] method.</returns>
+        /// <exception cref="InvalidOperationException">The projectile cannot reach the zero distance, or the solve did not converge.</exception>
+        public ZeroCalculatedParameters CalculateZeroParameters(Ammunition ammunition, Atmosphere atmosphere, Rifle rifle, ZeroingParameters zero, ShotParameters shot = null, Wind[] wind = null, DragTable dragTable = null, Measurement<DistanceUnit>? accuracy = null)
         {
-            Measurement<DistanceUnit> rangeTo = rifle.Zero.Distance * 2;
-            Measurement<DistanceUnit> step = rifle.Zero.Distance / 100;
-            Measurement<DistanceUnit> calculationStep = GetCalculationStep(step);
-            accuracy ??= new Measurement<DistanceUnit>(0.1, DistanceUnit.Millimeter);
+            ArgumentNullException.ThrowIfNull(ammunition);
+            ArgumentNullException.ThrowIfNull(rifle);
+            ArgumentNullException.ThrowIfNull(zero);
 
-            dragTable = ValidateDragTable(ammunition, dragTable);
+            var zeroAmmunition = zero.Ammunition ?? ammunition;
+            var zeroAtmosphere = zero.Atmosphere ?? atmosphere ?? new Atmosphere();
+            double accuracyMillimeters = (accuracy ?? new Measurement<DistanceUnit>(0.1, DistanceUnit.Millimeter)).In(DistanceUnit.Millimeter);
 
-            if (rifle.Zero.Atmosphere != null)
-                atmosphere = rifle.Zero.Atmosphere;
+            var verticalTarget = zero.VerticalOffset ?? Measurement<DistanceUnit>.ZERO;
+            var horizontalTarget = zero.HorizontalOffset ?? Measurement<DistanceUnit>.ZERO;
+            double zeroDistanceMeters = zero.Distance.In(DistanceUnit.Meter);
 
-            atmosphere ??= new Atmosphere();
+            // Single output row exactly at the zero distance (the range clamp lands it there).
+            var solveShot = new ShotParameters
+            {
+                Step = zero.Distance,
+                MaximumDistance = zero.Distance,
+                ZeroDropAdjustment = Measurement<AngularUnit>.ZERO,
+                ShotAngle = shot?.ShotAngle,
+                BarrelAzimuth = shot?.BarrelAzimuth,
+                Latitude = shot?.Latitude,
+            };
 
-            if (rifle.Zero.Ammunition != null)
-                ammunition = rifle.Zero.Ammunition;
-
-            // Pre-compute all conversion factors outside the approximation loop
-            VelocityUnit velUnit = ammunition.MuzzleVelocity.Unit;
-            double vel0 = ammunition.MuzzleVelocity.Value;                      // velUnit
-            double sightHeightMeters = rifle.Sight.SightHeight.In(DistanceUnit.Meter);
-            double calcStepMeters = calculationStep.In(DistanceUnit.Meter);
-            double maximumRangeMeters = rangeTo.In(DistanceUnit.Meter);
-            double zeroDistanceMeters = rifle.Zero.Distance.In(DistanceUnit.Meter);
-            double verticalOffsetMeters = ((rifle.Zero.VerticalOffset) ?? Measurement<DistanceUnit>.ZERO).In(DistanceUnit.Meter);
-            double accuracyMillimeters = accuracy.Value.In(DistanceUnit.Millimeter);
-
-            double maximumDropMeters = MaximumDrop.In(DistanceUnit.Meter);
-            double minimumVelocity = MinimumVelocity.In(velUnit);
-
-            // velUnit->m/s divisor: use division (not multiply by reciprocal) to match
-            // Measurement<T>.In(MPS) which internally divides by this constant
-            double mpsToVel = Measurement<VelocityUnit>.Convert(1, VelocityUnit.MetersPerSecond, velUnit);
-
-            // Altitude tracked in native unit for FP accuracy
-            DistanceUnit altUnit = atmosphere.Altitude.Unit;
-            double alt0Value = atmosphere.Altitude.Value;                        // altUnit
-            double meterToAltUnit = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, altUnit);
-            double alt0Meters = atmosphere.Altitude.In(DistanceUnit.Meter);
-
-            // Drag factor
-            double adjustToFps = Measurement<VelocityUnit>.Convert(1, velUnit, VelocityUnit.FeetPerSecond);
-            double ballisticFactor = 1.0 / ammunition.GetBallisticCoefficient();
-            double accumulatedFactor = PIR * adjustToFps * ballisticFactor;
-
-            // Gravity in velUnit per second
-            double earthGravity = Measurement<VelocityUnit>.Convert(
-                Measurement<AccelerationUnit>.Convert(1, AccelerationUnit.EarthGravity, AccelerationUnit.MeterPerSecondSquare),
-                VelocityUnit.MetersPerSecond, velUnit);
-
-            // Conversion: meters -> millimeters for accuracy check
-            double meterToMm = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, DistanceUnit.Millimeter);
-            // Conversion: meters -> centimeters for angle adjustment
-            double meterToCm = Measurement<DistanceUnit>.Convert(1, DistanceUnit.Meter, DistanceUnit.Centimeter);
-
-            var sightAngle = new Measurement<AngularUnit>(150, AngularUnit.MOA);
+            var dropAdjustment = Measurement<AngularUnit>.ZERO;
+            Measurement<AngularUnit>? windageAdjustment = null;   // stays null when there is no horizontal effect to correct
 
             for (int approximation = 0; approximation < 100; approximation++)
             {
-                double barrelElevCos = sightAngle.Cos();
-                double barrelElevSin = sightAngle.Sin();
+                solveShot.ZeroDropAdjustment = dropAdjustment;
+                solveShot.ZeroWindageAdjustment = windageAdjustment;
 
-                // Velocity vector in velUnit; barrelAzimuth=0 so cos=1, sin=0, vz=0
-                double vx = vel0 * barrelElevCos;
-                double vy = vel0 * barrelElevSin;
+                // Full trajectory — spin drift, Coriolis, wind deflection and aero jump are applied by Calculate.
+                var trajectory = Calculate(zeroAmmunition, rifle, zeroAtmosphere, solveShot, wind, dragTable);
 
-                // Range vector in meters
-                double rx = 0, ry = -sightHeightMeters;
-
-                // Altitude tracking
-                double altValue = alt0Value;                                     // altUnit
-                double altMeters = alt0Meters;                                   // meters (shadow for threshold)
-                double lastAtAltMeters = -1e9;
-
-                double densityFactor = 0;
-                double machInVelUnit = 0;
-                DragTableNode dragTableNode = null;
-
-                while (rx <= maximumRangeMeters)
+                TrajectoryPoint impact = null;
+                for (int k = trajectory.Length - 1; k >= 0; k--)
                 {
-                    if (Math.Abs(altMeters - lastAtAltMeters) > 1.0)
+                    if (trajectory[k] != null)
                     {
-                        atmosphere.AtAltitude(new Measurement<DistanceUnit>(altValue, altUnit), out densityFactor, out Measurement<VelocityUnit> machMeasurement);
-                        machInVelUnit = machMeasurement.In(velUnit);
-                        lastAtAltMeters = altMeters;
-                    }
-
-                    double velocityMag = Math.Sqrt(vx * vx + vy * vy);
-                    if (velocityMag < minimumVelocity || ry < -maximumDropMeters)
-                        break;
-
-                    // dt must go through TimeSpan for tick-precision truncation
-                    double dt = TimeSpan.FromSeconds(calcStepMeters / (vx / mpsToVel)).TotalSeconds;
-
-                    double currentMach = velocityMag / machInVelUnit;
-
-                    dragTableNode ??= dragTable.Find(currentMach);
-
-                    while (dragTableNode.Mach > currentMach)
-                        dragTableNode = dragTableNode.Previous;
-                    while (dragTableNode.Next != null && dragTableNode.Next.Mach <= currentMach)
-                        dragTableNode = dragTableNode.Next;
-
-                    double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityMag;
-                    double factor = dt * drag;
-
-                    vx = vx - factor * vx;
-                    vy = vy - factor * vy - earthGravity * dt;
-
-                    double drx = vx / mpsToVel * dt;                            // meters
-                    double dry = vy / mpsToVel * dt;                            // meters
-
-                    rx += drx;
-                    ry += dry;
-
-                    altValue += dry * meterToAltUnit;                            // altUnit
-                    altMeters += dry;                                            // meters
-
-                    if (rx >= zeroDistanceMeters)
-                    {
-                        double matchMeters = ry - verticalOffsetMeters;
-                        if (Math.Abs(matchMeters * meterToMm) < accuracyMillimeters)
-                            return sightAngle;
-
-                        sightAngle += new Measurement<AngularUnit>(-matchMeters * meterToCm / zeroDistanceMeters * 100, AngularUnit.CmPer100Meters);
+                        impact = trajectory[k];
                         break;
                     }
                 }
+                if (impact == null || impact.Distance.In(DistanceUnit.Meter) < zeroDistanceMeters - 0.01)
+                    throw new InvalidOperationException("The projectile cannot reach the zero distance");
+
+                // Miss at the zero distance: +vertical ⇒ impact below target ⇒ raise; +horizontal ⇒
+                // impact right of target (windage is left +) ⇒ tilt left. Newton step: the linear miss
+                // over the zero distance is (to first order) the exact angular correction.
+                var verticalMiss = verticalTarget - impact.Drop;
+                var horizontalMiss = horizontalTarget - impact.Windage;
+
+                bool verticalOk = verticalMiss.Abs().In(DistanceUnit.Millimeter) < accuracyMillimeters;
+                bool horizontalOk = horizontalMiss.Abs().In(DistanceUnit.Millimeter) < accuracyMillimeters;
+                if (verticalOk && horizontalOk)
+                    return new ZeroCalculatedParameters(dropAdjustment, windageAdjustment);
+
+                if (!verticalOk)
+                    dropAdjustment += BallisticMath.CalculateAdjustment(verticalMiss, zero.Distance);
+                if (!horizontalOk)
+                    windageAdjustment = (windageAdjustment ?? Measurement<AngularUnit>.ZERO) + BallisticMath.CalculateAdjustment(horizontalMiss, zero.Distance);
             }
+
             throw new InvalidOperationException("Cannot find zero parameters");
         }
 
@@ -224,10 +209,24 @@ namespace BallisticCalculator
             TrajectoryPoint[] trajectoryPoints = new TrajectoryPoint[(int)(Math.Floor(rangeTo / step)) + 1];
 
             var barrelAzimuth = shot.BarrelAzimuth ?? new Measurement<AngularUnit>(0.0, AngularUnit.Radian);
-            var barrelElevation = shot.SightAngle;
+
+            // Accumulate the dialed sight settings into the initial barrel orientation.
+            // Vertical: zero elevation + per-shot elevation clicks + line-of-sight incline.
+            var barrelElevation = shot.ZeroDropAdjustment;
+            if (shot.ShotDropAdjustment != null)
+                barrelElevation += shot.ShotDropAdjustment.Value;
             bool hasShotAngle = shot.ShotAngle != null;
             if (hasShotAngle)
                 barrelElevation += shot.ShotAngle.Value;
+
+            // Horizontal: zero windage + per-shot windage clicks. Positive tilts the barrel left
+            // (seeds +vz below), producing positive (left) Windage — so a +N windage adjustment
+            // cancels a −N (right) drift, mirroring how the vertical elevation cancels drop.
+            // Zero/absent ⇒ windageSin == 0 ⇒ vz stays 0 ⇒ bit-identical to the pre-windage engine.
+            var windageAngle = shot.ZeroWindageAdjustment ?? new Measurement<AngularUnit>(0, AngularUnit.Radian);
+            if (shot.ShotWindageAdjustment != null)
+                windageAngle += shot.ShotWindageAdjustment.Value;
+
             var lineOfSight = shot.ShotAngle ?? new Measurement<AngularUnit>(0, AngularUnit.Radian);
             double lineOfSightTan = MeasurementMath.Tan(lineOfSight);
             double lineOfDepartureTan = MeasurementMath.Tan(barrelElevation);
@@ -255,16 +254,19 @@ namespace BallisticCalculator
             double barrelElevCos = barrelElevation.Cos();
             double barrelElevSin = barrelElevation.Sin();
             double barrelAzSin = barrelAzimuth.Sin();
+            double windageCos = windageAngle.Cos();
+            double windageSin = windageAngle.Sin();
 
             // Velocity vector: x = towards target, y = vertical, z = lateral — in velUnit.
-            // Azimuth no longer tilts the muzzle vector into z: the bullet is always integrated
-            // along x, and BarrelAzimuth becomes a pure scalar into the Coriolis terms (see the
-            // Coriolis block below). This also removes the old azimuth-90 divide-by-zero, where
-            // vx (and thus dt = step/vx) collapsed when the line of fire pointed along z
-            // (CORIOLIS.md §3).
-            double vx = vel0 * barrelElevCos;
+            // Elevation raises vy; the dialed windage angle rotates the (vx, vz) plane so a left
+            // tilt (positive windageAngle) seeds +vz. BarrelAzimuth (compass bearing) still does
+            // NOT tilt the muzzle vector — the bullet is integrated along x and azimuth is a pure
+            // scalar into the Coriolis terms (CORIOLIS.md §3); that also avoids the old azimuth-90
+            // divide-by-zero where vx (and dt = step/vx) collapsed along z. With no windage dialed
+            // (windageSin == 0) vz stays 0 and the seed is bit-identical to the pre-windage engine.
+            double vx = vel0 * barrelElevCos * windageCos;
             double vy = vel0 * barrelElevSin;
-            double vz = 0;
+            double vz = vel0 * barrelElevCos * windageSin;
 
             // Range vector: x = towards target, y = drop, z = windage — in meters
             double rx = 0, ry = -sightHeightMeters, rz = 0;
@@ -390,7 +392,7 @@ namespace BallisticCalculator
                         nextWindRangeMeters = wind[currentWind].MaximumRange.Value.In(DistanceUnit.Meter);
                 }
 
-                if (distanceMeters >= nextRangeDistMeters)
+                if (distanceMeters >= nextRangeDistMeters - RangeEmitEpsilonMeters)
                 {
                     double windage_m = rz;
                     if (calculateDrift)
@@ -475,41 +477,93 @@ namespace BallisticCalculator
 
                 // --- Physics integration step ---
 
-                // dt must go through TimeSpan to match the original's tick-precision truncation
-                double dt = TimeSpan.FromSeconds(calcStepMeters / (vx / mpsToVel)).TotalSeconds;
+                // Shorten only the sub-step that would cross the next output range so the row is
+                // emitted (near-)exactly at the requested distance rather than up to one coarse
+                // step past it — the coarse step would otherwise break the "point at the requested
+                // range" output contract (and inflate that row's drop). Between output points the
+                // full coarse step is used, so this costs ~one short step per row. Harmless at the
+                // fine step the historical engine used (the crossing sub-step was already short).
+                double effectiveCalcStep = calcStepMeters;
+                double stepToNextRange = (nextRangeDistMeters - distanceMeters) * lineOfSightCos;
+                if (stepToNextRange > 0 && stepToNextRange < effectiveCalcStep)
+                    effectiveCalcStep = stepToNextRange;
 
-                // Wind-adjusted velocity vector (velUnit)
-                double vax = vx - wx;
-                double vay = vy - wy;
-                double vaz = vz - wz;
+                // dt must go through TimeSpan to match the original's tick-precision truncation.
+                // Derived from the current vx so the along-bore advance per step ≈ effectiveCalcStep
+                // for both integrators.
+                double dt = TimeSpan.FromSeconds(effectiveCalcStep / (vx / mpsToVel)).TotalSeconds;
 
-                // Drag lookup by Mach number
-                double velocityAdj = Math.Sqrt(vax * vax + vay * vay + vaz * vaz);
-                double currentMach = velocityAdj / machInVelUnit;
+                double dry;
+                if (Integrator == IntegrationMethod.Euler)
+                {
+                    // Semi-implicit (symplectic) Euler — position uses the just-updated velocity.
+                    // Wind-adjusted velocity vector (velUnit)
+                    double vax = vx - wx;
+                    double vay = vy - wy;
+                    double vaz = vz - wz;
 
-                dragTableNode ??= dragTable.Find(currentMach);
+                    // Drag lookup by Mach number
+                    double velocityAdj = Math.Sqrt(vax * vax + vay * vay + vaz * vaz);
+                    double currentMach = velocityAdj / machInVelUnit;
 
-                while (dragTableNode.Mach > currentMach)
-                    dragTableNode = dragTableNode.Previous;
-                while (dragTableNode.Next != null && dragTableNode.Next.Mach <= currentMach)
-                    dragTableNode = dragTableNode.Next;
+                    dragTableNode ??= dragTable.Find(currentMach);
 
-                // Apply drag deceleration and gravity
-                double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityAdj;
-                double factor = dt * drag;
+                    // Clamp to the end nodes if the Mach is outside the table's range (custom/drg tables
+                    // do not span down to Mach 0 like the standard curves). Bit-identical for standard
+                    // tables, whose floor node is Mach 0, so the guard never fires.
+                    while (dragTableNode.Previous != null && dragTableNode.Mach > currentMach)
+                        dragTableNode = dragTableNode.Previous;
+                    while (dragTableNode.Next != null && dragTableNode.Next.Mach <= currentMach)
+                        dragTableNode = dragTableNode.Next;
 
-                vx = vx - factor * vax;                                 // velUnit
-                vy = vy - factor * vay - earthGravity * dt;             // velUnit (gravity in velUnit/s)
-                vz = vz - factor * vaz;                                 // velUnit
+                    // Apply drag deceleration and gravity
+                    double drag = accumulatedFactor * densityFactor * dragTableNode.CalculateDrag(currentMach) * velocityAdj;
+                    double factor = dt * drag;
 
-                // Position delta: convert velocity to m/s via division, then multiply by dt
-                double drx = vx / mpsToVel * dt;                       // meters
-                double dry = vy / mpsToVel * dt;                       // meters
-                double drz = vz / mpsToVel * dt;                       // meters
+                    vx = vx - factor * vax;                                 // velUnit
+                    vy = vy - factor * vay - earthGravity * dt;             // velUnit (gravity in velUnit/s)
+                    vz = vz - factor * vaz;                                 // velUnit
 
-                rx += drx;
-                ry += dry;
-                rz += drz;
+                    // Position delta: convert velocity to m/s via division, then multiply by dt
+                    double drx = vx / mpsToVel * dt;                       // meters
+                    dry = vy / mpsToVel * dt;                              // meters
+                    double drz = vz / mpsToVel * dt;                       // meters
+
+                    rx += drx;
+                    ry += dry;
+                    rz += drz;
+                }
+                else
+                {
+                    // Midpoint (2nd-order Runge-Kutta): evaluate the drag+gravity acceleration at
+                    // the start (a1), step the velocity a half-dt to the midpoint, re-evaluate (a2),
+                    // then advance velocity by a2·dt and position by the midpoint velocity·dt. Two
+                    // drag evaluations per step buy 2nd-order accuracy, so the step can be ~10×
+                    // coarser at equal error. Density/Mach are held at the loop-top altitude (they
+                    // change negligibly across one step). PLAN1 §1.1.
+                    Acceleration(vx, vy, vz, wx, wy, wz, accumulatedFactor, densityFactor,
+                        machInVelUnit, earthGravity, dragTable, ref dragTableNode,
+                        out double a1x, out double a1y, out double a1z);
+
+                    double half = dt * 0.5;
+                    double vmx = vx + a1x * half;
+                    double vmy = vy + a1y * half;
+                    double vmz = vz + a1z * half;
+
+                    Acceleration(vmx, vmy, vmz, wx, wy, wz, accumulatedFactor, densityFactor,
+                        machInVelUnit, earthGravity, dragTable, ref dragTableNode,
+                        out double a2x, out double a2y, out double a2z);
+
+                    vx += a2x * dt;                                        // velUnit
+                    vy += a2y * dt;                                        // velUnit
+                    vz += a2z * dt;                                        // velUnit
+
+                    // Position advances by the midpoint velocity (the RK2 slope for r' = v).
+                    rx += vmx / mpsToVel * dt;                             // meters
+                    dry = vmy / mpsToVel * dt;                             // meters
+                    rz += vmz / mpsToVel * dt;                             // meters
+                    ry += dry;
+                }
 
                 distanceMeters = rx / lineOfSightCos;
                 altValue += dry * meterToAltUnit;                       // altUnit (matches Measurement operator+ FP path)
@@ -523,22 +577,59 @@ namespace BallisticCalculator
         }
         #pragma warning restore S3776
 
-        internal Measurement<DistanceUnit> GetCalculationStep(Measurement<DistanceUnit> step)
+        internal Measurement<DistanceUnit> GetCalculationStep(Measurement<DistanceUnit> step) =>
+            GetCalculationStep(step, MaximumCalculationStepSize);
+
+        internal static Measurement<DistanceUnit> GetCalculationStep(Measurement<DistanceUnit> step, Measurement<DistanceUnit> maximumStep)
         {
             step /= 2;      //do it twice for increased accuracy of velocity calculation and 10 times per step
-            if (step > MaximumCalculationStepSize)
+            if (step > maximumStep)
             {
                 int stepOrder = (int)Math.Floor(Math.Log10(step.Value));
-                int maximumOrder = (int)Math.Floor(Math.Log10(MaximumCalculationStepSize.In(step.Unit)));
+                int maximumOrder = (int)Math.Floor(Math.Log10(maximumStep.In(step.Unit)));
                 step /= Math.Pow(10, stepOrder - maximumOrder + 1);
             }
             return step;
         }
 
+        /// <summary>
+        /// Drag + gravity acceleration (velUnit per second) at a given velocity, walking the shared
+        /// drag node to the air-relative Mach. Used by the midpoint (RK2) integrator, which needs
+        /// the acceleration evaluated at two velocities per step. Density and speed-of-sound are
+        /// passed in (held at the loop-top altitude, as for Euler).
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Acceleration(double vx, double vy, double vz,
+            double wx, double wy, double wz,
+            double accumulatedFactor, double densityFactor, double machInVelUnit,
+            double earthGravity, DragTable dragTable, ref DragTableNode node,
+            out double ax, out double ay, out double az)
+        {
+            double vax = vx - wx;
+            double vay = vy - wy;
+            double vaz = vz - wz;
+
+            double velocityAdj = Math.Sqrt(vax * vax + vay * vay + vaz * vaz);
+            double mach = velocityAdj / machInVelUnit;
+
+            node ??= dragTable.Find(mach);
+            while (node.Previous != null && node.Mach > mach)
+                node = node.Previous;
+            while (node.Next != null && node.Next.Mach <= mach)
+                node = node.Next;
+
+            double drag = accumulatedFactor * densityFactor * node.CalculateDrag(mach) * velocityAdj;
+            ax = -drag * vax;
+            ay = -drag * vay - earthGravity;
+            az = -drag * vaz;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WindVectorRaw(ShotParameters shot, Wind wind, VelocityUnit units, out double wx, out double wy, out double wz)
         {
-            var shotAngle = shot.SightAngle;
+            var shotAngle = shot.ZeroDropAdjustment;
+            if (shot.ShotDropAdjustment != null)
+                shotAngle += shot.ShotDropAdjustment.Value;
             if (shot.ShotAngle != null)
                 shotAngle += shot.ShotAngle.Value;
 

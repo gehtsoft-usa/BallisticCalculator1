@@ -41,6 +41,14 @@ namespace BallisticCalculator
         public Measurement<DistanceUnit>? VerticalOffset { get; set; }
 
         /// <summary>
+        /// <para>The horizontal offset of the zero impact point from the aim point.</para>
+        /// <para>Sign matches trajectory windage: positive is left, negative is right.</para>
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BXmlProperty("horizontal-offset", Optional = true)]
+        public Measurement<DistanceUnit>? HorizontalOffset { get; set; }
+
+        /// <summary>
         /// Default constructor
         /// </summary>
         public ZeroingParameters()

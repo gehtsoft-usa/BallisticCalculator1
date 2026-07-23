@@ -335,7 +335,7 @@ namespace BallisticCalculator.Test.Reticle
             
             //we need detailed trajectory to calculate BDC
             var calc = new TrajectoryCalculator();
-            trajectory.ShotParameters.SightAngle = calc.SightAngle(trajectory.Ammunition, trajectory.Rifle, trajectory.Atmosphere);
+            trajectory.ShotParameters.ZeroDropAdjustment = calc.CalculateZeroParameters(trajectory.Ammunition, trajectory.Atmosphere, trajectory.Rifle, trajectory.Rifle.Zero).ZeroDropAdjustment;
             trajectory.ShotParameters.Step = DistanceUnit.Yard.New(10);
             trajectory.ShotParameters.MaximumDistance = DistanceUnit.Yard.New(500);
             var trajectory1 = calc.Calculate(trajectory.Ammunition, trajectory.Rifle, trajectory.Atmosphere, trajectory.ShotParameters, new[] { trajectory.Wind });

@@ -13,7 +13,7 @@
   <RawDir>$(MSBuildProjectDirectory)/src/raw</RawDir>
  </PropertyGroup>
  <ItemGroup>
-  <CustomFile Include="$(MSBuildProjectDirectory)/img/**/*.png;$(MSBuildProjectDirectory)/html/**/*.*" />
+  <CustomFile Include="$(MSBuildProjectDirectory)/img/**/*.png;$(MSBuildProjectDirectory)/img/**/*.svg;$(MSBuildProjectDirectory)/html/**/*.*" />
   <CurrentDocTargetDir Include="$(DocTargetDir)" />
   <CurrentRawDir Include="$(RawDir)" />
  </ItemGroup>
@@ -33,7 +33,7 @@
   <ContentFromPackage Package="Gehtsoft.Build.DocGen" Source="Content/template/html/pageImages" Version="$(DocGenVersion)" Destination="$(DocTargetDir)/pageImages" />
  </Target>
  <ItemGroup>
-  <DocSource Include="$(MSBuildProjectDirectory)/../BallisticCalculator/bin/Debug/netstandard2.0/BallisticCalculator.dll" />
+  <DocSource Include="$(MSBuildProjectDirectory)/../BallisticCalculator/bin/Debug/net8.0/BallisticCalculator.dll" />
  </ItemGroup>
  <Target Name="Scan">
   <Asm2Xml Assemblies="@(DocSource)" OutputXml="obj/raw.xml" Mode="net80" />

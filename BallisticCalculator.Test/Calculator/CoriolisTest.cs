@@ -41,7 +41,7 @@ namespace BallisticCalculator.Test.Calculator
             {
                 Step = new Measurement<DistanceUnit>(1, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(2000, DistanceUnit.Yard),
-                SightAngle = sightAngle,
+                ZeroDropAdjustment = sightAngle,
                 Latitude = latDeg == null ? (Measurement<AngularUnit>?)null : new Measurement<AngularUnit>(latDeg.Value, AngularUnit.Degree),
                 BarrelAzimuth = azDeg == null ? (Measurement<AngularUnit>?)null : new Measurement<AngularUnit>(azDeg.Value, AngularUnit.Degree),
             };
@@ -63,13 +63,13 @@ namespace BallisticCalculator.Test.Calculator
         {
             var template = TableLoader.FromResource("g1_nowind");
             var cal = new TrajectoryCalculator();
-            var sightAngle = cal.SightAngle(template.Ammunition, template.Rifle, template.Atmosphere);
+            var sightAngle = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero).ZeroDropAdjustment;
 
             ShotParameters Shot(double? az) => new ShotParameters
             {
                 Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
-                SightAngle = sightAngle,
+                ZeroDropAdjustment = sightAngle,
                 BarrelAzimuth = az == null ? (Measurement<AngularUnit>?)null : new Measurement<AngularUnit>(az.Value, AngularUnit.Degree),
             };
 
@@ -130,7 +130,7 @@ namespace BallisticCalculator.Test.Calculator
 
             var (ammo, rifle, atmo) = KestrelConfig();
             var cal = new TrajectoryCalculator();
-            var sightAngle = cal.SightAngle(ammo, rifle, atmo);
+            var sightAngle = cal.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero).ZeroDropAdjustment;
 
             var on = cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, latDeg, azDeg));
             var off = cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, null, null));
@@ -155,7 +155,7 @@ namespace BallisticCalculator.Test.Calculator
         {
             var (ammo, rifle, atmo) = KestrelConfig();
             var cal = new TrajectoryCalculator();
-            var sightAngle = cal.SightAngle(ammo, rifle, atmo);
+            var sightAngle = cal.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero).ZeroDropAdjustment;
 
             var on = cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, 45, 0));
             var p = PointAt(on, 1000);
@@ -179,7 +179,7 @@ namespace BallisticCalculator.Test.Calculator
         {
             var (ammo, rifle, atmo) = KestrelConfig();
             var cal = new TrajectoryCalculator();
-            var sightAngle = cal.SightAngle(ammo, rifle, atmo);
+            var sightAngle = cal.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero).ZeroDropAdjustment;
 
             var on = cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, 45, 90));
             var off = cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, null, null));
@@ -212,7 +212,7 @@ namespace BallisticCalculator.Test.Calculator
         {
             var (ammo, rifle, atmo) = KestrelConfig();
             var cal = new TrajectoryCalculator();
-            var sightAngle = cal.SightAngle(ammo, rifle, atmo);
+            var sightAngle = cal.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero).ZeroDropAdjustment;
 
             double Windage(double? lat, double? az) => PointAt(cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, lat, az)), 2000).Windage.In(DistanceUnit.Meter);
             double Drop(double? lat, double? az) => PointAt(cal.Calculate(ammo, rifle, atmo, KestrelShot(sightAngle, lat, az)), 2000).DropFlat.In(DistanceUnit.Meter);

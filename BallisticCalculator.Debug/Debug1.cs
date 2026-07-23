@@ -57,7 +57,7 @@ namespace BallisticCalculator.Debug
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
                 Step = step,
                 //calculate sight angle for the specified zero distance
-                SightAngle = calc.SightAngle(ammo, rifle, atmosphere)
+                ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment
             };
 
             //define winds
@@ -129,7 +129,7 @@ namespace BallisticCalculator.Debug
                 MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
                 Step = step,
                 //calculate sight angle for the specified zero distance
-                SightAngle = calc.SightAngle(ammo, rifle, atmosphere)
+                ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment
             };
 
             //define winds
