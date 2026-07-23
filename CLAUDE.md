@@ -17,8 +17,9 @@ A **3DOF (point-mass) model**. Origin: JBM ballistics v2 public C sources, porte
 ideas. Extensions over the original: a higher-accuracy drag curve (40+ approximation points
 fitting per-node 2nd-degree polynomials, vs 5–6), NASA-based atmosphere (humid-air density,
 barometric lapse), Litz spin-drift, and an adaptive integration step balancing speed vs
-accuracy. The hot loop is **explicit Euler in raw doubles** (bypassing `Measurement<T>`).
-Claimed accuracy: within ~0.5% / 0.2 MOA of modern calculators. Full algorithm: §5.
+accuracy. The hot loop runs in **raw doubles** (bypassing `Measurement<T>`); the integrator is
+**midpoint RK2 by default** at a ~10× coarser step (semi-implicit Euler still selectable via
+`Integrator`). Claimed accuracy: within ~0.5% / 0.2 MOA of modern calculators. Full algorithm: §5.
 
 ---
 
@@ -34,8 +35,9 @@ Solution: `BallisticCalculator.sln`. Docs project + generated XML docs: `doc/`.
 Public overview + risk notice: `README.md`.
 
 Engine source, by concern (read the specific dir, not the whole tree):
-- `BallisticCalculator/Calculations/` — `TrajectoryCalculator.cs` (integrator, `SightAngle`,
-  `Calculate`), `ShotParameters.cs`, `TrajectoryPoint.cs`, `BallisticMath.cs`, `Vector.cs`.
+- `BallisticCalculator/Calculations/` — `TrajectoryCalculator.cs` (integrator, `CalculateZeroParameters`,
+  `Calculate`), `ShotParameters.cs`, `ZeroCalculatedParameters.cs`, `TrajectoryPoint.cs`,
+  `BallisticMath.cs`, `DrgDragTableFactory.cs`, `Vector.cs`.
 - `BallisticCalculator/Data/` — `Ammunition`, `Atmosphere`, `Wind`, `Rifle`, `Sight`,
   `Rifling`, `ZeroingParameters`, `TwistDirection`, `AmmunitionLibraryEntry`.
 - `BallisticCalculator/Drag/` — `BallisticCoefficient`, standard tables `G1..RA4`,
@@ -43,10 +45,13 @@ Engine source, by concern (read the specific dir, not the whole tree):
 - `BallisticCalculator/Serialization/` — custom `BXml` XML serialization (classes also carry
   `System.Text.Json` attributes, so they serialize to both XML and JSON).
 - `BallisticCalculator/Reticle/` — reticle model. `Resources/Calibers.csv` — embedded caliber data.
-- `BallisticCalculator/Tools/` (namespace `BallisticCalculator.Tools`) — standalone helper utilities that
-  don't touch the integrator: `BallisticCoefficientConverter` (G1↔G7 etc., table-driven & velocity-aware),
+- `BallisticCalculator/Tools/` (namespace `BallisticCalculator.Tools`) — standalone helper utilities:
+  `BallisticCoefficientConverter` (G1↔G7 etc., table-driven & velocity-aware),
   `BarrelTwist` (Miller stability forward/inverse: `Stability`, `RecommendedTwist`, `Recommend` →
-  min/optimal/max `TwistRecommendation`).
+  min/optimal/max `TwistRecommendation`), `MovingTargetLead` (crossing lead, linear & angular),
+  `PointBlankRange` (`Analyze` → MPBR / danger-space corridor from a trajectory; `PointBlankAim` Center/Bottom),
+  `RadarDragTableFactory` (`Create` → custom GC `DrgDragTable` from distance/velocity radar pairs),
+  `HitProbability` (`Estimate` → Monte-Carlo WEZ over MV/group/range/wind errors + position multipliers).
 
 Engine dependencies (`BallisticCalculator/BallisticCalculator.csproj`):
 - **`Gehtsoft.Measurements` 1.1.17** — strongly-typed units (all physics quantities). See §2.
@@ -141,7 +146,8 @@ new Rifling(Measurement<DistanceUnit> riflingStep, TwistDirection direction) // 
 new ZeroingParameters(Measurement<DistanceUnit> distance, Ammunition ammunition, Atmosphere atmosphere)
 ```
 - `TwistDirection` (`Data/TwistDirection.cs`): `Left` (drifts left), `Right` (drifts right).
-- `ZeroingParameters.VerticalOffset` (nullable) offsets the zero impact point (+ up).
+- `ZeroingParameters.VerticalOffset` (nullable) offsets the zero impact point (+ up);
+  `HorizontalOffset` (nullable) offsets it horizontally (+ left, − right — same sign as `Windage`).
 - `Zero.Ammunition`/`Zero.Atmosphere` override the shot's ammo/atmo *for zeroing only* when set.
 
 ### Atmosphere (`Data/Atmosphere.cs`) — immutable, derived fields computed in ctor
@@ -173,17 +179,30 @@ new Wind(Measurement<VelocityUnit> velocity, Measurement<AngularUnit> direction,
 ```csharp
 new ShotParameters {
     Step, MaximumDistance,               // output table granularity & extent
-    SightAngle,                          // REQUIRED — get from TrajectoryCalculator.SightAngle
+    ZeroDropAdjustment,                  // REQUIRED — vertical barrel elevation (formerly SightAngle);
+                                         //   from CalculateZeroParameters (or shot.Apply(...))
+    ZeroWindageAdjustment = null,        // horizontal zero (+ left); usually set via Apply
+    ShotDropAdjustment    = null,        // extra elevation clicks for this shot (+ up)
+    ShotWindageAdjustment = null,        // extra windage clicks for this shot (+ left)
     ShotAngle = null,                    // line-of-sight incline, + up / - down
     CantAngle = null,
     BarrelAzimuth = null,                // compass bearing, 0°=N clockwise→E; scalar into Coriolis only
     Latitude = null                      // geographic latitude (N +, S −); null ⇒ no Earth rotation
 }
+shot.Apply(ZeroCalculatedParameters)     // copies ZeroDropAdjustment + ZeroWindageAdjustment
 ```
+- Launch accumulates the angles: vertical = `ZeroDropAdjustment` + `ShotDropAdjustment` + `ShotAngle`;
+  horizontal = `ZeroWindageAdjustment` + `ShotWindageAdjustment`. Positive windage tilts left (seeds
+  `+vz`), so a +N windage adjustment cancels an −N (right) drift. Absent windage ⇒ `vz=0`, bit-identical.
 - `BarrelAzimuth` **does not tilt the trajectory** (it did, buggily, pre-Coriolis) — the bullet is
   always integrated along the line of fire. It and `Latitude` only orient the Coriolis/Eötvös terms.
 - `Latitude` set (with `BarrelAzimuth` optional) enables Coriolis (§5 Coriolis subsection). Both `null`
   and `Az ∈ {0, null}` are exact no-ops vs the pre-Coriolis engine.
+
+### ZeroCalculatedParameters (`Calculations/ZeroCalculatedParameters.cs`)
+Result of `CalculateZeroParameters`: `ZeroDropAdjustment` (`Measurement<AngularUnit>`) and
+`ZeroWindageAdjustment` (`Measurement<AngularUnit>?`, null when there's nothing to correct
+horizontally). Feed to a shot via `shot.Apply(...)`, or read `.ZeroDropAdjustment` directly.
 
 ### TrajectoryPoint (`Calculations/TrajectoryPoint.cs`) — one output row
 Read-only properties: `Time` (TimeSpan), `Distance` (along LoS), `DistanceFlat`,
@@ -199,9 +218,11 @@ point, `Sg₀·(v₀/v)^1.25`; null unless rifling + bullet dims supplied). `Dro
 
 - `DragTable` abstract base; concrete standard tables `G1,G2,G5,G6,G7,G8,GI,GS,RA4` (each a
   hardcoded `DragTableDataPoint[]` of `(Mach, DragCoefficient)`). Point counts e.g. **G1=81,
-  G7=86** points, Mach 0→5. `DragTable.Get(DragTableId)` returns a lazily-cached singleton.
+  G7=86** points, Mach 0→5. `DragTable.Get(DragTableId)` returns a thread-safe `Lazy<T>` singleton.
 - **`GC` = custom**: `Get(GC)` throws; you must pass a `DragTable` instance directly to
-  `SightAngle`/`Calculate`.
+  `CalculateZeroParameters`/`Calculate`.
+- The hot-loop drag-node walk is guarded against running off the ends, so a custom/`.drg` table whose
+  Mach range doesn't reach the trajectory's low end clamps to the floor node instead of throwing.
 - **Interpolation**: the ctor fits, per interior point, a 2nd-degree polynomial over the three
   adjacent points → each `DragTableNode` stores coefficients `A,B,C` with
   `CalculateDrag(mach) = C + mach*(B + A*mach)` (`DragTableNode.cs`). `Find(mach)` is a binary
@@ -215,10 +236,14 @@ point, `Sg₀·(v₀/v)^1.25`; null unless rifling + bullet dims supplied). `Dro
 
 ## 5. TrajectoryCalculator (`Calculations/TrajectoryCalculator.cs`)
 
-Two public methods:
+Two public methods (note `CalculateZeroParameters`'s arg order is ammo, **atmo, rifle**, zero):
 
 ```csharp
-Measurement<AngularUnit> SightAngle(Ammunition, Rifle, Atmosphere,
+// Solves drop + windage zero by driving the full Calculate trajectory (drift/Coriolis/aero-jump
+// folded in). Returns ZeroCalculatedParameters; feed to a shot via Apply or read .ZeroDropAdjustment.
+ZeroCalculatedParameters CalculateZeroParameters(Ammunition, Atmosphere, Rifle, ZeroingParameters zero,
+                                    ShotParameters shot = null,          // only ShotAngle/Azimuth/Latitude used
+                                    Wind[] wind = null,                  // optional; calm by default
                                     DragTable dragTable = null,          // required if BC table == GC
                                     Measurement<DistanceUnit>? accuracy = null);   // default 0.1 mm
 
@@ -226,23 +251,31 @@ TrajectoryPoint[] Calculate(Ammunition, Rifle, Atmosphere, ShotParameters shot,
                             Wind[] wind = null, DragTable dragTable = null);
 ```
 
-Tunable properties: `MaximumCalculationStepSize` (default **0.1 m**). Static:
-`MaximumDrop` (**10000 ft** — stop), `MinimumVelocity` (**50 ft/s** — stop).
+Tunable properties: `Integrator` (`IntegrationMethod.MidpointRK2` default | `Euler`),
+`MaximumCalculationStepSize` (default **1 m**). Static: `MaximumDrop` (**10000 ft** — stop),
+`MinimumVelocity` (**50 ft/s** — stop). **Thread-safe**: one configured instance is safe for
+concurrent `Calculate`/`CalculateZeroParameters` (don't mutate `Integrator`/step mid-run).
 
-### Algorithm (both methods share the same integrator)
-- **Explicit Euler** integration in raw doubles (the hot loop avoids `Measurement<T>` overhead).
-  Unit conventions inside the loop: velocity in the muzzle-velocity's unit; position in meters;
-  altitude in the atmosphere's unit; time truncated to `TimeSpan` tick precision.
-- **Calculation step** (`GetCalculationStep`): output `Step` is halved, then if still larger
-  than `MaximumCalculationStepSize` it is divided down by powers of ten (~1 cm actual step for a
-  25 yd output step — accuracy is not integration-limited).
+### Algorithm
+- Integration in raw doubles (the hot loop avoids `Measurement<T>` overhead). Default **midpoint RK2**
+  (two drag evals/step, 2nd-order); **semi-implicit Euler** selectable via `Integrator`. Unit
+  conventions inside the loop: velocity in the muzzle-velocity's unit; position in meters; altitude in
+  the atmosphere's unit; time truncated to `TimeSpan` tick precision.
+- **Calculation step** (`GetCalculationStep`): output `Step` is halved, then if still larger than
+  `MaximumCalculationStepSize` it is divided down by powers of ten (~11 cm actual step for a 25 yd
+  output step at the 1 m default). The sub-step crossing each output range is shortened so rows land
+  on the requested distance. `CalculateZeroParameters` drives `Calculate`, so it uses the same
+  configured integrator/step.
 - **Drag** per step: `accel = PIR * (velUnit→fps) * (1/BC) * densityFactor * Cd(mach) * |v_air|`
   where **`PIR = 2.08551e-04 = (π/8)·(ρ0/144)`**, `v_air = v − wind`, `Cd` from the drag node.
   Velocity is decremented by `dt*drag*v_air`; then gravity `earthGravity*dt` on the vertical.
 - **Mach** uses the *air-relative* speed; the drag node walks `Previous` as Mach falls.
 - **Sound speed / density** are refreshed only when altitude changes by >1 m (perf guard).
-- **`SightAngle`**: iterates (≤100 passes) adjusting barrel elevation until the trajectory
-  crosses `Zero.Distance` within `accuracy` (default 0.1 mm), starting from a 150 MOA guess.
+- **`CalculateZeroParameters`**: Newton-iterates (≤100 passes) the vertical **and** horizontal
+  barrel adjustments, each pass driving `Calculate` to `zero.Distance` and correcting drop→`VerticalOffset`
+  and windage→`HorizontalOffset` within `accuracy` (default 0.1 mm). Because it uses the full trajectory,
+  spin drift, Coriolis (if `Latitude` supplied), aero jump and wind are folded into the zero. Windage
+  stays `null` when there's nothing to correct.
 - **Termination**: velocity < 50 ft/s, drop below −10000 ft, or output array full. Steep-angle
   shots can end one output step early.
 
@@ -270,8 +303,9 @@ Kestrel, which agree to ~0.4%); see `CLAUDE/CORIOLIS.md`. Constants `Ω = 7.2921
   **gravitational fall below the vacuum bore line** by `vRatio = g_eff/g`, leaving launch/sight
   geometry (hence the exact −sightHeight muzzle drop) untouched. East ⇒ less drop, West ⇒ more;
   hemisphere-symmetric (`cos φ`). Applied to both `Drop` and `DropFlat`.
-- **Not applied in `SightAngle`** (zeroing stays purely ballistic; effect at a 100 yd zero is
-  <0.02 MOA). Accuracy vs BE: windage ~exact, drop within ~0.16% (drag-baseline-limited).
+- **In `CalculateZeroParameters`** the term is folded into the zero when `Latitude` is supplied via the
+  optional shot (it drives the full trajectory); at a 100 yd zero the effect is <0.02 MOA. Accuracy vs
+  BE: windage ~exact, drop within ~0.16% (drag-baseline-limited).
 
 ### Aerodynamic (crosswind) jump (only if `Rifling + BulletDiameter + BulletLength`, i.e. same gate as spin drift)
 Vertical deflection from a **horizontal crosswind** on a spin-stabilized bullet — Litz *Applied
@@ -281,7 +315,7 @@ folded into `Drop`/`DropFlat` (the vertical mirror of how spin drift folds into 
   calibers (`BulletLength/BulletDiameter`). Both reuse the spin-drift intermediates — no new inputs.
 - Applied as `drop += aeroJumpAngleRad · distance` (range-linear), after the Eötvös scaling. Muzzle
   crosswind only (first wind zone). **Up** for a wind from the right with a **right** twist; sign flips
-  for left twist / wind from the left. Not applied in `SightAngle`.
+  for left twist / wind from the left. Folded into the zero when wind is passed to `CalculateZeroParameters`.
 - Validated against Hornady 4DOF: cuts the wind-case drop error ~0.83 MOA → ~0.11 MOA (residual is
   Eq 5.4 with our Miller `Sg` running ~14% above 4DOF's effective jump). Inclined-fire `cos` projection
   not yet applied (deferred).
@@ -313,13 +347,15 @@ crosswind with a shot angle produces a small vertical component.
 - **`Windage` includes spin drift** when drift is on, **and Coriolis** when `Latitude` is set — not
   separable from the output alone.
 - **Coriolis needs `Latitude`** (N +, S −); `BarrelAzimuth` (0° = N clockwise) no longer tilts the
-  path — it only orients the Eötvös term. Coriolis is skipped in `SightAngle` by design.
+  path — it only orients the Eötvös term. `CalculateZeroParameters` includes it when `Latitude` is
+  passed via its optional shot (it drives the full trajectory).
 - **Aerodynamic (crosswind) jump** rides on the **same gate as spin drift** (`Rifling` +
   `BulletDiameter` + `BulletLength`): with those set, a crosswind adds a vertical term to `Drop` too,
   not just windage. So enabling spin-drift inputs also changes `Drop` under wind.
-- **`SightAngle` must be computed and put on `ShotParameters.SightAngle`** before `Calculate`;
+- **`CalculateZeroParameters` must be run and applied** (`shot.Apply(...)` or set
+  `ShotParameters.ZeroDropAdjustment`) before `Calculate`; its arg order is ammo, **atmo, rifle**, zero.
   `ShotAngle` is *added* to barrel elevation inside `Calculate`.
-- **`GC` custom BC** requires passing the `DragTable` to both `SightAngle` and `Calculate`.
+- **`GC` custom BC** requires passing the `DragTable` to both `CalculateZeroParameters` and `Calculate`.
 - **50 ft/s floor & early stop**: subsonic long-range or steep-angle runs may return fewer rows
   than `MaximumDistance/Step + 1`; guard for trailing `null`s in the returned array.
 
@@ -346,8 +382,9 @@ var cal  = new TrajectoryCalculator();
 var shot = new ShotParameters {
     Step = new Measurement<DistanceUnit>(25, DistanceUnit.Yard),
     MaximumDistance = new Measurement<DistanceUnit>(1500, DistanceUnit.Yard),
-    SightAngle = cal.SightAngle(ammo, rifle, atmo),
 };
+shot.Apply(cal.CalculateZeroParameters(ammo, atmo, rifle, rifle.Zero));   // note: ammo, ATMO, rifle, zero
+
 TrajectoryPoint[] traj = cal.Calculate(ammo, rifle, atmo, shot,
     new[] { new Wind(new Measurement<VelocityUnit>(10, VelocityUnit.MilesPerHour),
                      new Measurement<AngularUnit>(90, AngularUnit.Degree)) });

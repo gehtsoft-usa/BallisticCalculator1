@@ -1,10 +1,11 @@
 # Custom drag curves
 
 For anything beyond the standard `G1..RA4` curves — a measured/custom drag table, a radar `.drg`
-file, or a multi-BC (BC-vs-Mach) profile. Standard curves come from `DragTable.Get(DragTableId.G7)`
-and are applied automatically when the BC names a standard table; the techniques here all use table
-id **`GC`** and require passing the `DragTable` instance to **both** `SightAngle` and `Calculate`
-(there is no `DragTable.Get(GC)` — it throws).
+file, a multi-BC (BC-vs-Mach) profile, or a curve derived from radar velocities. Standard curves come
+from `DragTable.Get(DragTableId.G7)` and are applied automatically when the BC names a standard table;
+the techniques here all use table id **`GC`** and require passing the `DragTable` instance to **both**
+`CalculateZeroParameters` (its `dragTable` argument) and `Calculate` (there is no `DragTable.Get(GC)` —
+it throws).
 
 ## A. A custom drag table in code
 ```csharp
@@ -22,14 +23,14 @@ class MyDrag : DragTable
 
 var table = new MyDrag();
 var ammo  = new Ammunition(weight, new BallisticCoefficient(0.5, DragTableId.GC), muzzleVelocity);
-shot.SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table);
+shot.ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment;
 var traj = calc.Calculate(ammo, rifle, atmosphere, shot, null, table);
 ```
 
 ## B. A radar `.drg` file
 ```csharp
 DrgDragTable table = DrgDragTable.Open("308-168gr.drg");   // also Open(Stream)
-// use `table` exactly like the custom table above (pass to SightAngle and Calculate)
+// use `table` exactly like the custom table above (pass to CalculateZeroParameters and Calculate)
 table.Save("copy.drg");                                    // also Save(Stream)
 ```
 
@@ -70,11 +71,38 @@ var ammo = new Ammunition(
     weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
     ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
     muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond));
-shot.SightAngle = calc.SightAngle(ammo, rifle, atmosphere, table);
+shot.ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment;
 var traj = calc.Calculate(ammo, rifle, atmosphere, shot, null, table);
+```
+
+## D. A drag curve from radar velocities (`Tools.RadarDragTableFactory`)
+Build a custom curve from downrange velocity measurements (Doppler radar): `(distance, velocity)`
+pairs plus the bullet weight and diameter. It recovers the drag coefficient at each Mach by inverting
+the engine's drag law, so the resulting table reproduces the measured velocity decay. Assumes flat fire
+in still air; pass the atmosphere the data was taken in. Needs at least three readings with velocity
+strictly decreasing as distance increases. Returns a `DrgDragTable` (a `GC` table with a form-factor of
+1 plus the weight/diameter) — use it like the tables above.
+```csharp
+using BallisticCalculator.Tools;
+
+var readings = new[]
+{
+    new RadarReading(new Measurement<DistanceUnit>(0,   DistanceUnit.Yard), new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond)),
+    new RadarReading(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), new Measurement<VelocityUnit>(2460, VelocityUnit.FeetPerSecond)),
+    new RadarReading(new Measurement<DistanceUnit>(200, DistanceUnit.Yard), new Measurement<VelocityUnit>(2235, VelocityUnit.FeetPerSecond)),
+    // ... more; velocity must strictly decrease with distance
+};
+
+DrgDragTable table = RadarDragTableFactory.Create(
+    readings,
+    new Measurement<WeightUnit>(168, WeightUnit.Grain),
+    new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch));   // optional: Atmosphere, name
+var ammo = table.Ammunition.Ammunition;   // GC, form-factor 1, weight + diameter, MV from the data
 ```
 
 ## Signatures
 `DragTable.Get(DragTableId)`, `DrgDragTable.Open(string|Stream)`,
 `DrgDragTable.Save(string|Stream)`, `DrgDragTableFactory.Build(AmmunitionLibraryEntry, DragTableId, IEnumerable<BcAtMach>)`,
-`new BcAtMach(double mach, double bc)`, `new DragTableDataPoint(double mach, double dragCoefficient)`.
+`new BcAtMach(double mach, double bc)`, `new DragTableDataPoint(double mach, double dragCoefficient)`,
+`Tools.RadarDragTableFactory.Create(IEnumerable<RadarReading>, Measurement<WeightUnit>, Measurement<DistanceUnit>, Atmosphere = null, string name = null)`,
+`new Tools.RadarReading(Measurement<DistanceUnit> distance, Measurement<VelocityUnit> velocity)`.
