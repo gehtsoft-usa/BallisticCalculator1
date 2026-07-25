@@ -39,6 +39,13 @@ namespace BallisticCalculator.Reticle.Data
         public string Color { get; set; }
 
         /// <summary>
+        /// <para>The style of the line stroke.</para>
+        /// <para>If no value is set, a solid line will be used.</para>
+        /// </summary>
+        [BXmlProperty(Name = "line-style", Optional = true)]
+        public ReticleLineStyle? LineStyle { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public ReticleLine() : base(ReticleElementType.Line)
@@ -56,7 +63,8 @@ namespace BallisticCalculator.Reticle.Data
                 return object.Equals(Start, line.Start) &&
                     object.Equals(End, line.End) &&
                     object.Equals(LineWidth, line.LineWidth) &&
-                    object.Equals(Color, line.Color);
+                    object.Equals(Color, line.Color) &&
+                    object.Equals(LineStyle, line.LineStyle);
 
             return false;
         }
@@ -79,6 +87,8 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(LineWidth?.ToString(format, formatProvider) ?? "null")
                 .Append(",c=")
                 .Append(Color ?? "null")
+                .Append(",ls=")
+                .Append(LineStyle?.ToString() ?? "null")
                 .Append(')');
             return sb.ToString();
         }
@@ -87,7 +97,7 @@ namespace BallisticCalculator.Reticle.Data
         /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode()
         {
-            return HashUtil.HashCombine(Start, End, LineWidth, Color);
+            return HashUtil.HashCombine(Start, End, LineWidth, Color, LineStyle);
         }
 
         /// <summary>Creates a new object that is a copy of the current instance.</summary>
@@ -100,6 +110,7 @@ namespace BallisticCalculator.Reticle.Data
                 End = this.End.Clone(),
                 Color = this.Color,
                 LineWidth = this.LineWidth,
+                LineStyle = this.LineStyle,
             };
         }
     }

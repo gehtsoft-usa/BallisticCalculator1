@@ -43,13 +43,13 @@ namespace BallisticCalculator.Reticle.Draw
                     {
                         mTranslator.Transform(line.Start.X, line.Start.Y, out float x0, out float y0);
                         mTranslator.Transform(line.End.X, line.End.Y, out float x1, out float y1);
-                        mCanvas.Line(x0, y0, x1, y1, mTranslator.TransformL(line.LineWidth), line.Color ?? BLACK);
+                        mCanvas.Line(x0, y0, x1, y1, mTranslator.TransformL(line.LineWidth), line.Color ?? BLACK, line.LineStyle ?? ReticleLineStyle.Solid);
                     }
                     break;
                 case ReticleCircle circle:
                     {
                         mTranslator.Transform(circle.Center.X, circle.Center.Y, out float x0, out float y0);
-                        mCanvas.Circle(x0, y0, mTranslator.TransformL(circle.Radius), mTranslator.TransformL(circle.LineWidth), circle.Fill ?? false, circle.Color ?? BLACK);
+                        mCanvas.Circle(x0, y0, mTranslator.TransformL(circle.Radius), mTranslator.TransformL(circle.LineWidth), circle.Fill ?? false, circle.Color ?? BLACK, circle.LineStyle ?? ReticleLineStyle.Solid);
                     }
                     break;
                 case ReticleRectangle rectangle:
@@ -57,7 +57,7 @@ namespace BallisticCalculator.Reticle.Draw
                         mTranslator.Transform(rectangle.TopLeft.X, rectangle.TopLeft.Y, out float x0, out float y0);
                         float x1 = mTranslator.TransformL(rectangle.Size.X);
                         float y1 = mTranslator.TransformL(rectangle.Size.Y);
-                        mCanvas.Rectangle(x0, y0, x0 + x1, y0 + y1, mTranslator.TransformL(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? BLACK);
+                        mCanvas.Rectangle(x0, y0, x0 + x1, y0 + y1, mTranslator.TransformL(rectangle.LineWidth), rectangle.Fill ?? false, rectangle.Color ?? BLACK, rectangle.LineStyle ?? ReticleLineStyle.Solid);
                     }
                     break;
                 case ReticleText text:
@@ -102,7 +102,7 @@ namespace BallisticCalculator.Reticle.Draw
             }
             if (path.Fill ?? false)
                 canvasPath.Close();
-            mCanvas.Path(canvasPath, mTranslator.TransformL(path.LineWidth), path.Fill ?? false, path.Color ?? BLACK);
+            mCanvas.Path(canvasPath, mTranslator.TransformL(path.LineWidth), path.Fill ?? false, path.Color ?? BLACK, path.LineStyle ?? ReticleLineStyle.Solid);
         }
 
         /// <summary>

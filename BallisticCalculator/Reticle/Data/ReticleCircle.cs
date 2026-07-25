@@ -46,6 +46,13 @@ namespace BallisticCalculator.Reticle.Data
         public string Color { get; set; }
 
         /// <summary>
+        /// <para>The style of the line stroke.</para>
+        /// <para>If no value is set, a solid line will be used.</para>
+        /// </summary>
+        [BXmlProperty(Name = "line-style", Optional = true)]
+        public ReticleLineStyle? LineStyle { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public ReticleCircle() : base(ReticleElementType.Circle)
@@ -64,7 +71,8 @@ namespace BallisticCalculator.Reticle.Data
                     Equals(Radius, circle.Radius) &&
                     Equals(LineWidth, circle.LineWidth) &&
                     Equals(Fill, circle.Fill) &&
-                    Equals(Color, circle.Color);
+                    Equals(Color, circle.Color) &&
+                    Equals(LineStyle, circle.LineStyle);
 
             return false;
         }
@@ -89,6 +97,8 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(Color ?? "null")
                 .Append(",f=")
                 .Append(Fill?.ToString(formatProvider).ToLower() ?? "null")
+                .Append(",ls=")
+                .Append(LineStyle?.ToString() ?? "null")
                 .Append(')');
 
             return sb.ToString();
@@ -98,7 +108,7 @@ namespace BallisticCalculator.Reticle.Data
         /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode()
         {
-            return HashUtil.HashCombine(Center, Radius, Fill, LineWidth, Color);
+            return HashUtil.HashCombine(Center, Radius, Fill, LineWidth, Color, LineStyle);
         }
 
         /// <summary>Creates a new object that is a copy of the current instance.</summary>
@@ -111,6 +121,7 @@ namespace BallisticCalculator.Reticle.Data
                 Color = this.Color,
                 Fill = this.Fill,
                 LineWidth = this.LineWidth,
+                LineStyle = this.LineStyle,
                 Radius = this.Radius
             };
         }

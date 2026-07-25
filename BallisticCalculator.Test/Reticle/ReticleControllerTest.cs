@@ -68,7 +68,8 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, dx1)),
                 It.Is<float>(f => Approximately(f, dy1)),
                 It.Is<float>(f => Approximately(f, dw)),
-                It.Is<string>(s => s == color))).Verifiable();
+                It.Is<string>(s => s == color),
+                It.IsAny<ReticleLineStyle>())).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawReticle();
@@ -100,7 +101,8 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, dy1)),
                 It.Is<float>(f => Approximately(f, dw)),
                 It.Is<bool>(b => b == fill),
-                It.Is<string>(s => s == color))).Verifiable();
+                It.Is<string>(s => s == color),
+                It.IsAny<ReticleLineStyle>())).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawReticle();
@@ -132,7 +134,8 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, dr)),
                 It.Is<float>(f => Approximately(f, dw)),
                 It.Is<bool>(b => b == fill),
-                It.Is<string>(s => s == color))).Verifiable();
+                It.Is<string>(s => s == color),
+                It.IsAny<ReticleLineStyle>())).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawReticle();
@@ -254,7 +257,8 @@ namespace BallisticCalculator.Test.Reticle
                     It.Is<IReticleCanvasPath>(path => path == canvasPath.Object),
                     It.Is<float>(f => Approximately(f, 1)),
                     It.Is<bool>(f => f),
-                    It.Is<string>(s => s == "red")))
+                    It.Is<string>(s => s == "red"),
+                    It.IsAny<ReticleLineStyle>()))
                 .Callback(() => (order++).Should().Be(5, "Drawing path must be the last action"))
                 .Verifiable();
 
@@ -289,7 +293,8 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, dx1)),
                 It.Is<float>(f => Approximately(f, dy1)),
                 It.Is<float>(f => Approximately(f, dw)),
-                It.Is<string>(s => s == color))).Verifiable();
+                It.Is<string>(s => s == color),
+                It.IsAny<ReticleLineStyle>())).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawReticle();
@@ -318,7 +323,8 @@ namespace BallisticCalculator.Test.Reticle
                 It.Is<float>(f => Approximately(f, 6403, 5)),
                 It.Is<float>(f => Approximately(f, 1, 0.1f)),
                 It.Is<bool>(b => !b),
-                It.Is<string>(s => s == "zecolor"))).Verifiable();
+                It.Is<string>(s => s == "zecolor"),
+                It.IsAny<ReticleLineStyle>())).Verifiable();
 
             ReticleDrawController controller = new ReticleDrawController(reticle, canvas.Object);
             controller.DrawTarget(trajectory.Trajectory, DistanceUnit.Inch.New(8), DistanceUnit.Yard.New(250), "zecolor");

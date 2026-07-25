@@ -46,6 +46,13 @@ namespace BallisticCalculator.Reticle.Data
         public string Color { get; set; }
 
         /// <summary>
+        /// <para>The style of the line stroke.</para>
+        /// <para>If no value is set, a solid line will be used.</para>
+        /// </summary>
+        [BXmlProperty(Name = "line-style", Optional = true)]
+        public ReticleLineStyle? LineStyle { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public ReticleRectangle() : base(ReticleElementType.Rectangle)
@@ -64,7 +71,8 @@ namespace BallisticCalculator.Reticle.Data
                     Equals(Size, rectangle.Size) &&
                     Equals(LineWidth, rectangle.LineWidth) &&
                     Equals(Color, rectangle.Color) &&
-                    Equals(Fill, rectangle.Fill);
+                    Equals(Fill, rectangle.Fill) &&
+                    Equals(LineStyle, rectangle.LineStyle);
 
             return false;
         }
@@ -89,6 +97,8 @@ namespace BallisticCalculator.Reticle.Data
                 .Append(Color ?? "null")
                 .Append(",f=")
                 .Append(Fill?.ToString(formatProvider).ToLower() ?? "null")
+                .Append(",ls=")
+                .Append(LineStyle?.ToString() ?? "null")
                 .Append(')');
 
             return sb.ToString();
@@ -98,7 +108,7 @@ namespace BallisticCalculator.Reticle.Data
         /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode()
         {
-            return HashUtil.HashCombine(TopLeft, Size, LineWidth, Color, Fill);
+            return HashUtil.HashCombine(TopLeft, Size, LineWidth, Color, Fill, LineStyle);
         }
 
         /// <summary>Creates a new object that is a copy of the current instance.</summary>
@@ -112,6 +122,7 @@ namespace BallisticCalculator.Reticle.Data
                 Color = this.Color,
                 Fill = this.Fill,
                 LineWidth = this.LineWidth,
+                LineStyle = this.LineStyle,
             };
         }
     }

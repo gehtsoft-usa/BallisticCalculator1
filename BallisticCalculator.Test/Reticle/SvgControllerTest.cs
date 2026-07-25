@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Xml.Linq;
+using BallisticCalculator.Reticle.Data;
 using BallisticCalculator.Reticle.Draw;
 using AwesomeAssertions;
 using Xunit;
@@ -43,6 +44,59 @@ namespace BallisticCalculator.Test.Reticle
                 .And.HaveAttribute("stroke", "black")
                 .And.HaveAttribute("stroke-width", "5")
                 .And.Match(xe => xe.Parent.Name == Name("svg"));
+        }
+
+        [Fact]
+        public void Line_Solid_HasNoDashArray()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Line(1, 2, 3, 4, 5, "black", ReticleLineStyle.Solid);
+            var document = XDocument.Parse(canvas.ToSvg());
+            var line = document.Root.Element(Name("line"));
+            line.Attribute("stroke-dasharray").Should().BeNull();
+            line.Attribute("stroke-linecap").Should().BeNull();
+        }
+
+        [Fact]
+        public void Line_Dashed_HasDashArray()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Line(1, 2, 3, 4, 5, "black", ReticleLineStyle.Dashed);
+            var document = XDocument.Parse(canvas.ToSvg());
+            var line = document.Root.Element(Name("line"));
+            line.Should().HaveAttribute("stroke-dasharray", "20 15");
+            line.Attribute("stroke-linecap").Should().BeNull();
+        }
+
+        [Fact]
+        public void Line_Dotted_HasDashArrayAndRoundCap()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Line(1, 2, 3, 4, 5, "black", ReticleLineStyle.Dotted);
+            var document = XDocument.Parse(canvas.ToSvg());
+            var line = document.Root.Element(Name("line"));
+            line.Should().HaveAttribute("stroke-dasharray", "5 10");
+            line.Should().HaveAttribute("stroke-linecap", "round");
+        }
+
+        [Fact]
+        public void Circle_Filled_IgnoresLineStyle()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Circle(1, 2, 3, 4, true, "red", ReticleLineStyle.Dashed);
+            var document = XDocument.Parse(canvas.ToSvg());
+            var circle = document.Root.Element(Name("circle"));
+            circle.Attribute("stroke-dasharray").Should().BeNull();
+        }
+
+        [Fact]
+        public void Rectangle_Dashed_HasDashArray()
+        {
+            SvgCanvas canvas = new SvgCanvas("test", "2in", "2in");
+            canvas.Rectangle(1, 2, 3, 4, 5, false, "red", ReticleLineStyle.Dashed);
+            var document = XDocument.Parse(canvas.ToSvg());
+            var rect = document.Root.Element(Name("rect"));
+            rect.Should().HaveAttribute("stroke-dasharray", "20 15");
         }
 
         [Fact]

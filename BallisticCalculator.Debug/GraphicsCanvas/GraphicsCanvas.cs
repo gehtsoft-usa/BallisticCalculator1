@@ -41,9 +41,9 @@ namespace BallisticCalculator.Reticle.Graphics
             mGraphics.FillRectangle(mBackgroundBrush, mDrawingArea);
         }
 
-        public void Circle(float x, float y, float radius, float width, bool fill, string color) => Ellipse(x, y, radius, radius, width, fill, color);
+        public void Circle(float x, float y, float radius, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid) => Ellipse(x, y, radius, radius, width, fill, color, style);
 
-        public void Ellipse(float x, float y, float radiusX, float radiusY, float width, bool fill, string color)
+        public void Ellipse(float x, float y, float radiusX, float radiusY, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
             float x1 = x - radiusX;
             float x2 = x + radiusX;
@@ -53,12 +53,12 @@ namespace BallisticCalculator.Reticle.Graphics
                 mGraphics.FillEllipse(TranslateBrush(color), x1, y1, x2 - x1, y2 - y1);
 
             if (!fill || width > 1)
-                mGraphics.DrawEllipse(CreatePen(color, width), x1, y1, x2 - x1, y2 - y1);
+                mGraphics.DrawEllipse(CreatePen(color, width, fill ? ReticleLineStyle.Solid : style), x1, y1, x2 - x1, y2 - y1);
         }
 
-        public void Line(float x1, float y1, float x2, float y2, float width, string color)
+        public void Line(float x1, float y1, float x2, float y2, float width, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
-            mGraphics.DrawLine(CreatePen(color, width), x1, y1, x2, y2);
+            mGraphics.DrawLine(CreatePen(color, width, style), x1, y1, x2, y2);
         }
 
         public void Polyline((float x, float y)[] points, float width, string color)
@@ -83,13 +83,13 @@ namespace BallisticCalculator.Reticle.Graphics
                 mGraphics.DrawPolygon(CreatePen(color, width), pts);
         }
 
-        public void Rectangle(float x1, float y1, float x2, float y2, float width, bool fill, string color)
+        public void Rectangle(float x1, float y1, float x2, float y2, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
             if (fill)
                 mGraphics.FillRectangle(TranslateBrush(color), x1, y1, x2 - x1, y2 - y1);
 
             if (!fill || width > 1)
-                mGraphics.DrawRectangle(CreatePen(color, width), x1, y1, x2 - x1, y2 - y1);
+                mGraphics.DrawRectangle(CreatePen(color, width, fill ? ReticleLineStyle.Solid : style), x1, y1, x2 - x1, y2 - y1);
         }
 
         public void Text(float x, float y, float height, string text, string color)
@@ -116,14 +116,14 @@ namespace BallisticCalculator.Reticle.Graphics
 
         public IReticleCanvasPath CreatePath() => new ReticleGraphicsPath();
 
-        public void Path(IReticleCanvasPath path, float width, bool fill, string color)
+        public void Path(IReticleCanvasPath path, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
             if (path is ReticleGraphicsPath graphicsPath)
             {
                 if (fill)
                     mGraphics.FillPath(TranslateBrush(color), graphicsPath.Path);
                 else
-                    mGraphics.DrawPath(CreatePen(color, width), graphicsPath.Path);
+                    mGraphics.DrawPath(CreatePen(color, width, style), graphicsPath.Path);
             }
             else
                 throw new ArgumentException($"Path object is not created by {nameof(GraphicsCanvas)} class", nameof(path));
@@ -182,14 +182,22 @@ namespace BallisticCalculator.Reticle.Graphics
             return brush;
         }
 
-        private static Pen CreatePen(string color, float width)
+        private static Pen CreatePen(string color, float width, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
             int _width = width < 0.5 ? 1 : (int)Math.Round((double)width);
 
-            string key = $"{color ?? "black"}{_width}";
+            string key = $"{color ?? "black"}{_width}{style}";
             if (!gPenCache.TryGetValue(key, out Pen pen))
             {
-                pen = new Pen(TranslateColor(color), _width);
+                pen = new Pen(TranslateColor(color), _width)
+                {
+                    DashStyle = style switch
+                    {
+                        ReticleLineStyle.Dashed => System.Drawing.Drawing2D.DashStyle.Dash,
+                        ReticleLineStyle.Dotted => System.Drawing.Drawing2D.DashStyle.Dot,
+                        _ => System.Drawing.Drawing2D.DashStyle.Solid,
+                    }
+                };
                 if (gPenCache.Count > 5000)
                     gPenCache.Clear();
                 gPenCache[key] = pen;

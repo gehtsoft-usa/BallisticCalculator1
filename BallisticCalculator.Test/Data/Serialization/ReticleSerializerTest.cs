@@ -72,6 +72,40 @@ namespace BallisticCalculator.Test.Data.Serialization
         }
 
         [Fact]
+        public void RoundTripLineStyle()
+        {
+            var line = new ReticleLine()
+            {
+                Start = new ReticlePosition(1, 2, AngularUnit.Mil),
+                End = new ReticlePosition(3, 4, AngularUnit.Mil),
+                Color = "gray",
+                LineWidth = AngularUnit.Mil.New(1.5),
+                LineStyle = ReticleLineStyle.Dashed,
+            };
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var line2 = serializer.Deserialize<ReticleLine>(serializer.Serialize(line));
+
+            line2.LineStyle.Should().Be(ReticleLineStyle.Dashed);
+            line2.Should().Be(line);
+        }
+
+        [Fact]
+        public void RoundTripLineStyle_DefaultsToNull()
+        {
+            var line = new ReticleLine()
+            {
+                Start = new ReticlePosition(1, 2, AngularUnit.Mil),
+                End = new ReticlePosition(3, 4, AngularUnit.Mil),
+            };
+
+            SerializerRoundtrip serializer = new SerializerRoundtrip();
+            var line2 = serializer.Deserialize<ReticleLine>(serializer.Serialize(line));
+
+            line2.LineStyle.Should().BeNull();
+        }
+
+        [Fact]
         public void RoundTripReticleElements()
         {
             var reticle = new ReticleDefinition()

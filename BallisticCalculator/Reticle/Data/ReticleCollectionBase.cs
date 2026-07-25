@@ -38,6 +38,13 @@ namespace BallisticCalculator.Reticle.Data
         public void Add(T element) => mElements.Add(element);
 
         /// <summary>
+        /// Inserts a new element into the collection at the specified position
+        /// </summary>
+        /// <param name="index">The zero-based position at which the element is inserted; it must be between 0 and Count.</param>
+        /// <param name="element">The element to insert.</param>
+        public void Insert(int index, T element) => mElements.Insert(index, element);
+
+        /// <summary>
         /// Removes the element from the collection by its position
         /// </summary>
         /// <param name="index"></param>

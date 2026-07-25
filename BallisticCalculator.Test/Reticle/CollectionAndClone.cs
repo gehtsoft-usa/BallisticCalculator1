@@ -63,6 +63,7 @@ namespace BallisticCalculator.Test.Reticle
                 End = new ReticlePosition(3, 4, AngularUnit.Mil),
                 LineWidth = AngularUnit.Mil.New(0.2),
                 Color = "blue",
+                LineStyle = ReticleLineStyle.Dotted,
             };
 
             var l2 = l1.Clone() as ReticleLine;
@@ -70,8 +71,24 @@ namespace BallisticCalculator.Test.Reticle
             l2.Should().NotBeNull();
             l2.Should().NotBeSameAs(l1);
             l2.Should().Be(l1);
+            l2.LineStyle.Should().Be(ReticleLineStyle.Dotted);
             l2.Start.Should().NotBeSameAs(l1.Start);
             l2.End.Should().NotBeSameAs(l1.End);
+        }
+
+        [Fact]
+        public void Line_DifferentLineStyle_NotEqual()
+        {
+            var l1 = new ReticleLine()
+            {
+                Start = new ReticlePosition(1, 2, AngularUnit.Mil),
+                End = new ReticlePosition(3, 4, AngularUnit.Mil),
+                LineStyle = ReticleLineStyle.Dashed,
+            };
+            var l2 = l1.Clone() as ReticleLine;
+            l2.LineStyle = ReticleLineStyle.Dotted;
+
+            l2.Should().NotBe(l1);
         }
 
         [Fact]
@@ -126,6 +143,64 @@ namespace BallisticCalculator.Test.Reticle
 
             collection[0].Should().BeSameAs(b);
             collection[1].Should().BeSameAs(a);
+        }
+
+        [Fact]
+        public void ElementsCollection_Insert_PlacesElementAtIndex()
+        {
+            var collection = new ReticleElementsCollection();
+            var a = new ReticleLine() { Start = new ReticlePosition(1, 1, AngularUnit.Mil) };
+            var c = new ReticleLine() { Start = new ReticlePosition(3, 3, AngularUnit.Mil) };
+            collection.Add(a);
+            collection.Add(c);
+
+            var b = new ReticleLine() { Start = new ReticlePosition(2, 2, AngularUnit.Mil) };
+            collection.Insert(1, b);
+
+            collection.Count.Should().Be(3);
+            collection[0].Should().BeSameAs(a);
+            collection[1].Should().BeSameAs(b);
+            collection[2].Should().BeSameAs(c);
+        }
+
+        [Fact]
+        public void PathElementsCollection_Insert_PlacesElementAtIndex()
+        {
+            var collection = new ReticlePathElementsCollection();
+            var a = new ReticlePathElementMoveTo() { Position = new ReticlePosition(1, 1, AngularUnit.Mil) };
+            var c = new ReticlePathElementLineTo() { Position = new ReticlePosition(3, 3, AngularUnit.Mil) };
+            collection.Add(a);
+            collection.Add(c);
+
+            var b = new ReticlePathElementLineTo() { Position = new ReticlePosition(2, 2, AngularUnit.Mil) };
+            collection.Insert(1, b);
+
+            collection.Count.Should().Be(3);
+            collection[0].Should().BeSameAs(a);
+            collection[1].Should().BeSameAs(b);
+            collection[2].Should().BeSameAs(c);
+        }
+
+        [Fact]
+        public void Insert_AtCount_AppendsElement()
+        {
+            var collection = new ReticlePathElementsCollection();
+            var a = new ReticlePathElementMoveTo() { Position = new ReticlePosition(1, 1, AngularUnit.Mil) };
+            collection.Add(a);
+
+            var b = new ReticlePathElementLineTo() { Position = new ReticlePosition(2, 2, AngularUnit.Mil) };
+            collection.Insert(collection.Count, b);
+
+            collection[1].Should().BeSameAs(b);
+        }
+
+        [Fact]
+        public void Insert_OutOfRange_Throws()
+        {
+            var collection = new ReticlePathElementsCollection();
+            var a = new ReticlePathElementMoveTo() { Position = new ReticlePosition(1, 1, AngularUnit.Mil) };
+
+            collection.Invoking(c => c.Insert(1, a)).Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [Fact]

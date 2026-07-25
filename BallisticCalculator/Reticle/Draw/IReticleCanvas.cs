@@ -49,8 +49,9 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="radius"></param>
         /// <param name="width"></param>
         /// <param name="fill"></param>
-        /// <param name="color"></param>       
-        void Circle(float x, float y, float radius, float width, bool fill, string color);
+        /// <param name="color"></param>
+        /// <param name="style">The style of the line stroke. Solid by default.</param>
+        void Circle(float x, float y, float radius, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid);
         /// <summary>
         /// Draw line
         /// </summary>
@@ -60,9 +61,9 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="y2"></param>
         /// <param name="width"></param>
         /// <param name="color"></param>
-        
-        void Line(float x1, float y1, float x2, float y2, float width, string color);
-        
+        /// <param name="style">The style of the line stroke. Solid by default.</param>
+        void Line(float x1, float y1, float x2, float y2, float width, string color, ReticleLineStyle style = ReticleLineStyle.Solid);
+
         /// <summary>
         /// Draw a rectangle
         /// </summary>
@@ -73,8 +74,8 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="width"></param>
         /// <param name="fill"></param>
         /// <param name="color"></param>
-       
-        void Rectangle(float x1, float y1, float x2, float y2, float width, bool fill, string color);
+        /// <param name="style">The style of the line stroke. Solid by default.</param>
+        void Rectangle(float x1, float y1, float x2, float y2, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid);
 
         /// <summary>
         /// Draw a text
@@ -110,6 +111,7 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="width"></param>
         /// <param name="fill"></param>
         /// <param name="color"></param>
-        void Path(IReticleCanvasPath path, float width, bool fill, string color);
+        /// <param name="style">The style of the line stroke. Solid by default.</param>
+        void Path(IReticleCanvasPath path, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid);
     }
 }

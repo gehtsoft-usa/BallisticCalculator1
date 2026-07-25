@@ -24,7 +24,7 @@ namespace BallisticCalculator.Test.Reticle
                 Color = "black",
             };
 
-            circle.ToString().Should().Be("Circle(p=(1.2345mil:6.789mil),r=1.234mil,w=0.01mil,c=black,f=true)");
+            circle.ToString().Should().Be("Circle(p=(1.2345mil:6.789mil),r=1.234mil,w=0.01mil,c=black,f=true,ls=null)");
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace BallisticCalculator.Test.Reticle
                 Color = null,
             };
 
-            circle.ToString().Should().Be("Circle(p=(1.2345moa:6.789moa),r=1.234moa,w=null,c=null,f=null)");
+            circle.ToString().Should().Be("Circle(p=(1.2345moa:6.789moa),r=1.234moa,w=null,c=null,f=null,ls=null)");
         }
 
         [Fact]
@@ -53,7 +53,22 @@ namespace BallisticCalculator.Test.Reticle
                 Color = "black",
             };
 
-            line.ToString().Should().Be("Line(s=(1.2345mil:6.789mil),e=(5.4321mil:9.876mil),w=0.01mil,c=black)");
+            line.ToString().Should().Be("Line(s=(1.2345mil:6.789mil),e=(5.4321mil:9.876mil),w=0.01mil,c=black,ls=null)");
+        }
+
+        [Fact]
+        public void Line_WithLineStyle()
+        {
+            ReticleLine line = new ReticleLine()
+            {
+                Start = new ReticlePosition(1.2345, 6.789, AngularUnit.Mil),
+                End = new ReticlePosition(5.4321, 9.876, AngularUnit.Mil),
+                LineWidth = AngularUnit.Mil.New(0.01),
+                Color = "black",
+                LineStyle = ReticleLineStyle.Dashed,
+            };
+
+            line.ToString().Should().Be("Line(s=(1.2345mil:6.789mil),e=(5.4321mil:9.876mil),w=0.01mil,c=black,ls=Dashed)");
         }
 
         [Fact]
@@ -68,7 +83,7 @@ namespace BallisticCalculator.Test.Reticle
                 Fill = false,
             };
 
-            rectangle.ToString().Should().Be("Rectangle(p=(1.2345mil:6.789mil),s=(5.4321mil:9.876mil),w=0.01mil,c=black,f=false)");
+            rectangle.ToString().Should().Be("Rectangle(p=(1.2345mil:6.789mil),s=(5.4321mil:9.876mil),w=0.01mil,c=black,f=false,ls=null)");
         }
 
         [Fact]
@@ -97,7 +112,7 @@ namespace BallisticCalculator.Test.Reticle
                 Fill = null,
             };
 
-            rectangle.ToString().Should().Be("Rectangle(p=(1.2345mil:6.789mil),s=(5.4321mil:9.876mil),w=null,c=null,f=null)");
+            rectangle.ToString().Should().Be("Rectangle(p=(1.2345mil:6.789mil),s=(5.4321mil:9.876mil),w=null,c=null,f=null,ls=null)");
         }
 
         [Fact]
@@ -111,7 +126,7 @@ namespace BallisticCalculator.Test.Reticle
                 Color = null,
             };
 
-            line.ToString().Should().Be("Line(s=(1.2345mil:6.789mil),e=(5.4321mil:9.876mil),w=null,c=null)");
+            line.ToString().Should().Be("Line(s=(1.2345mil:6.789mil),e=(5.4321mil:9.876mil),w=null,c=null,ls=null)");
         }
 
         [Fact]
@@ -188,14 +203,14 @@ namespace BallisticCalculator.Test.Reticle
             p.Elements.Add(new ReticlePathElementMoveTo() { Position = new ReticlePosition(1.23, 5.54, AngularUnit.MOA) });
             p.Elements.Add(new ReticlePathElementLineTo() { Position = new ReticlePosition(7.8, 8.9, AngularUnit.MOA) });
 
-            p.ToString().Should().Be("Path(w=10mil,c=red,f=true,[M(1.23moa:5.54moa),L(7.8moa:8.9moa)])");
+            p.ToString().Should().Be("Path(w=10mil,c=red,f=true,ls=null,[M(1.23moa:5.54moa),L(7.8moa:8.9moa)])");
         }
 
         [Fact]
         public void Path2()
         {
             ReticlePath p = new ReticlePath();
-            p.ToString().Should().Be("Path(w=null,c=null,f=null)");
+            p.ToString().Should().Be("Path(w=null,c=null,f=null,ls=null)");
         }
 
         [Fact]

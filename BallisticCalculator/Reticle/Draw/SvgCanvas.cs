@@ -26,6 +26,30 @@ namespace BallisticCalculator.Reticle.Draw
         private void AppendAttribute(XmlNode node, string attribute, float value) => AppendAttribute(node, attribute, $"{(int)Math.Floor((double)value)}");
 
         /// <summary>
+        /// Applies the stroke style (dash pattern) to the SVG node.
+        /// The dash lengths are scaled to the effective stroke width so that
+        /// the pattern is proportional at any zoom level.
+        /// </summary>
+        private void ApplyLineStyle(XmlNode node, ReticleLineStyle style, float width)
+        {
+            if (style == ReticleLineStyle.Solid)
+                return;
+
+            float w = width < 1 ? 1 : width;
+
+            int dash = (int)Math.Floor(style == ReticleLineStyle.Dotted ? w : w * 4);
+            int gap = (int)Math.Floor(style == ReticleLineStyle.Dotted ? w * 2 : w * 3);
+            if (dash < 1)
+                dash = 1;
+            if (gap < 1)
+                gap = 1;
+
+            AppendAttribute(node, "stroke-dasharray", $"{dash} {gap}");
+            if (style == ReticleLineStyle.Dotted)
+                AppendAttribute(node, "stroke-linecap", "round");
+        }
+
+        /// <summary>
         /// Canvas title
         /// </summary>
         public string Title { get; }
@@ -129,15 +153,19 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="width"></param>
         /// <param name="fill"></param>
         /// <param name="color"></param>
-        public void Circle(float x, float y, float radius, float width, bool fill, string color)
+        /// <param name="style"></param>
+        public void Circle(float x, float y, float radius, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
+            float strokeWidth = width < 1 && !fill ? 1 : width;
             XmlNode element = document.CreateElement("circle");
             AppendAttribute(element, "cx", x);
             AppendAttribute(element, "cy", y);
             AppendAttribute(element, "r", radius < 0.5 ? 1.0f : radius);
             AppendAttribute(element, "stroke", color);
-            AppendAttribute(element, "stroke-width", width < 1 && !fill ? 1 : width);
+            AppendAttribute(element, "stroke-width", strokeWidth);
             AppendAttribute(element, "fill", fill ? color : "none");
+            if (!fill)
+                ApplyLineStyle(element, style, strokeWidth);
             document.DocumentElement.AppendChild(element);
         }
 
@@ -150,15 +178,18 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="y2"></param>
         /// <param name="width"></param>
         /// <param name="color"></param>
-        public void Line(float x1, float y1, float x2, float y2, float width, string color)
+        /// <param name="style"></param>
+        public void Line(float x1, float y1, float x2, float y2, float width, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
+            float strokeWidth = width < 1 ? 1 : width;
             XmlNode element = document.CreateElement("line");
             AppendAttribute(element, "x1", x1);
             AppendAttribute(element, "y1", y1);
             AppendAttribute(element, "x2", x2);
             AppendAttribute(element, "y2", y2);
             AppendAttribute(element, "stroke", color);
-            AppendAttribute(element, "stroke-width", width < 1 ? 1 : width);
+            AppendAttribute(element, "stroke-width", strokeWidth);
+            ApplyLineStyle(element, style, strokeWidth);
 
             document.DocumentElement.AppendChild(element);
         }
@@ -173,16 +204,20 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="width"></param>
         /// <param name="fill"></param>
         /// <param name="color"></param>
-        public void Rectangle(float x1, float y1, float x2, float y2, float width, bool fill, string color)
+        /// <param name="style"></param>
+        public void Rectangle(float x1, float y1, float x2, float y2, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
+            float strokeWidth = width < 1 && !fill ? 1 : width;
             XmlNode element = document.CreateElement("rect");
             AppendAttribute(element, "x", x1);
             AppendAttribute(element, "y", y1);
             AppendAttribute(element, "width", x2 - x1);
             AppendAttribute(element, "height", y2 - y1);
             AppendAttribute(element, "stroke", color);
-            AppendAttribute(element, "stroke-width", width < 1 && !fill ? 1 : width);
+            AppendAttribute(element, "stroke-width", strokeWidth);
             AppendAttribute(element, "fill", fill ? color : "none");
+            if (!fill)
+                ApplyLineStyle(element, style, strokeWidth);
 
             document.DocumentElement.AppendChild(element);
         }
@@ -242,7 +277,8 @@ namespace BallisticCalculator.Reticle.Draw
         /// <param name="width"></param>
         /// <param name="fill"></param>
         /// <param name="color"></param>
-        public void Path(IReticleCanvasPath path, float width, bool fill, string color)
+        /// <param name="style"></param>
+        public void Path(IReticleCanvasPath path, float width, bool fill, string color, ReticleLineStyle style = ReticleLineStyle.Solid)
         {
             if (path is SvgPath svgPath)
             {
@@ -254,7 +290,10 @@ namespace BallisticCalculator.Reticle.Draw
                 AppendAttribute(element, "fill", fill ? color : "none");
                 AppendAttribute(element, "stroke", !fill ? color : "none");
                 if (!fill)
+                {
                     AppendAttribute(element, "stroke-width", width);
+                    ApplyLineStyle(element, style, width);
+                }
 
                 document.DocumentElement.AppendChild(element);
             }

@@ -38,6 +38,13 @@ namespace BallisticCalculator.Reticle.Data
         public string Color { get; set; }
 
         /// <summary>
+        /// <para>The style of the line stroke.</para>
+        /// <para>If no value is set, a solid line will be used.</para>
+        /// </summary>
+        [BXmlProperty(Name = "line-style", Optional = true)]
+        public ReticleLineStyle? LineStyle { get; set; }
+
+        /// <summary>
         /// The collection of reticle's elements
         /// </summary>
         [BXmlProperty(Name = "elements", Collection = true)]
@@ -61,7 +68,8 @@ namespace BallisticCalculator.Reticle.Data
             {
                 if (!object.Equals(LineWidth, path.LineWidth) ||
                     !object.Equals(Color, path.Color) ||
-                    !object.Equals(Fill, path.Fill))
+                    !object.Equals(Fill, path.Fill) ||
+                    !object.Equals(LineStyle, path.LineStyle))
                     return false;
 
                 if (Elements.Count != path.Elements.Count)
@@ -92,7 +100,9 @@ namespace BallisticCalculator.Reticle.Data
                .Append(",c=")
                .Append(Color ?? "null")
                .Append(",f=")
-               .Append(Fill?.ToString(formatProvider).ToLower() ?? "null");
+               .Append(Fill?.ToString(formatProvider).ToLower() ?? "null")
+               .Append(",ls=")
+               .Append(LineStyle?.ToString() ?? "null");
 
             if (Elements.Count > 0)
             {
@@ -113,7 +123,7 @@ namespace BallisticCalculator.Reticle.Data
         /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode()
         {
-            int c = HashUtil.HashCombine(LineWidth, Color, Fill);
+            int c = HashUtil.HashCombine(LineWidth, Color, Fill, LineStyle);
             foreach (var element in Elements)
                 c = HashUtil.CodeCombine(c, element.GetHashCode());
             return c;
@@ -128,6 +138,7 @@ namespace BallisticCalculator.Reticle.Data
                 Color = this.Color,
                 Fill = this.Fill,
                 LineWidth = this.LineWidth,
+                LineStyle = this.LineStyle,
             };
 
             for (int i = 0; i < Elements.Count; i++)
