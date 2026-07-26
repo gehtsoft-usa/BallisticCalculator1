@@ -30,14 +30,15 @@ namespace BallisticCalculator.Test.Calculator
         public void SynthesizedCurveMatches4Dof(string trajRes, string bcRes,
             double velTol, double dropTolMOA, double windTolMOA, bool assertDrop, double minPublishedDropMOA)
         {
-            var (baseTable, knots) = LoadBcCurve(bcRes);
+            var (baseTable, diameter, knots) = LoadBcCurve(bcRes);
             var template = LoadTrajectory(trajRes);
             var cal = new TrajectoryCalculator();
             double maxYd = template.Trajectory[template.Trajectory.Count - 1].Distance.In(DistanceUnit.Yard);
             var winds = template.Wind == null ? null : new[] { template.Wind };
 
-            // synthesized-drg run: swap the published BC for the custom (GC) curve
-            template.Ammunition.BallisticCoefficient = new BallisticCoefficient(1.0, DragTableId.GC);
+            // synthesized-drg run: the factory scales the curve by the bullet's sectional density and
+            // stamps the ammunition with the matching GC form factor, replacing the published BC
+            template.Ammunition.BulletDiameter ??= diameter;
             var entry = new AmmunitionLibraryEntry { Name = trajRes, Ammunition = template.Ammunition };
             var table = DrgDragTableFactory.Build(entry, baseTable, knots);
 
@@ -205,10 +206,10 @@ namespace BallisticCalculator.Test.Calculator
         private static TrajectoryPoint[] RunSynth(TableLoader template, Wind[] winds = null, TwistDirection? twistOverride = null)
         {
             var cal = new TrajectoryCalculator();
-            var (baseTable, knots) = LoadBcCurve("bc_eldx");
+            var (baseTable, diameter, knots) = LoadBcCurve("bc_eldx");
             double maxYd = template.Trajectory[template.Trajectory.Count - 1].Distance.In(DistanceUnit.Yard);
 
-            template.Ammunition.BallisticCoefficient = new BallisticCoefficient(1.0, DragTableId.GC);
+            template.Ammunition.BulletDiameter ??= diameter;
             Rifle rifle = twistOverride == null
                 ? template.Rifle
                 : new Rifle(template.Rifle.Sight, template.Rifle.Zero,
@@ -241,13 +242,16 @@ namespace BallisticCalculator.Test.Calculator
             return new TableLoader(s);
         }
 
-        // bc_*.txt format: comment lines (#) ignored, first real line = base DragTableId,
-        // remaining lines = "mach;bc".
-        private static (DragTableId baseTable, BcAtMach[] knots) LoadBcCurve(string name)
+        // bc_*.txt format: comment lines (#) ignored, first real line = "<base DragTableId>;<bullet
+        // diameter>", remaining lines = "mach;bc". The diameter is there because the synthesized
+        // curve is scaled by the bullet's sectional density; the b1_*.txt trajectory templates carry
+        // only weight, so it belongs with the per-bullet drag data.
+        private static (DragTableId baseTable, Measurement<DistanceUnit> diameter, BcAtMach[] knots) LoadBcCurve(string name)
         {
             using var s = typeof(B1DragTest).Assembly.GetManifestResourceStream($"BallisticCalculator.Test.resources.{name}.txt");
             using var r = new StreamReader(s);
             DragTableId? baseId = null;
+            Measurement<DistanceUnit> diameter = Measurement<DistanceUnit>.ZERO;
             var knots = new List<BcAtMach>();
             string line;
             while ((line = r.ReadLine()) != null)
@@ -255,17 +259,18 @@ namespace BallisticCalculator.Test.Calculator
                 line = line.Trim();
                 if (line.Length == 0 || line[0] == '#')
                     continue;
+                var parts = line.Split(';');
                 if (baseId == null)
                 {
-                    baseId = (DragTableId)Enum.Parse(typeof(DragTableId), line);
+                    baseId = (DragTableId)Enum.Parse(typeof(DragTableId), parts[0]);
+                    diameter = new Measurement<DistanceUnit>(parts[1]);
                     continue;
                 }
-                var parts = line.Split(';');
                 knots.Add(new BcAtMach(
                     double.Parse(parts[0], CultureInfo.InvariantCulture),
                     double.Parse(parts[1], CultureInfo.InvariantCulture)));
             }
-            return (baseId.Value, knots.ToArray());
+            return (baseId.Value, diameter, knots.ToArray());
         }
     }
 }

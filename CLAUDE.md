@@ -233,14 +233,21 @@ point, `Sg₀·(v₀/v)^1.25`; null unless rifling + bullet dims supplied). `Dro
   (whitespace-separated, Cd first). `TableId==GC`; exposes an `AmmunitionLibraryEntry`.
   Fields 1–4 are required; **5 (bullet length, m) and 6 (source) are optional and round-trip**
   through `Save` — a zero/absent length gives `BulletLength == null`, an absent source defaults
-  to `"drg file"`. Caliber, ammunition type and barrel length have **no slot in the format** and
-  are lost on save.
+  to `"drg file"`. Caliber, ammunition type, barrel length **and muzzle velocity** have **no slot in
+  the format** and are lost on save (`Open` stamps a 500 m/s MV placeholder). `CFM` and `BRL` are
+  read identically (only the tag differs); `Save` always writes `CFM`.
   Construction: `Open` (file/stream), `DrgDragTableFactory.Build` (scale a standard curve by a
   BC-vs-Mach profile), `RadarDragTableFactory.Create` (from velocity readings; optional
   `bulletLength`/`source`), or the **public ctor** `new DrgDragTable(points, name, weight,
   diameter, bulletLength = null, source = null, muzzleVelocity = null)` — params mirror the
   header fields; validates ≥2 points, ascending Mach. Metadata is readable *and* mutable
   post-construction via `table.Ammunition` (public getter over a mutable entry).
+- **One Cd scale everywhere — the file's.** `Open`, the public ctor, `RadarDragTableFactory.Create`
+  and `DrgDragTableFactory.Build` all hold the projectile's **physical Cd** and all pair with
+  **form factor 1** (so `BC_eff = SD`). So **run any `DrgDragTable` with `table.Ammunition.Ammunition`**
+  and `Build`→`Save`→`Open` round-trips (only the MV is lost — no header slot). `Build` therefore
+  **requires weight + diameter** and **overwrites** the entry's BC with the form-factor-1 `GC` value.
+  Before 1.1.11.3 `Build` returned `Cd/BC` and needed `coefficient 1.0` instead; see `BREAKING_CHANGES.md`.
 
 ---
 
@@ -366,6 +373,17 @@ crosswind with a shot angle produces a small vertical component.
   `ShotParameters.ZeroDropAdjustment`) before `Calculate`; its arg order is ammo, **atmo, rifle**, zero.
   `ShotAngle` is *added* to barrel elevation inside `Calculate`.
 - **`GC` custom BC** requires passing the `DragTable` to both `CalculateZeroParameters` and `Calculate`.
+- **Run a custom `DrgDragTable` with `table.Ammunition.Ammunition`** (§4) — every construction path
+  stamps the form-factor-1 `GC` value that matches its physical-Cd points. Pairing such a table with
+  `coefficient 1.0` instead is a silent `1/SD` drag error (2.8× for a 285 gr .338), not an exception.
+- **A published drag report's CD/BC columns and its velocity table may not share an air density.**
+  In both Warner Tool sheets (`resources/warner_*.txt`) the CD/BC columns are the density-independent
+  aerodynamic values while the velocity table is raw measurement at ~0.77 density (a warm day on the
+  6000 ft NM Tech/EMRTC ranges), so feeding the multi-BC column a sea-level atmosphere is 14–24 %
+  slow at 1500 yd. Only two atmosphere numbers reach the trajectory — density factor and speed of
+  sound — and they are jointly identifiable from such a report, but the alt/pressure/temp/humidity
+  split behind them is not. Humidity is a <1 % lever and runs backwards from intuition (vapour is
+  lighter than air, so **dry** air is denser). `WarnerReportTest` cross-checks the two tables.
 - **50 ft/s floor & early stop**: subsonic long-range or steep-angle runs may return fewer rows
   than `MaximumDistance/Step + 1`; guard for trailing `null`s in the returned array.
 

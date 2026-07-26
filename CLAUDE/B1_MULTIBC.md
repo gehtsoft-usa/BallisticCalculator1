@@ -10,17 +10,21 @@ Verified against source 2026-07-13.
 ## Components (engine)
 - **`BcAtMach`** (`BallisticCalculator/Calculations/BcAtMach.cs`) — one `Mach` → `Bc` knot.
 - **`DrgDragTableFactory.Build(AmmunitionLibraryEntry ammo, DragTableId baseTable, IEnumerable<BcAtMach> curve)`**
-  (`Calculations/DrgDragTableFactory.cs`) — returns a `DrgDragTable`. `Cd_custom(M) = Cd_base(M) / BC(M)`
+  (`Calculations/DrgDragTableFactory.cs`) — returns a `DrgDragTable`. `Cd(M) = Cd_base(M) / BC(M) · SD`
   on the base table's Mach grid; `BC` is piecewise-linear between knots, held flat beyond the end
-  knots. Caller supplies the ammunition metadata (name/weight/diameter).
+  knots. Caller supplies the ammunition metadata; **weight and diameter are required** (they set the
+  scale) and the entry's BC is **overwritten** with form factor 1 on `GC`. Since 1.1.11.3 — see
+  `BREAKING_CHANGES.md`.
 - **`DrgDragTable.Save(Stream|string)` / `Open(...)`** (`Drag/DrgDragTable.cs`) — CFM `.drg`
   round-trip (`:R` precision).
-- **Usage:** run the synthesized table with ammo `new BallisticCoefficient(1.0, DragTableId.GC)`
-  (the synthesis normalizes to `BcRef = 1`).
+- **Usage:** run the synthesized table with `table.Ammunition.Ammunition` — the factory stamps the
+  form-factor-1 `GC` ammo that matches the curve. The `SD` in the curve cancels against the `SD` the
+  form factor resolves to, so trajectories match the pre-1.1.11.3 `BC = 1.0` usage exactly, and the
+  table is now a plain `.drg` (survives `Save`→`Open`).
 
 ## The identity (why it works, and generalizes)
 Engine drag: `a = PIR · densityFactor · Cd(M) · v² / BC` (`PIR = 2.08551e-4`). With the synthesized
-table (`Cd_custom = Cd_std / BC_eff`) run at `BC = 1`, the base-table term cancels:
+table (`Cd = Cd_std · SD / BC_eff`) run at `BC = SD` (form factor 1), the base-table term cancels:
 
 ```
 Cd_custom(M) = a_ref / (PIR · densityFactor · v²)
@@ -68,8 +72,10 @@ B0-3 baseline, B0-4 MV 3200, B0-5 7000 ft. Sanity check any BTHP scan: a .224 75
   Save round-trip, including the real `sierra_168_brl.drg` BRL file).
 
 **Resources (embedded):**
-- `bc_<bullet>.txt` — the multi-BC curve. Format: `#` comments ignored, **first real line = base
-  `DragTableId`**, then `mach;bc` lines. Currently **3 knots** each (Strelok-style multi-BC).
+- `bc_<bullet>.txt` — the multi-BC curve. Format: `#` comments ignored, **first real line =
+  `<base DragTableId>;<bullet diameter>`**, then `mach;bc` lines. Currently **3 knots** each
+  (Strelok-style multi-BC). The diameter lives here because the synthesis is scaled by sectional
+  density and the `b1_*.txt` templates carry only weight.
 - `b1_<case>.txt` — 8 Hornady-4DOF trajectories in the `TableLoader` format (50-yd rows), one per
   test case: `b1_eldx`, `b1_eldm`, `b1_eldm_10kft`, `b1_bthp`, `b1_bthp_hot`, `b1_bthp_3200`,
   `b1_bthp_7kft`, `b1_eldx_wind`.

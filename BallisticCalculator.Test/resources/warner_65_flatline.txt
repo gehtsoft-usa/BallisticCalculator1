@@ -1,0 +1,45 @@
+# Warner Tool Company Doppler-radar data sheet - 6.5 mm Flatline, 123 gr.
+#
+# Transcribed from the published one-page PDF report (Warner Tool Company,
+# 2019-01-03, warner-tool.com): the bullet header, the smoothed
+# "Mach / CD / BC-G1 / BC-G7" summary table (rows where the report has data)
+# and the "Distance / Velocity / Time" table.
+#
+# As with the .338 sheet, the CD/BC columns and the velocity table do not share
+# an air density: the columns are the density-independent aerodynamic values and
+# the velocity table is raw measurement at ~0.77 of standard density (a warm day
+# on the New Mexico Tech / EMRTC ranges). See WarnerReportTest.
+
+# name;weight;diameter
+bullet;6.5mm Flatline;123gr;0.264in
+
+# the drag curve the multi-BC column below is used with
+base;G1
+
+# mach;cd;bc-g1;bc-g7
+cd;1.1;0.354;0.419;0.286
+cd;1.2;0.327;0.492;0.299
+cd;1.35;0.298;0.559;0.309
+cd;1.5;0.279;0.594;0.311
+cd;1.75;0.257;0.616;0.310
+cd;2;0.241;0.621;0.312
+cd;2.25;0.225;0.630;0.317
+cd;2.5;0.213;0.639;0.320
+
+# distance;velocity;time of flight in seconds
+v;0yd;3121.5ft/s;0.000
+v;100yd;3001.9ft/s;0.096
+v;200yd;2884.0ft/s;0.200
+v;300yd;2767.9ft/s;0.307
+v;400yd;2654.0ft/s;0.418
+v;500yd;2542.2ft/s;0.533
+v;600yd;2432.8ft/s;0.653
+v;700yd;2325.7ft/s;0.779
+v;800yd;2221.1ft/s;0.910
+v;900yd;2119.0ft/s;1.048
+v;1000yd;2019.3ft/s;1.193
+v;1100yd;1922.0ft/s;1.346
+v;1200yd;1827.0ft/s;1.506
+v;1300yd;1734.2ft/s;1.676
+v;1400yd;1643.2ft/s;1.854
+v;1500yd;1554.0ft/s;2.042

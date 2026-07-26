@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.11.3">Fix multi-BC calculator density handling</version>
   <version id="1.1.11.2">Fix DRG I/O</version>
   <version id="1.1.11.1">Reticle extensions: move elements, line style</version>
   <version id="1.1.11">Another optimization of calculation loop, new zeroing parameter calculation (breaking change), new set of tools (GC table from veloctities, danger zone, moving targets, hit probability)</version>

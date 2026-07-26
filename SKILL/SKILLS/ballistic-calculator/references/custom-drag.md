@@ -36,13 +36,20 @@ table.Save("copy.drg");                                    // also Save(Stream)
 
 ## C. Multi-BC → synthesized drag table (`DrgDragTableFactory`)
 Turn a 2–3 point BC-vs-Mach profile (as published for many bullets) into a custom curve. It scales a
-standard base curve by the BC at each Mach (piecewise-linear between knots, flat beyond the ends). Run
-the result with a BC of **1.0** and table **`GC`**.
+standard base curve by the BC at each Mach (piecewise-linear between knots, flat beyond the ends) and
+by the bullet's sectional density, so the table holds the projectile's **physical Cd** — the same
+quantity a `.drg` file stores. **Run it with the ammunition the factory hands back**
+(`table.Ammunition.Ammunition`), which carries a **form factor of 1.0** on table **`GC`**.
 
-`Build` uses only its `baseTable` and `bcCurve` arguments to compute the curve; the
-`AmmunitionLibraryEntry` is attached to the returned table as **metadata only** (name/source/caliber
-etc.) and its numeric fields do *not* affect the drag curve. `baseTable` must be a standard curve
-(passing `GC` throws), and every knot's BC must be positive.
+`Build` needs the bullet **weight and diameter** in the entry (they set the scale of the curve; it
+throws without them). The ballistic coefficient in the entry is *not* an input — `Build` overwrites it
+with the form-factor-1 `GC` value the curve must be run with, so the table and its ammunition can't be
+mismatched. `baseTable` must be a standard curve (passing `GC` throws), and every knot's BC must be
+positive.
+
+Because the curve is on the `.drg` scale, `Build` → `Save` → `Open` round-trips: the reloaded table
+gives the same drag and the same trajectory (the header has no muzzle-velocity slot, so set that
+yourself after `Open`).
 
 `AmmunitionLibraryEntry` (properties): `Ammunition` (`Ammunition`), `Name`, `Source`, `Caliber`,
 `AmmunitionType` (all `string`), `BarrelLength` (`Measurement<DistanceUnit>?`).
@@ -51,10 +58,10 @@ var entry = new AmmunitionLibraryEntry
 {
     Name = "220 gr .308",
     Ammunition = new Ammunition(
-        weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
-        ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
+        weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),        // required
+        ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),   // ignored, Build overwrites it
         muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond),
-        bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch)),
+        bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch)),   // required
 };
 
 var curve = new[]                                       // Mach -> effective BC
@@ -67,10 +74,7 @@ var curve = new[]                                       // Mach -> effective BC
 DrgDragTable table = DrgDragTableFactory.Build(entry, DragTableId.G7, curve);
 // table.Save("220gr-308.drg");  // optional
 
-var ammo = new Ammunition(
-    weight: new Measurement<WeightUnit>(220, WeightUnit.Grain),
-    ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
-    muzzleVelocity: new Measurement<VelocityUnit>(2600, VelocityUnit.FeetPerSecond));
+var ammo = table.Ammunition.Ammunition;   // GC, form factor 1 — stamped by Build
 shot.ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment;
 var traj = calc.Calculate(ammo, rifle, atmosphere, shot, null, table);
 ```

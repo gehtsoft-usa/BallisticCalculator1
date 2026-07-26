@@ -4,6 +4,54 @@ Newest first. Each entry says **what changed**, **why**, and **how to migrate**.
 
 ---
 
+## 1.1.11.3
+
+### 1. `DrgDragTableFactory.Build` returns the physical drag coefficient
+
+`Build` used to return `Cd_base(M) / BC(M)` — a curve on a reciprocal-BC scale that had to be run
+with a ballistic coefficient **value** of `1.0`. Every other custom table in the library (a loaded
+`.drg` file, `RadarDragTableFactory.Create`, the public `DrgDragTable` constructor) holds the
+projectile's **physical Cd** and is run with a **form factor of 1**.
+
+Two scales behind one type meant a `Build` table could not be persisted: `Save` wrote it as a `.drg`,
+`Open` read it back as physical Cd, and the drag came out `1/SD` too large — 2.8× for a 285 gr .338,
+so the bullet fell out of the sky. Mixing the pairings by hand did the same thing silently, with no
+exception.
+
+`Build` now multiplies by the bullet's sectional density, so **one convention is used everywhere: the
+file's**. Consequences:
+
+- **`Build` requires the bullet weight and diameter** in the entry's `Ammunition` (they set the scale
+  of the curve). It throws `ArgumentException` without them.
+- **`Build` overwrites the entry's `BallisticCoefficient`** with `new BallisticCoefficient(1,
+  DragTableId.GC, BallisticCoefficientValueType.FormFactor)`. The BC was never an input; stamping it
+  makes the table and its ammunition impossible to mismatch. It also defaults an empty `Source` to
+  `"bc curve"`.
+- `Build` → `Save` → `Open` now round-trips: same points, same effective BC, same trajectory. Only the
+  muzzle velocity is lost, because the `.drg` header has no slot for it.
+- Third-party `.drg` files are unaffected — `Open` and `Save` did not change.
+
+Trajectories are **unchanged** for correct usage: the sectional density in the curve cancels against
+the form factor in the ammunition.
+
+**Before**
+```csharp
+ammo.BallisticCoefficient = new BallisticCoefficient(1.0, DragTableId.GC);   // magic value
+var entry = new AmmunitionLibraryEntry { Name = "220 gr .308", Ammunition = ammo };
+var table = DrgDragTableFactory.Build(entry, DragTableId.G7, curve);
+var traj = calc.Calculate(ammo, rifle, atmosphere, shot, null, table);
+```
+
+**After**
+```csharp
+// weight and diameter are required; the BC is set by the factory
+var entry = new AmmunitionLibraryEntry { Name = "220 gr .308", Ammunition = ammo };
+var table = DrgDragTableFactory.Build(entry, DragTableId.G7, curve);
+var traj = calc.Calculate(table.Ammunition.Ammunition, rifle, atmosphere, shot, null, table);
+```
+
+---
+
 ## 1.1.11
 
 ### 1. Zeroing: `SightAngle` replaced by `CalculateZeroParameters`
