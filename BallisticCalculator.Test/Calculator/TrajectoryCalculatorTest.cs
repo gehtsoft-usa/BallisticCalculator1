@@ -408,5 +408,110 @@ namespace BallisticCalculator.Test.Calculator
                 }
             }
         }
+
+        // A third-party drg file must drive a physically correct trajectory, not merely a
+        // self-consistent one. The Sierra 168 gr MatchKing BRL radar table is checked against the
+        // bullet's published G7 BC of 0.218: over 1000 yd the measured curve and the published
+        // coefficient agree to 0.54 % in velocity and 0.25 MOA in drop, which is the real spread
+        // between a radar curve and a single-BC approximation of the same bullet.
+        //
+        // This is also the sharpest guard on the custom-table scale: pairing the file's physical Cd
+        // with anything other than its form factor of one is a factor-of-4 error here, not a percent.
+        [Fact]
+        public void RealDrgFile_TrajectoryMatchesPublishedBc()
+        {
+            using var src = typeof(TrajectoryCalculatorTest).Assembly
+                .GetManifestResourceStream("BallisticCalculator.Test.resources.sierra_168_brl.drg");
+            var table = DrgDragTable.Open(src);
+
+            var fromFile = table.Ammunition.Ammunition;       // GC, form factor 1, from the header
+            fromFile.MuzzleVelocity = new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond);
+            var published = new Ammunition(
+                weight: fromFile.Weight,
+                ballisticCoefficient: new BallisticCoefficient(0.218, DragTableId.G7),
+                muzzleVelocity: fromFile.MuzzleVelocity,
+                bulletDiameter: fromFile.BulletDiameter,
+                bulletLength: fromFile.BulletLength);
+
+            var radar = RunTo1000Yards(fromFile, table);
+            var g7 = RunTo1000Yards(published, null);
+
+            radar.Length.Should().Be(g7.Length);
+            for (int i = 0; i < g7.Length; i++)
+            {
+                double expected = g7[i].Velocity.In(VelocityUnit.FeetPerSecond);
+                radar[i].Velocity.In(VelocityUnit.FeetPerSecond).Should()
+                    .BeApproximately(expected, expected * 0.0075, $"velocity@{g7[i].Distance:N0}");
+
+                double yards = g7[i].Distance.In(DistanceUnit.Yard);
+                if (yards <= 0)
+                    continue;
+                double dropToleranceInInch = Measurement<AngularUnit>.Convert(0.35, AngularUnit.MOA, AngularUnit.InchesPer100Yards) * yards / 100;
+                radar[i].Drop.In(DistanceUnit.Inch).Should()
+                    .BeApproximately(g7[i].Drop.In(DistanceUnit.Inch), dropToleranceInInch, $"drop@{g7[i].Distance:N0}");
+            }
+        }
+
+        // The CFM-header counterpart of Custom2 (which drives the BRL 120 mm mortar file): the
+        // .30 Lapua AP492 radar table, run against the reference trajectory of the same projectile.
+        //
+        // Note the tolerances are a sanity band, not an accuracy claim: drg.txt and the hand-coded
+        // MyDrag curve used by Custom1 are two different measured datasets for this bullet (they
+        // differ by up to 25 % in Cd through the transonic region), so their trajectories are only
+        // expected to agree to a couple of percent. What this pins is that a CFM file loads, pairs
+        // with its own ammunition and flies - a scale error would be several hundred percent.
+        [Fact]
+        public void Custom1_FromCfmDrgFile()
+        {
+            var template = TableLoader.FromResource("custom");
+            using var stream = typeof(TrajectoryCalculatorTest).Assembly
+                .GetManifestResourceStream("BallisticCalculator.Test.resources.drg.txt");
+            var table = DrgDragTable.Open(stream);
+
+            // the file's own metadata must agree with the reference load it belongs to
+            table.Ammunition.Ammunition.GetBallisticCoefficient().Should()
+                .BeApproximately(template.Ammunition.GetBallisticCoefficient(), 0.005);
+
+            var cal = new TrajectoryCalculator();
+            var shot = new ShotParameters
+            {
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Meter),
+                MaximumDistance = new Measurement<DistanceUnit>(500, DistanceUnit.Meter),
+                ZeroDropAdjustment = cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero, dragTable: table).ZeroDropAdjustment,
+            };
+            var trajectory = cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot, null, table);
+
+            trajectory.Length.Should().Be(template.Trajectory.Count);
+            for (int i = 0; i < trajectory.Length; i++)
+            {
+                var templatePoint = template.Trajectory[i];
+                double expected = templatePoint.Velocity.In(templatePoint.Velocity.Unit);
+                trajectory[i].Velocity.In(templatePoint.Velocity.Unit).Should()
+                    .BeApproximately(expected, expected * 0.02, $"velocity@{templatePoint.Distance:N0}");
+
+                double yards = templatePoint.Distance.In(DistanceUnit.Yard);
+                if (yards <= 0)
+                    continue;
+                double dropToleranceInInch = Measurement<AngularUnit>.Convert(0.7, AngularUnit.MOA, AngularUnit.InchesPer100Yards) * yards / 100;
+                trajectory[i].Drop.In(DistanceUnit.Inch).Should()
+                    .BeApproximately(templatePoint.Drop.In(DistanceUnit.Inch), dropToleranceInInch, $"drop@{templatePoint.Distance:N0}");
+            }
+        }
+
+        private static TrajectoryPoint[] RunTo1000Yards(Ammunition ammunition, DragTable table)
+        {
+            var cal = new TrajectoryCalculator();
+            var rifle = new Rifle(
+                sight: new Sight(new Measurement<DistanceUnit>(1.5, DistanceUnit.Inch), Measurement<AngularUnit>.ZERO, Measurement<AngularUnit>.ZERO),
+                zero: new ZeroingParameters(new Measurement<DistanceUnit>(100, DistanceUnit.Yard), null, null));
+            var atmosphere = new Atmosphere();
+            var shot = new ShotParameters
+            {
+                Step = new Measurement<DistanceUnit>(100, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+            };
+            shot.Apply(cal.CalculateZeroParameters(ammunition, atmosphere, rifle, rifle.Zero, dragTable: table));
+            return cal.Calculate(ammunition, rifle, atmosphere, shot, null, table);
+        }
     }
 }
