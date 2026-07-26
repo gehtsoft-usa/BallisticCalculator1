@@ -317,6 +317,36 @@
        !var table = DrgDragTable.Open("308-168gr.drg");
        !// then use `table` the same way as a custom DragTable
     @end
+
+    The bullet metadata from the file header is available through the table's
+    [c]Ammunition[/c] entry: the name, the weight, the diameter, the bullet length and the
+    data source. The length matters - it is one of the values the spin drift and the
+    aerodynamic jump need, so a file that carries it saves you from filling it in by hand.
+
+    @example
+        @title=Reading the metadata of a drg file
+        @highlight=cs
+        @show=yes
+       !var table = DrgDragTable.Open("308-168gr.drg");
+       !var bullet = table.Ammunition.Ammunition;      // weight, diameter, length
+       !var origin = table.Ammunition.Source;          // "Radar Data", for instance
+    @end
+
+    A table can also be built in code from your own measured points and saved as a
+    [c].drg[/c] file. The constructor takes the same values the file header carries, so
+    nothing is lost on the way back to disk:
+
+    @example
+        @title=Building and saving a custom drg table
+        @highlight=cs
+        @show=yes
+       !var table = new DrgDragTable(points, "308 168gr custom",
+       !    new Measurement<WeightUnit>(168, WeightUnit.Grain),
+       !    new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch),
+       !    bulletLength: new Measurement<DistanceUnit>(1.226, DistanceUnit.Inch),
+       !    source: "Doppler radar, 2026");
+       !table.Save("308-168gr.drg");
+    @end
 @end
 
 @article

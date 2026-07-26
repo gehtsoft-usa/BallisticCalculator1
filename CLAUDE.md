@@ -229,8 +229,18 @@ point, `Sg₀·(v₀/v)^1.25`; null unless rifling + bullet dims supplied). `Dro
   search to the **nearest** node; the hot loop then walks `Previous` as velocity drops.
 - **Custom radar/measured curves — `DrgDragTable`** (`Drag/DrgDragTable.cs`):
   `DrgDragTable.Open(stream|fileName)` parses `.drg` files. Format: header line
-  `CFM|BRL, name, weight(kg), diameter(m), ...`; then point lines `"<Cd> <Mach>"`
+  `CFM|BRL, name, weight(kg), diameter(m), length(m), source`; then point lines `"<Cd> <Mach>"`
   (whitespace-separated, Cd first). `TableId==GC`; exposes an `AmmunitionLibraryEntry`.
+  Fields 1–4 are required; **5 (bullet length, m) and 6 (source) are optional and round-trip**
+  through `Save` — a zero/absent length gives `BulletLength == null`, an absent source defaults
+  to `"drg file"`. Caliber, ammunition type and barrel length have **no slot in the format** and
+  are lost on save.
+  Construction: `Open` (file/stream), `DrgDragTableFactory.Build` (scale a standard curve by a
+  BC-vs-Mach profile), `RadarDragTableFactory.Create` (from velocity readings; optional
+  `bulletLength`/`source`), or the **public ctor** `new DrgDragTable(points, name, weight,
+  diameter, bulletLength = null, source = null, muzzleVelocity = null)` — params mirror the
+  header fields; validates ≥2 points, ascending Mach. Metadata is readable *and* mutable
+  post-construction via `table.Ammunition` (public getter over a mutable entry).
 
 ---
 

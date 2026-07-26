@@ -100,6 +100,34 @@ namespace BallisticCalculator.Test.Tools
             table.TableId.Should().Be(DragTableId.GC);
             table.Ammunition.Ammunition.Weight.In(WeightUnit.Grain).Should().BeApproximately(WeightGr, 1e-6);
             table.Ammunition.Ammunition.BulletDiameter.Value.In(DistanceUnit.Inch).Should().BeApproximately(DiameterIn, 1e-6);
+            table.Ammunition.Ammunition.BulletLength.Should().BeNull();
+            table.Ammunition.Source.Should().Be("radar data");
+        }
+
+        // The optional length and source must reach the entry and survive a drg round-trip.
+        [Fact]
+        public void OptionalLengthAndSource_ArePreserved()
+        {
+            var (_, readings) = Reference();
+            var table = RadarDragTableFactory.Create(readings,
+                new Measurement<WeightUnit>(WeightGr, WeightUnit.Grain),
+                new Measurement<DistanceUnit>(DiameterIn, DistanceUnit.Inch),
+                new Atmosphere(),
+                name: "168 SMK",
+                bulletLength: new Measurement<DistanceUnit>(1.226, DistanceUnit.Inch),
+                source: "LabRadar 2026-07-26");
+
+            table.Ammunition.Ammunition.BulletLength.Value.In(DistanceUnit.Inch).Should().BeApproximately(1.226, 1e-6);
+            table.Ammunition.Source.Should().Be("LabRadar 2026-07-26");
+
+            using var ms = new System.IO.MemoryStream();
+            table.Save(ms);
+            ms.Position = 0;
+            var reopened = DrgDragTable.Open(ms);
+
+            reopened.Ammunition.Name.Should().Be("168 SMK");
+            reopened.Ammunition.Ammunition.BulletLength.Value.In(DistanceUnit.Inch).Should().BeApproximately(1.226, 1e-6);
+            reopened.Ammunition.Source.Should().Be("LabRadar 2026-07-26");
         }
 
         [Fact]

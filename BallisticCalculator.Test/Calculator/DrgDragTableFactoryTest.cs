@@ -17,7 +17,8 @@ namespace BallisticCalculator.Test.Calculator
                 weight: new Measurement<WeightUnit>(168, WeightUnit.Grain),
                 ballisticCoefficient: new BallisticCoefficient(1.0, DragTableId.GC),
                 muzzleVelocity: new Measurement<VelocityUnit>(2700, VelocityUnit.FeetPerSecond),
-                bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch)),
+                bulletDiameter: new Measurement<DistanceUnit>(0.308, DistanceUnit.Inch),
+                bulletLength: new Measurement<DistanceUnit>(1.215, DistanceUnit.Inch)),
         };
 
         // A flat BC(M) = k must produce Cd_custom(M) = Cd_base(M) / k at every base node.
@@ -106,6 +107,32 @@ namespace BallisticCalculator.Test.Calculator
                 .Should().BeApproximately(entry.Ammunition.Weight.In(WeightUnit.Kilogram), 1e-9);
             reopened.Ammunition.Ammunition.BulletDiameter.Value.In(DistanceUnit.Meter)
                 .Should().BeApproximately(entry.Ammunition.BulletDiameter.Value.In(DistanceUnit.Meter), 1e-9);
+            reopened.Ammunition.Ammunition.BulletLength.Should().NotBeNull();
+            reopened.Ammunition.Ammunition.BulletLength.Value.In(DistanceUnit.Meter)
+                .Should().BeApproximately(entry.Ammunition.BulletLength.Value.In(DistanceUnit.Meter), 1e-9);
+            reopened.Ammunition.Source.Should().Be("unit-test");
+        }
+
+        // The bullet length and the source are optional in the header: when they are missing
+        // (or zeroed, as older versions of Save wrote them) the load must not fail.
+        [Fact]
+        public void Save_OmittedLengthAndSource()
+        {
+            using var ms = new MemoryStream();
+            using (var w = new StreamWriter(ms, System.Text.Encoding.ASCII, 4096, true))
+            {
+                w.WriteLine("CFM, no-metadata, 0.01089, 0.00782,0,");
+                w.WriteLine("0.14 0");
+                w.WriteLine("0.30 1");
+                w.WriteLine("0.25 5");
+            }
+            ms.Position = 0;
+
+            var table = DrgDragTable.Open(ms);
+
+            table.Ammunition.Name.Should().Be("no-metadata");
+            table.Ammunition.Ammunition.BulletLength.Should().BeNull();
+            table.Ammunition.Source.Should().Be("drg file");
         }
 
         // BC is interpolated linearly between knots and held flat beyond them.
@@ -149,6 +176,15 @@ namespace BallisticCalculator.Test.Calculator
                 .Should().BeApproximately(original.Ammunition.Ammunition.Weight.In(WeightUnit.Kilogram), 1e-9);
             reopened.Ammunition.Ammunition.BulletDiameter.Value.In(DistanceUnit.Meter)
                 .Should().BeApproximately(original.Ammunition.Ammunition.BulletDiameter.Value.In(DistanceUnit.Meter), 1e-9);
+
+            //the 5th and the 6th header fields of the reference file: length in meters and the data source
+            original.Ammunition.Ammunition.BulletLength.Should().NotBeNull();
+            original.Ammunition.Ammunition.BulletLength.Value.In(DistanceUnit.Meter).Should().BeApproximately(0.03114, 1e-9);
+            original.Ammunition.Source.Should().Be("Radar Data");
+
+            reopened.Ammunition.Ammunition.BulletLength.Value.In(DistanceUnit.Meter)
+                .Should().BeApproximately(original.Ammunition.Ammunition.BulletLength.Value.In(DistanceUnit.Meter), 1e-9);
+            reopened.Ammunition.Source.Should().Be(original.Ammunition.Source);
         }
 
         [Fact]

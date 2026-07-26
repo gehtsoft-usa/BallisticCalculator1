@@ -54,12 +54,15 @@ namespace BallisticCalculator.Tools
         /// <param name="bulletDiameter">The bullet diameter.</param>
         /// <param name="atmosphere">The atmosphere the data was measured in; when null, a sea-level standard atmosphere is used.</param>
         /// <param name="name">An optional name for the resulting ammunition entry.</param>
+        /// <param name="bulletLength">The optional bullet length. It is not used by the drag curve, but it is required for the spin drift and the aerodynamic jump, and it is stored in the drg file.</param>
+        /// <param name="source">The optional description of the data origin. When it is not specified, the entry is marked as radar data.</param>
         /// <returns>A custom drag table reproducing the measured velocity decay.</returns>
         /// <exception cref="ArgumentNullException">The readings are null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">The weight or diameter is not positive.</exception>
         /// <exception cref="ArgumentException">There are fewer than three readings, or velocity does not strictly decrease with distance.</exception>
         public static DrgDragTable Create(IEnumerable<RadarReading> readings, Measurement<WeightUnit> bulletWeight,
-            Measurement<DistanceUnit> bulletDiameter, Atmosphere atmosphere = null, string name = null)
+            Measurement<DistanceUnit> bulletDiameter, Atmosphere atmosphere = null, string name = null,
+            Measurement<DistanceUnit>? bulletLength = null, string source = null)
         {
             ArgumentNullException.ThrowIfNull(readings);
             double weightGrains = bulletWeight.In(WeightUnit.Grain);
@@ -111,12 +114,13 @@ namespace BallisticCalculator.Tools
             var entry = new AmmunitionLibraryEntry
             {
                 Name = name ?? "radar",
-                Source = "radar data",
+                Source = string.IsNullOrWhiteSpace(source) ? "radar data" : source.Trim(),
                 Ammunition = new Ammunition
                 {
                     BallisticCoefficient = new BallisticCoefficient(1, DragTableId.GC, BallisticCoefficientValueType.FormFactor),
                     Weight = bulletWeight,
                     BulletDiameter = bulletDiameter,
+                    BulletLength = bulletLength,
                     MuzzleVelocity = sorted[0].Velocity,
                 }
             };
