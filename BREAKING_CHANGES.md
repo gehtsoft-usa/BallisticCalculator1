@@ -4,7 +4,7 @@ Newest first. Each entry says **what changed**, **why**, and **how to migrate**.
 
 ---
 
-## Unreleased
+## 1.1.12
 
 ### 1. `Atmosphere.Density` now uses the station pressure, not the sea level pressure
 
