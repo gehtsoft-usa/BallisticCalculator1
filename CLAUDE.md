@@ -54,7 +54,7 @@ Engine source, by concern (read the specific dir, not the whole tree):
   `HitProbability` (`Estimate` → Monte-Carlo WEZ over MV/group/range/wind errors + position multipliers).
 
 Engine dependencies (`BallisticCalculator/BallisticCalculator.csproj`):
-- **`Gehtsoft.Measurements` 1.1.17** — strongly-typed units (all physics quantities). See §2.
+- **`Gehtsoft.Measurements` 1.1.18** — strongly-typed units (all physics quantities). See §2.
 - `System.Runtime` 4.3.1.
 - Embedded resource `Resources/Calibers.csv`.
 
@@ -78,7 +78,14 @@ custom `DragTable` and `DrgDragTable.Open`); reference-template loading in `Tabl
 
 Everything physical is a `Measurement<TUnit>` (a struct wrapping `double Value` + `TUnit Unit`).
 - **Source** (sibling repo, read when this section isn't enough): `../Gehtsoft.Measurements/`.
-- Compiled + XML docs: `~/.nuget/packages/gehtsoft.measurements/1.1.17/lib/netstandard2.0/`.
+- Compiled + XML docs: `~/.nuget/packages/gehtsoft.measurements/1.1.18/lib/net8.0/` (net8.0 only —
+  the package has no netstandard2.0 asset).
+- The sibling repo also ships a `gehtsoft-measurements` skill (`SKILL/skills/gehtsoft-measurements/`)
+  covering the whole public surface; it is **not** installed in this repo. Install it rather than
+  re-deriving this section if you need more than the essentials below.
+- ⚠️ 1.1.18 renamed `DensityUnit.OuncesPerCubicFeet` → `OuncesPerCubicInch` (the old name was always
+  ounces per cubic *inch*; the old member survives but is `[Obsolete]`). We use only
+  `KilogramPerCubicMeter` and `PoundsPerCubicFoot`, so nothing here was affected.
 
 **Construction & access**
 ```csharp
