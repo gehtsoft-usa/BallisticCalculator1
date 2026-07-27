@@ -66,6 +66,90 @@ namespace BallisticCalculator.Test.Data
             atmosphere.Temperature.In(TemperatureUnit.Celsius).Should().BeApproximately(temperature, 0.1);
         }
 
+        /// <summary>
+        /// The defining property of the density altitude: in the standard atmosphere it is the true
+        /// altitude. This checks the inverse against the forward barometric model of the class itself.
+        /// </summary>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(10000)]
+        public void DensityAltitude_OfStandardAtmosphereIsItsOwnAltitude(double feet)
+        {
+            var atmosphere = Atmosphere.CreateICAOAtmosphere(new Measurement<DistanceUnit>(feet, DistanceUnit.Foot));
+            atmosphere.DensityAltitude.In(DistanceUnit.Foot).Should().BeApproximately(feet, 0.01);
+        }
+
+        /// <summary>
+        /// An independent anchor: published tables put a hot (30C) dry sea level day at about 1725 ft
+        /// of density altitude.
+        /// </summary>
+        [Fact]
+        public void DensityAltitude_MatchesAPublishedValue()
+        {
+            var atmosphere = new Atmosphere(Measurement<DistanceUnit>.ZERO,
+                                            new Measurement<PressureUnit>(29.92, PressureUnit.InchesOfMercury), false,
+                                            new Measurement<TemperatureUnit>(30, TemperatureUnit.Celsius), 0);
+            atmosphere.DensityAltitude.In(DistanceUnit.Foot).Should().BeApproximately(1725, 40);
+        }
+
+        /// <summary>
+        /// Air denser than the standard sea level air sits below it, so the density altitude goes negative.
+        /// </summary>
+        [Fact]
+        public void DensityAltitude_IsNegativeInDenseAir()
+        {
+            var atmosphere = new Atmosphere(Measurement<DistanceUnit>.ZERO,
+                                            new Measurement<PressureUnit>(31.0, PressureUnit.InchesOfMercury), false,
+                                            new Measurement<TemperatureUnit>(0, TemperatureUnit.Fahrenheit), 0);
+            atmosphere.DensityAltitude.In(DistanceUnit.Foot).Should().BeNegative();
+        }
+
+        /// <summary>
+        /// Heat and humidity both thin the air, so both push the density altitude above the true altitude.
+        /// Water vapour is lighter than air, so the humid case is the thinner one.
+        /// </summary>
+        [Fact]
+        public void DensityAltitude_RisesWithHeatAndHumidity()
+        {
+            var altitude = new Measurement<DistanceUnit>(5000, DistanceUnit.Foot);
+            var standard = Atmosphere.CreateICAOAtmosphere(altitude);
+            var hot = new Atmosphere(altitude, standard.Pressure, false,
+                                     new Measurement<TemperatureUnit>(90, TemperatureUnit.Fahrenheit), 0);
+            var hotAndHumid = new Atmosphere(altitude, standard.Pressure, false,
+                                             new Measurement<TemperatureUnit>(90, TemperatureUnit.Fahrenheit), 0.9);
+
+            standard.DensityAltitude.In(DistanceUnit.Foot).Should().BeApproximately(5000, 0.01);
+            hot.DensityAltitude.In(DistanceUnit.Foot)
+                .Should().BeGreaterThan(standard.DensityAltitude.In(DistanceUnit.Foot));
+            hotAndHumid.DensityAltitude.In(DistanceUnit.Foot)
+                .Should().BeGreaterThan(hot.DensityAltitude.In(DistanceUnit.Foot));
+        }
+
+        /// <summary>
+        /// The density belongs to the pressure at the altitude. Supplying the sea level pressure and
+        /// letting the constructor resolve it must give the same density as supplying the resolved
+        /// station pressure directly, which is the pressure the trajectory engine uses internally.
+        /// </summary>
+        [Fact]
+        public void Density_UsesTheStationPressureNotTheSeaLevelOne()
+        {
+            var altitude = new Measurement<DistanceUnit>(5000, DistanceUnit.Foot);
+            var temperature = new Measurement<TemperatureUnit>(41, TemperatureUnit.Fahrenheit);
+            var seaLevel = new Measurement<PressureUnit>(29.92, PressureUnit.InchesOfMercury);
+
+            var fromSeaLevel = new Atmosphere(altitude, seaLevel, true, temperature, 0.5);
+            var fromStation = new Atmosphere(altitude, fromSeaLevel.Pressure, false, temperature, 0.5);
+
+            fromSeaLevel.Pressure.In(PressureUnit.InchesOfMercury)
+                .Should().BeLessThan(seaLevel.In(PressureUnit.InchesOfMercury), "the station pressure at altitude is lower");
+            fromSeaLevel.Density.In(DensityUnit.KilogramPerCubicMeter)
+                .Should().BeApproximately(fromStation.Density.In(DensityUnit.KilogramPerCubicMeter), 1e-9);
+            fromSeaLevel.DensityAltitude.In(DistanceUnit.Foot)
+                .Should().BeApproximately(fromStation.DensityAltitude.In(DistanceUnit.Foot), 1e-6);
+        }
+
         [Fact]
         public void SaveAndRestore()
         {

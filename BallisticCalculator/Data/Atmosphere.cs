@@ -31,7 +31,7 @@ namespace BallisticCalculator
         public Measurement<TemperatureUnit> Temperature { get; }
 
         /// <summary>
-        /// The current humidity in percents
+        /// The current relative humidity, as a fraction from 0 to 1 rather than as a percentage.
         /// </summary>
         [BXmlProperty("humidity")]
         public double Humidity { get; }
@@ -47,6 +47,18 @@ namespace BallisticCalculator
         /// </summary>
         [JsonIgnore]
         public Measurement<DensityUnit> Density { get; }
+
+        /// <summary>
+        /// <para>The altitude in the standard atmosphere which has the same air density as this atmosphere.</para>
+        /// <para>The density altitude summarizes into one number everything the air does to the drag, so two
+        /// sets of conditions with the same density altitude produce the same trajectory. Air that is hot,
+        /// high or humid raises it above the true altitude, dense air lowers it, and at sea level in
+        /// conditions denser than standard it is negative.</para>
+        /// <para>The value is derived from [c]Density[/c], so it accounts for the humidity as well as for the
+        /// pressure and the temperature.</para>
+        /// </summary>
+        [JsonIgnore]
+        public Measurement<DistanceUnit> DensityAltitude { get; }
 
         /// <summary>
         /// A standard density of the atmosphere
@@ -71,7 +83,7 @@ namespace BallisticCalculator
         /// <param name="altitude"></param>
         /// <param name="pressure"></param>
         /// <param name="temperature"></param>
-        /// <param name="humidity"></param>
+        /// <param name="humidity">The relative humidity, as a fraction from 0 to 1</param>
         [JsonConstructor]
         [BXmlConstructorAttribute]
         public Atmosphere(Measurement<DistanceUnit> altitude, Measurement<PressureUnit> pressure, Measurement<TemperatureUnit> temperature, double humidity)
@@ -86,7 +98,7 @@ namespace BallisticCalculator
         /// <param name="pressure"></param>
         /// <param name="pressureAtSeaLevel"></param>
         /// <param name="temperature"></param>
-        /// <param name="humidity"></param>
+        /// <param name="humidity">The relative humidity, as a fraction from 0 to 1</param>
         public Atmosphere(Measurement<DistanceUnit> altitude, Measurement<PressureUnit> pressure, bool pressureAtSeaLevel, Measurement<TemperatureUnit> temperature, double humidity)
         {
             Altitude = altitude;
@@ -98,8 +110,12 @@ namespace BallisticCalculator
             Temperature = temperature;
             Humidity = humidity;
 
-            Density = new Measurement<DensityUnit>(CalculateDensity(temperature.In(TemperatureUnit.Kelvin), pressure.In(PressureUnit.Pascal), humidity), DensityUnit.KilogramPerCubicMeter);
+            //the resolved Pressure, not the argument: when the caller supplied the sea level pressure the
+            //density belongs to the station pressure at the altitude, which is what AtAltitude also uses
+            double densityKgPerCubicMeter = CalculateDensity(temperature.In(TemperatureUnit.Kelvin), Pressure.In(PressureUnit.Pascal), humidity);
+            Density = new Measurement<DensityUnit>(densityKgPerCubicMeter, DensityUnit.KilogramPerCubicMeter);
             SoundVelocity = new Measurement<VelocityUnit>(CalculateSoundVelocity(temperature.In(TemperatureUnit.Kelvin)), VelocityUnit.MetersPerSecond);
+            DensityAltitude = new Measurement<DistanceUnit>(CalculateDensityAltitude(densityKgPerCubicMeter), DistanceUnit.Meter);
         }
 
         /// <summary>
@@ -114,7 +130,8 @@ namespace BallisticCalculator
             double pressure = Measurement<PressureUnit>.Convert(29.92, PressureUnit.InchesOfMercury, PressureUnit.Pascal);
             double temperature = Measurement<TemperatureUnit>.Convert(59, TemperatureUnit.Fahrenheit, TemperatureUnit.Kelvin);
 
-            return new Atmosphere(altitude, new Measurement<PressureUnit>(CalculatePressure(pressure, temperature, humidity, altitude1), PressureUnit.Pascal), false,
+            //the third argument is the base altitude of the standard atmosphere, which is the sea level
+            return new Atmosphere(altitude, new Measurement<PressureUnit>(CalculatePressure(pressure, temperature, 0, altitude1), PressureUnit.Pascal), false,
                                   new Measurement<TemperatureUnit>(CalculateTemperature(temperature, 0, altitude1), TemperatureUnit.Kelvin), humidity);
         }
 
@@ -198,6 +215,36 @@ namespace BallisticCalculator
         {
             const double exponent = -G_CONSTANT * AIR_MOLAR_MASS / (GAS_CONSTANT * TEMPERATURE_LAPSE);
             return basePressure * Math.Pow(1 + TEMPERATURE_LAPSE / baseTemperature * (altitude - baseAltitude), exponent);
+        }
+
+        //https://en.wikipedia.org/wiki/Density_altitude
+        //the sea level base of the standard atmosphere, the same one CreateICAOAtmosphere starts from
+        private const double STANDARD_SEA_LEVEL_TEMPERATURE = 288.15;
+
+        //deliberately NOT StandardDensity: that is the drag normalization constant inherited with the
+        //engine and it differs from this model's own sea level density by a hair. The density altitude
+        //is defined as the altitude of the standard atmosphere with a matching density, so deriving the
+        //base from the same constants the forward model uses is what makes the inverse exact
+        private static readonly double StandardSeaLevelDensity = CalculateDensity(
+            STANDARD_SEA_LEVEL_TEMPERATURE,
+            Measurement<PressureUnit>.Convert(29.92, PressureUnit.InchesOfMercury, PressureUnit.Pascal),
+            0);
+
+        /// <summary>
+        /// Calculate the altitude of the standard atmosphere which has the given air density
+        /// </summary>
+        /// <param name="density">The air density in kilograms per cubic meter</param>
+        /// <returns>The altitude in meters, negative for air denser than the standard sea level air</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double CalculateDensityAltitude(double density)
+        {
+            //in the standard atmosphere the density follows the same barometric law as the pressure, one
+            //power of the temperature lower, because the density is the pressure over the temperature:
+            //  density(h) = density(0) * (1 + LAPSE * h / T0) ^ exponent
+            //so inverting it for h turns a density ratio into an altitude
+            const double exponent = -G_CONSTANT * AIR_MOLAR_MASS / (GAS_CONSTANT * TEMPERATURE_LAPSE) - 1;
+            double ratio = density / StandardSeaLevelDensity;
+            return STANDARD_SEA_LEVEL_TEMPERATURE / TEMPERATURE_LAPSE * (Math.Pow(ratio, 1 / exponent) - 1);
         }
 
         /// <summary>

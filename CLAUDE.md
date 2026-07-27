@@ -161,9 +161,15 @@ Atmosphere.CreateICAOAtmosphere(altitude, humidity=0)              // ICAO stand
 - 4-arg ctor => `pressureAtSeaLevel=false` (the value is the actual pressure at that altitude).
   With `pressureAtSeaLevel=true` and altitude>0 it back-computes station pressure.
 - Default pressure is **29.95** inHg (not 29.92); ICAO helper uses 29.92.
-- Computes `Density` (kg/m³) and `SoundVelocity` (m/s) up front. Internal `AtAltitude(alt, out
-  densityFactor, out mach)` gives density ratio vs `StandardDensity` (0.076474 lb/ft³) and local
-  Mach speed — called along the trajectory as the bullet changes altitude.
+- Computes `Density` (kg/m³), `SoundVelocity` (m/s) and `DensityAltitude` (m) up front. Internal
+  `AtAltitude(alt, out densityFactor, out mach)` gives density ratio vs `StandardDensity`
+  (0.076474 lb/ft³) and local Mach speed — called along the trajectory as the bullet changes altitude.
+- **`DensityAltitude`** — the standard-atmosphere altitude with this atmosphere's density (humidity
+  included), i.e. the one number that summarizes the air's effect on drag. Inverts the same barometric
+  law `ρ(h)/ρ(0) = (1 + Lh/T₀)^(k−1)` the forward model uses, so a standard atmosphere at *h* returns
+  exactly *h*. ⚠️ Its baseline is the sea-level density derived from the ICAO constants (29.92 inHg /
+  288.15 K / 287.058), **not** `StandardDensity` — those differ by ~0.005%, which is ~1.9 ft of DA.
+  Don't "unify" them; `StandardDensity` is the drag normalization, this is the ICAO reference.
 
 ### Wind (`Data/Wind.cs`)
 ```csharp
@@ -303,7 +309,8 @@ concurrent `Calculate`/`CalculateZeroParameters` (don't mutate `Integrator`/step
 - **Spin drift** added to windage: `driftFactor · time^1.83 · dir · (inch→m)`,
   `driftFactor = 1.25·(Sg + 1.2)`, `dir = −1` for right twist, `+1` for left.
 - ⚠️ Spin drift is **folded into `Windage`** — there is no separate spin-drift output.
-- **No aerodynamic (crosswind) jump term** is modeled.
+- The same gate also enables **aerodynamic (crosswind) jump**, which adds a vertical term to `Drop`
+  — see the aerodynamic-jump subsection below.
 
 ### Coriolis / Eötvös (only if `ShotParameters.Latitude != null`)
 Earth-rotation deflection, applied as **per-output-point closed-form corrections** (not per-step

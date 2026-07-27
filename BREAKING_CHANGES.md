@@ -4,6 +4,41 @@ Newest first. Each entry says **what changed**, **why**, and **how to migrate**.
 
 ---
 
+## Unreleased
+
+### 1. `Atmosphere.Density` now uses the station pressure, not the sea level pressure
+
+The constructor computed the density from the `pressure` **argument** instead of the resolved
+`Pressure` property. With `pressureAtSeaLevel: true` and a non-zero altitude those are different
+numbers: `Pressure` is back-computed down to the station, while the argument is the sea level value.
+The density therefore came out too high, in proportion to the two pressures — **21 % at 5000 ft**.
+
+Only the public `Density` property was affected. The trajectory engine reads the resolved `Pressure`
+through the internal `AtAltitude`, so **no trajectory, zero or drag result changes**; the property is
+now consistent with the pressure the engine was already using.
+
+Callers who worked around the old value — passing the station pressure with
+`pressureAtSeaLevel: false` just to make `Density` come out right — can now pass the sea level
+pressure directly and read both correctly.
+
+### 2. `Atmosphere.CreateICAOAtmosphere` passed the humidity as the base altitude
+
+An argument-order slip fed `humidity` into the `baseAltitude` parameter of the internal pressure
+model, so a call with `humidity: 0.78` built the standard atmosphere from a base 0.78 m above sea
+level. The error was ~0.008 % of the pressure, and the default `humidity: 0` was unaffected, but the
+returned `Pressure` changes very slightly for any call that passed a humidity.
+
+### 3. New: `Atmosphere.DensityAltitude`
+
+Additive, no migration needed. The standard-atmosphere altitude matching this atmosphere's density,
+humidity included — the single number that summarizes the air's effect on drag.
+
+Its baseline is the sea level density implied by the ICAO constants (29.92 inHg / 288.15 K /
+287.058), **not** `Atmosphere.StandardDensity`. The latter is the engine's drag normalization and
+differs by ~0.005 %, which is ~1.9 ft of density altitude. They look interchangeable; they are not.
+
+---
+
 ## 1.1.11.3
 
 ### 1. `DrgDragTableFactory.Build` returns the physical drag coefficient
