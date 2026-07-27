@@ -20,9 +20,9 @@
 
      * New algorithm of step size definition to find the right balance between performance and accuracy.
 
-     * Drift calculation is added using Liltz's formulas
+     * Drift calculation is added using Litz's formulas
 
-     * Accuracy of the calculation is withing 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern commercial calculators.
+     * Accuracy of the calculation is within 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern commercial calculators.
 
     The source code of the library is available in git: [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]https://github.com/gehtsoft-usa/BallisticCalculator1[/eurl]
 
@@ -32,7 +32,7 @@
 
     For those who are looking for a JavaScript version, I highly recommend [eurl=https://ptosis.ch/ebalka/ebalka.html]Yet Another Ballistic Calculator[/eurl] project of our friend Alexandre Trofimov.
 
-    The current status of the project is ALPHA version.
+    The current status of the project is BETA version. The physics and the public API are considered settled, and the model is validated against five independent references. The API may still change in response to real-world use, and breaking changes are recorded in the breaking changes notes shipped with the source.
 
     Suggested reading:
 

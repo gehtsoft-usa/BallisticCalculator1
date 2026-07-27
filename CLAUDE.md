@@ -2,7 +2,7 @@
 
 A lightweight LGPL .NET library that models projectile trajectories in the atmosphere
 (air rifles, bows, firearms, artillery). NuGet package `BallisticCalculator`.
-Sister ports exist in Go and Java. Status: ALPHA.
+Sister ports exist in Go and Java. Status: BETA.
 
 > **Work here without a global re-scan.** This file is the durable map of the engine and the
 > `Gehtsoft.Measurements` library it is built on. The quick facts are up top; the reference

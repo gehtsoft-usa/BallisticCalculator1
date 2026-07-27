@@ -4,7 +4,7 @@ A new version of a ballistic calculator API, a new generation of a light-weight,
 
 The library provides trajectory calculations for projectiles, including for various applications, including air rifles, bows, firearms, artillery, and so on.
 
-3DF (degrees of freedom) model that is used in this calculator is rooted in [old C sources](http://www.jbmballistics.com/ballistics/downloads/downloads.shtml) of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's "Applied Ballistics" book and ideas of the friendly project by Alexandre Trofimov.
+The 3DOF (three degrees of freedom, point-mass) model that is used in this calculator is rooted in [old C sources](http://www.jbmballistics.com/ballistics/downloads/downloads.shtml) of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's "Applied Ballistics" book and ideas of the friendly project by Alexandre Trofimov.
 
 Changes made since porting original C sources:
 
@@ -16,7 +16,7 @@ Changes made since porting original C sources:
 
 * New algorithm of step size definition to find the right balance between performance and accuracy.
 
-* Drift calculation is added using Liltz's formulas
+* Drift calculation is added using Litz's formulas
 
 * Coriolis / Eötvös (Earth-rotation) deflection is added via `ShotParameters.Latitude`, matching the
   field references (Ballistic Explorer and Kestrel). Note: `ShotParameters.BarrelAzimuth` is now the
@@ -27,14 +27,29 @@ Changes made since porting original C sources:
   horizontal crosswind — is added using Litz's *Applied Ballistics* formula (needs rifling twist and
   bullet dimensions, like spin drift). It matched Hornady's 4DOF reference to ~0.1 MOA.
 
-* Accuracy of the calculation is withing 0.05%/0.1moa (less than 1inch per 1000 yards) of the most modern calculators.
+* Custom, measured drag curves are supported alongside the standard G1/G2/G5/G6/G7/G8/GI/GS/RA4
+  tables: `.drg` radar files can be read and written, and a curve can be synthesized from a
+  multi-BC (banded ballistic coefficient) profile of the kind bullet makers publish.
+
+* `Atmosphere` reports density altitude, so the combined effect of pressure, temperature and humidity
+  on the air can be read as the single number field shooters exchange.
 
 * A midpoint (RK2) integrator and a set of analysis tools (maximum point-blank range / danger space,
-  moving-target lead, Monte-Carlo hit probability / WEZ, and a custom drag curve derived from radar
-  velocities) were added in 1.1.11, together with a new zeroing API (`CalculateZeroParameters`).
+  moving-target lead, Monte-Carlo hit probability / WEZ, barrel twist recommendations, and a custom
+  drag curve derived from radar velocities) were added in 1.1.11, together with a new zeroing API
+  (`CalculateZeroParameters`).
 
-**Upgrading?** 1.1.11 has breaking changes (zeroing, `BarrelAzimuth`, sight adjustments) — see
-[BREAKING_CHANGES.md](BREAKING_CHANGES.md) for what changed and how to migrate.
+* Accuracy of the calculation is within 0.5%/0.2moa (less than 2inch per 1000 yards) of the most
+  modern calculators.
+
+The engine is checked against five independent references, each as a test in the suite: Hornady 4DOF
+(synthesized drag curves, ~0.05 MOA), Hornady 3DOF (bit-identical), Ballistic Explorer and Kestrel for
+the Earth-rotation deflection (~0.4%), the RA4/GI/G5/G6 program output (≤0.19 MOA), and an Exbal
+multi-BC report (0.02 MOA over 1000 yards).
+
+**Upgrading?** 1.1.11 has breaking changes (zeroing, `BarrelAzimuth`, sight adjustments), and
+`Atmosphere.Density` was corrected after it — see [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for what
+changed and how to migrate.
 
 Please refer to [online version of the documentation](http://docs.gehtsoftusa.com/BallisticCalculator1/)
 
@@ -52,7 +67,10 @@ The library is available in
 
 For those who are looking for a JavaScript version, I highly recommend [Yet Another Ballistic Calculator](https://ptosis.ch/ebalka/ebalka.html) project of our friend Alexandre Trofimov.
 
-The current status of the project is ALPHA version.
+The current status of the project is BETA version. The physics and the public API are considered
+settled — the model is validated against the references listed above and the API is documented and
+covered by tests. What "beta" still means here: the API may change in response to real-world use, and
+breaking changes will keep being recorded in [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 
 RISK NOTICE
 
