@@ -8,7 +8,7 @@
 
     The library provides trajectory calculations for projectiles, including for various applications, including air rifles, bows, firearms, artillery, and so on.
 
-    3DF (3 degrees of freedom) model that is used in this calculator is rooted in [eurl=http://www.jbmballistics.com/ballistics/downloads/downloads.shtml]old C sources[/eurl] of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's "Applied Ballistics" book and ideas of the friendly project by Alexandre Trofimov.
+    The 3DOF (three degrees of freedom, point-mass) model that is used in this calculator is rooted in [eurl=http://www.jbmballistics.com/ballistics/downloads/downloads.shtml]old C sources[/eurl] of version 2 of the public version of the JBM calculator, ported to C#, optimized, fixed, and extended with elements described in Litz's "Applied Ballistics" book and ideas of the friendly project by Alexandre Trofimov.
 
     Changes made since porting original C sources:
 
@@ -22,13 +22,27 @@
 
      * Drift calculation is added using Litz's formulas
 
+     * Coriolis / Eötvös (Earth-rotation) deflection is added via [c]ShotParameters.Latitude[/c], matching the field references (Ballistic Explorer and Kestrel). Note that [c]ShotParameters.BarrelAzimuth[/c] is now the firing bearing (0 degrees is North, going clockwise) and is used only to orient this effect: it no longer tilts the trajectory, which is a change from the earlier behavior.
+
+     * Aerodynamic (crosswind) jump, the vertical deflection a spin-stabilized bullet gets from a horizontal crosswind, is added using Litz's "Applied Ballistics" formula. It needs the rifling twist and the bullet dimensions, just as spin drift does, and it matched Hornady's 4DOF reference to about 0.1 moa.
+
+     * Custom, measured drag curves are supported alongside the standard G1, G2, G5, G6, G7, G8, GI, GS and RA4 tables. Radar drg files can be read and written, and a curve can be synthesized from a multi-BC (banded ballistic coefficient) profile of the kind bullet makers publish.
+
+     * [c]Atmosphere[/c] reports density altitude, so the combined effect of pressure, temperature and humidity on the air can be read as the single number field shooters exchange.
+
+     * A midpoint (RK2) integrator and a set of analysis tools were added in 1.1.11, together with a new zeroing API ([c]CalculateZeroParameters[/c]). The tools cover maximum point-blank range and danger space, moving-target lead, Monte-Carlo hit probability (WEZ), barrel twist recommendations, and a custom drag curve derived from radar velocities.
+
      * Accuracy of the calculation is within 0.5%/0.2moa (less than 2inch per 1000 yards) of the most modern commercial calculators.
+
+    The engine is checked against five independent references, each of them kept as a test in the suite: Hornady 4DOF (synthesized drag curves, about 0.05 moa), Hornady 3DOF (bit-identical), Ballistic Explorer and Kestrel for the Earth-rotation deflection (about 0.4%), the RA4, GI, G5 and G6 program output (0.19 moa or better), and an Exbal multi-BC report (0.02 moa over 1000 yards).
 
     The source code of the library is available in git: [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1]https://github.com/gehtsoft-usa/BallisticCalculator1[/eurl]
 
     Please feel free to report defects in [eurl=https://github.com/gehtsoft-usa/BallisticCalculator1/issues]Git Issues[/eurl].
 
     The library is also available in Go: [eurl=https://github.com/gehtsoft-usa/go_ballisticcalc]https://github.com/gehtsoft-usa/go_ballisticcalc[/eurl]
+
+    and in Java: [eurl=https://github.com/nikolaygekht/ballistic.calculator.java]https://github.com/nikolaygekht/ballistic.calculator.java[/eurl]
 
     For those who are looking for a JavaScript version, I highly recommend [eurl=https://ptosis.ch/ebalka/ebalka.html]Yet Another Ballistic Calculator[/eurl] project of our friend Alexandre Trofimov.
 
