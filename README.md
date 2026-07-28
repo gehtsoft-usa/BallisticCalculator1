@@ -57,6 +57,32 @@ You can get the latest official release from [nuget.org](https://www.nuget.org/p
 
 If you want to use the latest development version of the package, use [Gehtsoft public nuget channel](https://www.myget.org/F/gehtsoft-public/api/v3/index.json)
 
+## Agent skills
+
+The [`SKILL/`](SKILL/) folder holds two **Agent Skills** — plain `SKILL.md` folders that teach an AI
+coding assistant (Claude Code, Codex CLI, or any tool supporting the standard) to use this library
+correctly without rediscovering its API from the sources. See
+[SKILL/INSTALL.md](SKILL/INSTALL.md) for installation; both are independent.
+
+* [**`ballistic-calculator`**](SKILL/SKILLS/ballistic-calculator/) — the library itself: trajectories,
+  the `Measurement<TUnit>` unit types, standard and custom drag tables, `.drg` radar curves, multi-BC
+  synthesis, BXml/JSON persistence, and the analysis tools. It covers the conventions that are easy to
+  get wrong — humidity as a 0–1 fraction, left-positive windage, wind direction where 90° is *from the
+  right*, spin drift folded into windage.
+
+* [**`reticle-designer`**](SKILL/SKILLS/reticle-designer/) — designing a scope reticle from a
+  plain-language description and emitting it as a `.reticle` file plus a rendered SVG. It documents the
+  complete `.reticle` format, reticle design principles (mrad vs MOA subtension, FFP/SFP,
+  stroke-weight hierarchy, hash ladders, christmas-tree wind holds, clutter budget, BDC anchors), and
+  eight worked example reticles. It also ships `scripts/reticle.py`, which needs only Python 3.8+:
+
+  * `check` reports what the BXml deserializer would silently drop or misread — the format has no
+    schema, so a misspelled attribute is ignored and `fill="True"` reads as *false*. It also projects
+    where each `<bdc>` anchor's distance label will be drawn and flags collisions, which are otherwise
+    invisible until something renders with a live trajectory.
+  * `render` writes an SVG byte-identical to the library's own renderer, plus an ASCII raster that
+    encodes stroke weight, so a reticle can be reviewed without an image viewer or a .NET build.
+
 The library is available in
 
 * .NET: https://github.com/gehtsoft-usa/BallisticCalculator1

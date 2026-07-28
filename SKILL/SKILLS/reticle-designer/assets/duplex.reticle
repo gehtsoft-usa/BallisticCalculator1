@@ -1,0 +1,12 @@
+<reticle name="Duplex" size-x="20mrad" size-y="20mrad" zero-x="10mrad" zero-y="10mrad">
+  <elements>
+    <reticle-line start-x="-10mrad" start-y="0mrad" end-x="-4mrad" end-y="0mrad" line-width="0.6mrad" line-color="black" />
+    <reticle-line start-x="-4mrad" start-y="0mrad" end-x="-0.25mrad" end-y="0mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="10mrad" start-y="0mrad" end-x="4mrad" end-y="0mrad" line-width="0.6mrad" line-color="black" />
+    <reticle-line start-x="4mrad" start-y="0mrad" end-x="0.25mrad" end-y="0mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="-10mrad" end-x="0mrad" end-y="-4mrad" line-width="0.6mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="-4mrad" end-x="0mrad" end-y="-0.25mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="10mrad" end-x="0mrad" end-y="4mrad" line-width="0.6mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="4mrad" end-x="0mrad" end-y="0.25mrad" line-width="0.04mrad" line-color="black" />
+  </elements>
+</reticle>

@@ -1,21 +1,28 @@
-# Installing the BallisticCalculator skill
+# Installing the BallisticCalculator skills
 
-The skill is the folder [`SKILLS/ballistic-calculator/`](SKILLS/ballistic-calculator/)
-(a `SKILL.md` plus a `references/` subfolder). Installing it means copying that **whole folder** into a
-skills directory that your agent scans. Both Claude Code and Codex CLI implement the same `SKILL.md`
-standard, so the same folder works in either — only the destination directory differs.
+There are two independent skills, each a self-contained folder:
 
-Throughout, `SRC` is the skill folder in this repo:
+- [`SKILLS/ballistic-calculator/`](SKILLS/ballistic-calculator/) — using the library
+- [`SKILLS/reticle-designer/`](SKILLS/reticle-designer/) — designing reticles and `.reticle` files
+
+Installing one means copying that **whole folder** into a skills directory that your agent scans. Both
+Claude Code and Codex CLI implement the same `SKILL.md` standard, so the same folder works in either —
+only the destination directory differs.
+
+Throughout, `SRC` is the skill folder in this repo. Substitute whichever skill you are installing, or
+copy both:
 
 ```bash
 SRC="$(pwd)/SKILLS/ballistic-calculator"   # run from the SKILL/ directory
+SRC="$(pwd)/SKILLS/reticle-designer"       # ...or this one
 ```
 
-> **Keep the folder named `ballistic-calculator`.** Claude Code derives the skill's identity and its
-> `/slash-command` from the *folder* name (the frontmatter `name:` is not used for this), so the folder
-> is kept in sync with `name: ballistic-calculator` — install it as `ballistic-calculator` and it is
-> `/ballistic-calculator`. Auto-triggering (from the description) works regardless, but matching the
-> names keeps the identity consistent across Claude Code and Codex.
+> **Keep the folder names as they are.** Claude Code derives a skill's identity and its
+> `/slash-command` from the *folder* name (the frontmatter `name:` is not used for this), and each
+> folder is kept in sync with its `name:` — install `ballistic-calculator` and you get
+> `/ballistic-calculator`; install `reticle-designer` and you get `/reticle-designer`. Auto-triggering
+> (from the description) works regardless, but matching the names keeps the identity consistent across
+> Claude Code and Codex.
 
 ---
 
@@ -46,8 +53,14 @@ Project skills also load when Claude Code is started in a subdirectory (it searc
 ### Verify
 
 There is no list command. Start Claude Code, type `/` and look for the skill in the autocomplete menu,
-or ask *"what skills are available?"*. To confirm it triggers, ask something like *"write C# using the
-BallisticCalculator package to compute a .308 trajectory"* and check that it consults the skill.
+or ask *"what skills are available?"*. To confirm a skill triggers, ask something like:
+
+- `ballistic-calculator` — *"write C# using the BallisticCalculator package to compute a .308
+  trajectory"*
+- `reticle-designer` — *"make me an mrad reticle with hash marks every half mil and holdovers out to
+  10 mils"*
+
+and check that it consults the skill.
 
 ---
 
@@ -91,12 +104,12 @@ picks up the skill. (Codex also exposes a `skill-installer` helper and per-skill
 
 ## Windows paths
 
-On Windows, the equivalents are:
+On Windows, the equivalents are — with `<skill>` being `ballistic-calculator` or `reticle-designer`:
 
-- Claude Code, global: `%USERPROFILE%\.claude\skills\ballistic-calculator\`
-- Claude Code, project: `<repo>\.claude\skills\ballistic-calculator\`
-- Codex, global: `%USERPROFILE%\.agents\skills\ballistic-calculator\`
-- Codex, project: `<repo>\.agents\skills\ballistic-calculator\`
+- Claude Code, global: `%USERPROFILE%\.claude\skills\<skill>\`
+- Claude Code, project: `<repo>\.claude\skills\<skill>\`
+- Codex, global: `%USERPROFILE%\.agents\skills\<skill>\`
+- Codex, project: `<repo>\.agents\skills\<skill>\`
 
 Copy the folder with `xcopy /E /I` or `Copy-Item -Recurse`.
 
@@ -105,15 +118,19 @@ Copy the folder with `xcopy /E /I` or `Copy-Item -Recurse`.
 ## Updating / uninstalling
 
 - **Update:** re-copy the folder over the installed one; both tools pick up changes automatically.
-- **Uninstall:** delete the installed `ballistic-calculator/` folder from the skills directory.
+- **Uninstall:** delete the installed skill folder from the skills directory.
 
 ---
 
 ## Notes
 
-- The skill is documentation only. The app you build still needs `dotnet add package BallisticCalculator`.
-- Keep the `references/` subfolder alongside `SKILL.md` — the specialized topics (custom drag,
-  serialization, reticles) live there and are loaded on demand.
+- Both skills are documentation only. The app you build still needs
+  `dotnet add package BallisticCalculator`.
+- Keep the subfolders alongside `SKILL.md`. `references/` holds the specialized topics, loaded on
+  demand. For `reticle-designer`, `scripts/reticle.py` and `assets/` must come along too — `SKILL.md`
+  invokes the script by relative path and points at the example reticles.
+- `reticle-designer`'s tooling needs Python 3.8+ and nothing else: no .NET and no third-party
+  packages are required to check or preview a reticle.
 
 Sources: [Claude Code — Skills](https://code.claude.com/docs/en/skills),
 [OpenAI Codex — Build skills](https://developers.openai.com/codex/skills).

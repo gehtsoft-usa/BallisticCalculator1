@@ -1,10 +1,15 @@
-# BallisticCalculator — Agent Skill
+# BallisticCalculator — Agent Skills
 
-A self-contained **Agent Skill** that teaches an AI coding assistant (Claude Code, Codex CLI, or any
+Self-contained **Agent Skills** that teach an AI coding assistant (Claude Code, Codex CLI, or any
 tool that supports the `SKILL.md` standard) how to use the **`BallisticCalculator`** .NET NuGet package
 correctly — without reading the library source or decompiling the package to rediscover its API.
 
-The skill lives in [`SKILLS/ballistic-calculator/`](SKILLS/ballistic-calculator/).
+| Skill | Folder | What it is for |
+|---|---|---|
+| `ballistic-calculator` | [`SKILLS/ballistic-calculator/`](SKILLS/ballistic-calculator/) | using the library: trajectories, units, drag tables, serialization |
+| `reticle-designer` | [`SKILLS/reticle-designer/`](SKILLS/reticle-designer/) | designing a scope reticle from a description and emitting a `.reticle` file |
+
+The two are independent — install either or both.
 
 ## Why
 
@@ -28,6 +33,26 @@ round-trips than rediscovering the API from the package's XML docs.
 - **Reticles** — building a reticle definition in code and rendering it (e.g. to SVG), including
   bullet-drop-compensator markers.
 
+## `reticle-designer`
+
+Turns a plain-language brief — *"mrad hash marks every half mil, holdovers to 700 yards, wind dots"* —
+into a `.reticle` file the library can load, draw and label with real trajectory data.
+
+Where the `ballistic-calculator` skill documents the reticle **API**, this one covers the **design**
+and the **file format**: the complete BXml element/attribute specification, reticle design principles
+(subtension, FFP/SFP, stroke-weight hierarchy, the duplex principle, clutter budget, hash ladders,
+christmas-tree wind holds, BDC anchors), and eight verified worked patterns, including a commercial grid reticle rebuilt from its manufacturer's dimensioned drawing.
+
+It also ships `scripts/reticle.py`, which exists because the file format has no schema and **fails
+silently** — a misspelled attribute is ignored and `fill="True"` reads as *false*:
+
+- `check` reports everything the deserializer would quietly drop or misread.
+- `render` writes an SVG **byte-identical** to the library's own renderer (it reproduces the same unit
+  conversions, single-precision arithmetic and integer flooring), plus an ASCII raster that encodes
+  stroke weight, so geometry can be reviewed without an image viewer.
+
+No .NET and no third-party Python packages needed to check or preview a reticle.
+
 ## Structure (progressive disclosure)
 
 ```
@@ -37,10 +62,19 @@ SKILLS/ballistic-calculator/
     ├── custom-drag.md       # custom / .drg / multi-BC drag curves
     ├── serialization.md     # BXml + JSON persistence, custom formats
     └── reticle.md           # building and rendering reticles
+
+SKILLS/reticle-designer/
+├── SKILL.md                 # coordinate system, workflow, gotchas
+├── references/
+│   ├── file-format.md       # the complete .reticle specification
+│   ├── design-principles.md # how to choose the geometry
+│   └── patterns.md          # worked reticle families
+├── scripts/reticle.py       # check / render / preview
+└── assets/*.reticle         # eight verified example reticles
 ```
 
-`SKILL.md` stays lean (core workflow) so routine trajectory tasks don't pay for the specialized
-topics; each reference file is pulled in on demand only when the task calls for it.
+Each `SKILL.md` stays lean so routine tasks don't pay for the specialized topics; each reference file
+is pulled in on demand only when the task calls for it.
 
 ## Installation
 

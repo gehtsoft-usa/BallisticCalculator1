@@ -1,0 +1,33 @@
+<reticle name="Mil-Dot (mrad)" size-x="12mrad" size-y="12mrad" zero-x="6mrad" zero-y="6mrad">
+  <elements>
+    <reticle-circle center-x="0mrad" center-y="0mrad" radius="6mrad" line-width="0.02mrad" color="black" />
+    <reticle-line start-x="-5mrad" start-y="0mrad" end-x="5mrad" end-y="0mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="-5mrad" end-x="0mrad" end-y="5mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-5mrad" start-y="0mrad" end-x="-6mrad" end-y="0mrad" line-width="0.35mrad" line-color="black" />
+    <reticle-line start-x="5mrad" start-y="0mrad" end-x="6mrad" end-y="0mrad" line-width="0.35mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="-5mrad" end-x="0mrad" end-y="-6mrad" line-width="0.35mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="5mrad" end-x="0mrad" end-y="6mrad" line-width="0.35mrad" line-color="black" />
+    <reticle-circle center-x="-4mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="-4mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="-3mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="-3mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="-2mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="-2mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="-1mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="-1mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="1mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="1mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="2mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="2mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="3mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="3mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="4mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-circle center-x="0mrad" center-y="4mrad" radius="0.1mrad" fill="true" color="black" />
+  </elements>
+  <bdc>
+    <bdc position-x="0mrad" position-y="-1mrad" text-offset="0.9mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-2mrad" text-offset="0.9mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-3mrad" text-offset="0.9mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-4mrad" text-offset="0.9mrad" text-height="0.3mrad" />
+  </bdc>
+</reticle>

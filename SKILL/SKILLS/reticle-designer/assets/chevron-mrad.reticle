@@ -1,0 +1,59 @@
+<reticle name="Chevron" size-x="14mrad" size-y="18mrad" zero-x="7mrad" zero-y="5mrad">
+  <elements>
+    <reticle-path fill="true" color="black">
+      <elements>
+        <reticle-path-move-to position-x="0mrad" position-y="0mrad" />
+        <reticle-path-line-to position-x="1.3mrad" position-y="-1.6mrad" />
+        <reticle-path-line-to position-x="0.85mrad" position-y="-1.6mrad" />
+        <reticle-path-line-to position-x="0mrad" position-y="-0.55mrad" />
+        <reticle-path-line-to position-x="-0.85mrad" position-y="-1.6mrad" />
+        <reticle-path-line-to position-x="-1.3mrad" position-y="-1.6mrad" />
+      </elements>
+    </reticle-path>
+    <reticle-line start-x="-6.5mrad" start-y="0mrad" end-x="-1.5mrad" end-y="0mrad" line-width="0.15mrad" line-color="black" />
+    <reticle-line start-x="1.5mrad" start-y="0mrad" end-x="6.5mrad" end-y="0mrad" line-width="0.15mrad" line-color="black" />
+    <reticle-line start-x="-1.5mrad" start-y="-0.09mrad" end-x="-1.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="1.5mrad" start-y="-0.09mrad" end-x="1.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-2mrad" start-y="-0.2mrad" end-x="-2mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="2mrad" start-y="-0.2mrad" end-x="2mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-2.5mrad" start-y="-0.09mrad" end-x="-2.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="2.5mrad" start-y="-0.09mrad" end-x="2.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-3mrad" start-y="-0.2mrad" end-x="-3mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="3mrad" start-y="-0.2mrad" end-x="3mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-3.5mrad" start-y="-0.09mrad" end-x="-3.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="3.5mrad" start-y="-0.09mrad" end-x="3.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-4mrad" start-y="-0.2mrad" end-x="-4mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="4mrad" start-y="-0.2mrad" end-x="4mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-4.5mrad" start-y="-0.09mrad" end-x="-4.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="4.5mrad" start-y="-0.09mrad" end-x="4.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-5mrad" start-y="-0.2mrad" end-x="-5mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="5mrad" start-y="-0.2mrad" end-x="5mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-5.5mrad" start-y="-0.09mrad" end-x="-5.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="5.5mrad" start-y="-0.09mrad" end-x="5.5mrad" end-y="0.09mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-6mrad" start-y="-0.2mrad" end-x="-6mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="6mrad" start-y="-0.2mrad" end-x="6mrad" end-y="0.2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-0.13mrad" start-y="-2mrad" end-x="0.13mrad" end-y="-2mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-0.28mrad" start-y="-3mrad" end-x="0.28mrad" end-y="-3mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-text position-x="-0.48mrad" position-y="-3.15mrad" text-height="0.3mrad" text="3" anchor="Right" text-color="black" />
+    <reticle-line start-x="-0.13mrad" start-y="-4mrad" end-x="0.13mrad" end-y="-4mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-0.28mrad" start-y="-5mrad" end-x="0.28mrad" end-y="-5mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-text position-x="-0.48mrad" position-y="-5.15mrad" text-height="0.3mrad" text="5" anchor="Right" text-color="black" />
+    <reticle-line start-x="-0.13mrad" start-y="-6mrad" end-x="0.13mrad" end-y="-6mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-0.28mrad" start-y="-7mrad" end-x="0.28mrad" end-y="-7mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-text position-x="-0.48mrad" position-y="-7.15mrad" text-height="0.3mrad" text="7" anchor="Right" text-color="black" />
+    <reticle-line start-x="-0.13mrad" start-y="-8mrad" end-x="0.13mrad" end-y="-8mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-0.28mrad" start-y="-9mrad" end-x="0.28mrad" end-y="-9mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-text position-x="-0.48mrad" position-y="-9.15mrad" text-height="0.3mrad" text="9" anchor="Right" text-color="black" />
+    <reticle-line start-x="-0.13mrad" start-y="-10mrad" end-x="0.13mrad" end-y="-10mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-line start-x="-0.28mrad" start-y="-11mrad" end-x="0.28mrad" end-y="-11mrad" line-width="0.04mrad" line-color="black" />
+    <reticle-text position-x="-0.48mrad" position-y="-11.15mrad" text-height="0.3mrad" text="11" anchor="Right" text-color="black" />
+    <reticle-line start-x="0mrad" start-y="-1.6mrad" end-x="0mrad" end-y="-12.5mrad" line-width="0.04mrad" line-color="black" />
+  </elements>
+  <bdc>
+    <bdc position-x="0mrad" position-y="-3mrad" text-offset="0.63mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-5mrad" text-offset="0.63mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-7mrad" text-offset="0.63mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-9mrad" text-offset="0.63mrad" text-height="0.3mrad" />
+    <bdc position-x="0mrad" position-y="-11mrad" text-offset="0.63mrad" text-height="0.3mrad" />
+  </bdc>
+</reticle>

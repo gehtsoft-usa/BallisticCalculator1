@@ -1,0 +1,9 @@
+<reticle name="Circle-Dot" size-x="30mrad" size-y="30mrad" zero-x="15mrad" zero-y="15mrad">
+  <elements>
+    <reticle-circle center-x="0mrad" center-y="0mrad" radius="4mrad" line-width="0.5mrad" color="black" />
+    <reticle-circle center-x="0mrad" center-y="0mrad" radius="0.1mrad" fill="true" color="black" />
+    <reticle-line start-x="-15mrad" start-y="0mrad" end-x="-4.6mrad" end-y="0mrad" line-width="0.9mrad" line-color="black" />
+    <reticle-line start-x="15mrad" start-y="0mrad" end-x="4.6mrad" end-y="0mrad" line-width="0.9mrad" line-color="black" />
+    <reticle-line start-x="0mrad" start-y="-15mrad" end-x="0mrad" end-y="-4.6mrad" line-width="0.9mrad" line-color="black" />
+  </elements>
+</reticle>
