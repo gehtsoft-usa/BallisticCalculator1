@@ -6,7 +6,32 @@ Newest first. Each entry says **what changed**, **why**, and **how to migrate**.
 
 ## 1.1.12
 
-### 1. `Atmosphere.Density` now uses the station pressure, not the sea level pressure
+### 1. `MilDotReticle` and `data/reticle/mildot.reticle` are now in milliradians, not military mils
+
+Both were built with `AngularUnit.Mil`, which in `Gehtsoft.Measurements` is the **military mil** —
+1/6400 of a circle, 3.375 MOA. A mil-dot reticle is defined by **milliradian** dot spacing
+(1 mrad = 3.438 MOA = 3.6 in at 100 yd), so every subtension was **1.86 % too small**: the dots sat
+at 0.98175 mrad instead of 1 mrad, and the nominal 12-unit field of view was 11.78 mrad. Ranging with
+it therefore read about 1.9 % long, and the error accumulated across the reticle — 0.18 mrad by the
+4-dot mark, roughly 7 cm at 400 m.
+
+Every `AngularUnit.Mil` in `MilDotReticle.cs` is now `AngularUnit.MRad`, and every `mil` suffix in
+`mildot.reticle` is now `mrad`. The numbers are unchanged; only the unit they are expressed in is.
+
+**Migration.** Nothing to change in calling code — `MilDotReticle` is still constructed the same way
+and still reports `Size`/`Zero` as the same 12 and 6. But the reticle it produces is now 1.86 % larger
+in angle, so:
+
+- A rendered image of it changes size very slightly. Anything pixel-comparing a stored SVG needs its
+  baseline regenerated.
+- If you deliberately wanted the 1/6400 mil, construct the reticle yourself with `AngularUnit.Mil`;
+  the unit itself is unaffected.
+- Any of **your** reticle files that used `mil` to mean "milliradian" have the same bug. Swapping the
+  suffix to `mrad` fixes them, and the values need no recalculation.
+
+The `mil`/`mrad` distinction is now called out in the reticle file-format documentation.
+
+### 2. `Atmosphere.Density` now uses the station pressure, not the sea level pressure
 
 The constructor computed the density from the `pressure` **argument** instead of the resolved
 `Pressure` property. With `pressureAtSeaLevel: true` and a non-zero altitude those are different
@@ -21,14 +46,14 @@ Callers who worked around the old value — passing the station pressure with
 `pressureAtSeaLevel: false` just to make `Density` come out right — can now pass the sea level
 pressure directly and read both correctly.
 
-### 2. `Atmosphere.CreateICAOAtmosphere` passed the humidity as the base altitude
+### 3. `Atmosphere.CreateICAOAtmosphere` passed the humidity as the base altitude
 
 An argument-order slip fed `humidity` into the `baseAltitude` parameter of the internal pressure
 model, so a call with `humidity: 0.78` built the standard atmosphere from a base 0.78 m above sea
 level. The error was ~0.008 % of the pressure, and the default `humidity: 0` was unaffected, but the
 returned `Pressure` changes very slightly for any call that passed a humidity.
 
-### 3. New: `Atmosphere.DensityAltitude`
+### 4. New: `Atmosphere.DensityAltitude`
 
 Additive, no migration needed. The standard-atmosphere altitude matching this atmosphere's density,
 humidity included — the single number that summarizes the air's effect on drag.
