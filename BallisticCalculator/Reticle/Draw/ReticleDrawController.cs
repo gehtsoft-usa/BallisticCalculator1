@@ -185,8 +185,12 @@ namespace BallisticCalculator.Reticle.Draw
             var trajectoryPoint = FindByDistance(trajectory, targetDistance);
             if (trajectoryPoint != null)
             {
+                // The windage must be negated but the drop must not: the reticle's X grows to the
+                // right while TrajectoryPoint.Windage is positive to the LEFT, whereas the reticle's
+                // Y and DropAdjustment both take positive as up. So a bullet drifting right (a
+                // negative windage) belongs at a positive reticle X.
                 var centerY = trajectoryPoint.DropAdjustment;
-                var centerX = trajectoryPoint.WindageAdjustment;
+                var centerX = -trajectoryPoint.WindageAdjustment;
                 var x0 = centerX - angularTargetSize / 2;
                 var y0 = centerY + angularTargetSize / 2;
 

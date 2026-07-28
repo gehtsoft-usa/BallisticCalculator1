@@ -312,14 +312,17 @@ namespace BallisticCalculator.Test.Reticle
             //     Reticle: 10x10mil
             //     Canvas: 10000x1000 pixels
             //     Center of Target @ 250ft (see trajectory -> -3.2moa drop (0.95068 mil), 2.6moa windage (0.75828 mil))
-            //     Map center to target: mil to pixel y: 950, x: 758 against zero @ 5000x5000
+            //     Map center to target: mil to pixel y: 950 below zero, x: 758 LEFT of zero against
+            //       zero @ 5000x5000. The windage is positive, which in the trajectory means the
+            //       bullet went LEFT, so the target sits left of centre - see
+            //       Reticle_DrawShot_WindageGoesToTheDriftSide.
             //     Linear size of the target = atan(8 inches / 250 yards) = 0.905414549 mil => 905 pixels
             //     c1 = center - size / 2, c2 = center + size / 2
 
             canvas.Setup(canva => canva.Rectangle(
-                It.Is<float>(f => Approximately(f, 5305, 5)),
+                It.Is<float>(f => Approximately(f, 3789, 5)),
                 It.Is<float>(f => Approximately(f, 5497, 5)),
-                It.Is<float>(f => Approximately(f, 6210, 5)),
+                It.Is<float>(f => Approximately(f, 4694, 5)),
                 It.Is<float>(f => Approximately(f, 6403, 5)),
                 It.Is<float>(f => Approximately(f, 1, 0.1f)),
                 It.Is<bool>(b => !b),
@@ -330,6 +333,62 @@ namespace BallisticCalculator.Test.Reticle
             controller.DrawTarget(trajectory.Trajectory, DistanceUnit.Inch.New(8), DistanceUnit.Yard.New(250), "zecolor");
 
             canvas.Verify();
+        }
+
+        /// <summary>
+        /// The reticle's X grows to the right, while TrajectoryPoint.Windage is positive to the
+        /// LEFT. DrawTarget has to negate one to get the other, and for a long time it did not, so
+        /// every target was mirrored across the vertical axis. The drop must NOT be negated, because
+        /// the reticle's Y and DropAdjustment agree that positive is up.
+        /// </summary>
+        [Theory]
+        [InlineData(-1.0, true, "right-drifting bullet (negative windage) draws right of centre")]
+        [InlineData(1.0, false, "left-drifting bullet (positive windage) draws left of centre")]
+        public void Reticle_DrawShot_WindageGoesToTheDriftSide(double windageMil, bool expectRight, string because)
+        {
+            var canvas = CreateMockCanvas();
+            var reticle = CreateReticle();          // 10x10 mil, zero at 5,5 -> 1000 px per mil
+
+            var distance = DistanceUnit.Yard.New(1000);
+            var point = new TrajectoryPoint(
+                time: TimeSpan.FromSeconds(1), distance: distance, distanceFlat: distance,
+                velocity: VelocityUnit.FeetPerSecond.New(1500), mach: 1.3,
+                drop: DistanceUnit.Inch.New(-100), dropFlat: DistanceUnit.Inch.New(-100),
+                dropAdjustment: AngularUnit.Mil.New(-2),
+                lineOfSightElevation: Measurement<DistanceUnit>.ZERO,
+                lineOfDepartureElevation: Measurement<DistanceUnit>.ZERO,
+                windage: DistanceUnit.Inch.New(windageMil * 36),
+                windageAdjustment: AngularUnit.Mil.New(windageMil),
+                energy: EnergyUnit.FootPound.New(1000),
+                optimalGameWeight: WeightUnit.Pound.New(100));
+            // FindByDistance needs a point beyond the target distance before it returns anything
+            var beyond = new TrajectoryPoint(TimeSpan.FromSeconds(2), DistanceUnit.Yard.New(1100),
+                VelocityUnit.FeetPerSecond.New(1400), 1.2, DistanceUnit.Inch.New(-150),
+                DistanceUnit.Inch.New(0), EnergyUnit.FootPound.New(900), WeightUnit.Pound.New(90));
+
+            float x1 = 0, x2 = 0, y1 = 0;
+            canvas.Setup(c => c.Rectangle(It.IsAny<float>(), It.IsAny<float>(), It.IsAny<float>(),
+                                          It.IsAny<float>(), It.IsAny<float>(), It.IsAny<bool>(),
+                                          It.IsAny<string>(), It.IsAny<ReticleLineStyle>()))
+                  .Callback<float, float, float, float, float, bool, string, ReticleLineStyle>(
+                      (a, b, c, d, e, f, g, h) => { x1 = a; y1 = b; x2 = c; });
+
+            new ReticleDrawController(reticle, canvas.Object)
+                .DrawTarget(new[] { point, beyond }, DistanceUnit.Inch.New(36), distance, "red");
+
+            double centreX = (x1 + x2) / 2.0;
+            if (expectRight)
+                centreX.Should().BeGreaterThan(5000, because);
+            else
+                centreX.Should().BeLessThan(5000, because);
+
+            // the magnitude is the windage, mirrored only in sign
+            Math.Abs(centreX - 5000).Should().BeApproximately(1000 * Math.Abs(windageMil), 5,
+                "the offset from the axis is the windage itself");
+            // and the drop is NOT negated: 2 mil of drop is 2000 px below the 5000 axis
+            double centreY = y1 + (x2 - x1) / 2.0;
+            centreY.Should().BeApproximately(7000, 5,
+                "DropAdjustment shares its sign convention with the reticle's Y");
         }
 
         [Fact]

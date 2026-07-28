@@ -4,9 +4,40 @@ Newest first. Each entry says **what changed**, **why**, and **how to migrate**.
 
 ---
 
-## 1.1.12
+## 1.1.13
 
-### 1. `MilDotReticle` and `data/reticle/mildot.reticle` are now in milliradians, not military mils
+### 1. `ReticleDrawController.DrawTarget` no longer mirrors the target horizontally
+
+`DrawTarget` used `TrajectoryPoint.WindageAdjustment` directly as a reticle X coordinate. The two
+conventions are opposite — **windage is positive to the LEFT, a reticle's X is positive to the
+RIGHT** — so every target was drawn on the wrong side of the vertical axis. A bullet drifting right
+put the target box left of centre and vice versa. The magnitude was always correct, only the side was
+wrong, which is why it read as plausible: with spin drift alone the offset is a fraction of a
+milliradian, and under wind it simply looked like the wind came from the other direction.
+
+`centerX` is now `-trajectoryPoint.WindageAdjustment`. The drop is unchanged and must not be negated:
+the reticle's Y and `DropAdjustment` agree that positive is up.
+
+**Migration.** If you called `DrawTarget` and compensated for the old behaviour — negating the
+windage in your own trajectory before passing it, or mirroring the canvas — remove that workaround.
+If you did not compensate, your targets were mirrored and are now correct. Anything comparing stored
+renders needs its baselines regenerated. Nothing else in the library calls `DrawTarget`, and the
+windage sign itself is unchanged everywhere: `Windage`, `WindageAdjustment`, the drift model and the
+zeroing all behaved and still behave as documented.
+
+`ReticleControllerTest.Reticle_DrawShot_WindageGoesToTheDriftSide` now pins the direction for both
+drift senses, and `Reticle_DrawShot` has been updated — it asserted the mirrored coordinates.
+
+Two related quirks of `DrawTarget` are **not** changed, since they are matters of behaviour rather
+than correctness, but are worth knowing:
+
+- It draws nothing at all when no trajectory point lies *beyond* `targetDistance` — asking for a
+  target at or past the last computed point silently produces no rectangle.
+- It places the target using the point *before* the requested distance, so the hold shown is for a
+  slightly shorter range. (`DrawBulletDropCompensator` has the opposite bias: it labels with the
+  point *after* the crossing.)
+
+### 2. `MilDotReticle` and `data/reticle/mildot.reticle` are now in milliradians, not military mils
 
 Both were built with `AngularUnit.Mil`, which in `Gehtsoft.Measurements` is the **military mil** —
 1/6400 of a circle, 3.375 MOA. A mil-dot reticle is defined by **milliradian** dot spacing
@@ -31,7 +62,11 @@ in angle, so:
 
 The `mil`/`mrad` distinction is now called out in the reticle file-format documentation.
 
-### 2. `Atmosphere.Density` now uses the station pressure, not the sea level pressure
+---
+
+## 1.1.12
+
+### 1. `Atmosphere.Density` now uses the station pressure, not the sea level pressure
 
 The constructor computed the density from the `pressure` **argument** instead of the resolved
 `Pressure` property. With `pressureAtSeaLevel: true` and a non-zero altitude those are different
@@ -46,14 +81,14 @@ Callers who worked around the old value — passing the station pressure with
 `pressureAtSeaLevel: false` just to make `Density` come out right — can now pass the sea level
 pressure directly and read both correctly.
 
-### 3. `Atmosphere.CreateICAOAtmosphere` passed the humidity as the base altitude
+### 2. `Atmosphere.CreateICAOAtmosphere` passed the humidity as the base altitude
 
 An argument-order slip fed `humidity` into the `baseAltitude` parameter of the internal pressure
 model, so a call with `humidity: 0.78` built the standard atmosphere from a base 0.78 m above sea
 level. The error was ~0.008 % of the pressure, and the default `humidity: 0` was unaffected, but the
 returned `Pressure` changes very slightly for any call that passed a humidity.
 
-### 4. New: `Atmosphere.DensityAltitude`
+### 3. New: `Atmosphere.DensityAltitude`
 
 Additive, no migration needed. The standard-atmosphere altitude matching this atmosphere's density,
 humidity included — the single number that summarizes the air's effect on drag.
