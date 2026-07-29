@@ -71,6 +71,16 @@ namespace BallisticCalculator
         /// </summary>
         private const double RangeEmitEpsilonMeters = 1e-3;
 
+        /// <summary>
+        /// Floor (s) for the integration time step: one TimeSpan tick, the granularity of the tick
+        /// quantization below and therefore the smallest non-zero step it can express. Only reached
+        /// when the sub-step shortened to land on an output range is a fraction of a tick of travel
+        /// (tens of microns), where the quantization would return zero and the loop would stop
+        /// advancing. A floored step still covers at least the distance the step it replaces would
+        /// have, so the output range is crossed on that iteration and the floor never repeats.
+        /// </summary>
+        private const double MinimumTimeStepSeconds = 1e-7;
+
         private static DragTable ValidateDragTable(Ammunition ammunition, DragTable dragTable)
         {
             if (ammunition.BallisticCoefficient.Table == DragTableId.GC)
@@ -123,7 +133,7 @@ namespace BallisticCalculator
             // Single output row exactly at the zero distance (the range clamp lands it there).
             var solveShot = new ShotParameters
             {
-                Step = zero.Distance,
+                Step = zero.Distance / 10,          //reach distance in 10 steps, then clamp to the exact distance for the output row
                 MaximumDistance = zero.Distance,
                 ZeroDropAdjustment = Measurement<AngularUnit>.ZERO,
                 ShotAngle = shot?.ShotAngle,
@@ -140,19 +150,33 @@ namespace BallisticCalculator
                 solveShot.ZeroWindageAdjustment = windageAdjustment;
 
                 // Full trajectory — spin drift, Coriolis, wind deflection and aero jump are applied by Calculate.
-                var trajectory = Calculate(zeroAmmunition, rifle, zeroAtmosphere, solveShot, wind, dragTable);
+                TrajectoryPoint[] trajectory;
+                try
+                {
+                    trajectory = Calculate(zeroAmmunition, rifle, zeroAtmosphere, solveShot, wind, dragTable);
+                }
+                catch (TrajectoryCannotBeCalculatedException e)
+                {
+                    // The correction has walked the barrel elevation past the vertical, so the launch
+                    // no longer sends the projectile downrange and cannot be integrated. For an
+                    // unreachable zero this happens before the projectile falls out of the table, and
+                    // it is still the zero distance which is at fault, not the parameters.
+                    throw new ZeroRangeCantBeReachedException(
+                        "The barrel elevation required to reach the zero distance no longer sends the projectile downrange", e);
+                }
 
                 TrajectoryPoint impact = null;
                 for (int k = trajectory.Length - 1; k >= 0; k--)
                 {
-                    if (trajectory[k] != null)
+                    if (trajectory[k] != null && Math.Abs(trajectory[k].Distance.In(DistanceUnit.Meter)- zeroDistanceMeters) < 0.05)
                     {
                         impact = trajectory[k];
                         break;
                     }
                 }
-                if (impact == null || impact.Distance.In(DistanceUnit.Meter) < zeroDistanceMeters - 0.01)
-                    throw new InvalidOperationException("The projectile cannot reach the zero distance");
+
+                if (impact == null)
+                    throw new ZeroRangeCantBeReachedException("The projectile cannot reach the zero distance");
 
                 // Miss at the zero distance: +vertical ⇒ impact below target ⇒ raise; +horizontal ⇒
                 // impact right of target (windage is left +) ⇒ tilt left. Newton step: the linear miss
@@ -171,7 +195,7 @@ namespace BallisticCalculator
                     windageAdjustment = (windageAdjustment ?? Measurement<AngularUnit>.ZERO) + BallisticMath.CalculateAdjustment(horizontalMiss, zero.Distance);
             }
 
-            throw new InvalidOperationException("Cannot find zero parameters");
+            throw new ZeroRangeCantBeReachedException("The projectile cannot be zeroed at the specified distance");
         }
 
         /// <summary>
@@ -184,6 +208,9 @@ namespace BallisticCalculator
         /// <param name="wind"></param>
         /// <param name="dragTable">Custom drag table</param>
         /// <returns></returns>
+        /// <exception cref="TrajectoryCannotBeCalculatedException">The parameters cannot be integrated: an
+        /// integration step does not move the projectile downrange, or the projectile velocity is no longer
+        /// a finite number.</exception>
         public TrajectoryPoint[] Calculate(Ammunition ammunition, Rifle rifle, Atmosphere atmosphere, ShotParameters shot, Wind[] wind = null, DragTable dragTable = null)
         {
             Measurement<DistanceUnit> rangeTo = shot.MaximumDistance;
@@ -378,6 +405,15 @@ namespace BallisticCalculator
                     lastAtAltMeters = altMeters;
                 }
 
+                // A non-finite velocity means the integration has blown up rather than reached a
+                // physical limit (a zero ballistic coefficient or unusable drag coefficients drive
+                // the drag term to infinity, and the next step turns it into NaN). Checked here
+                // explicitly because the limits below compare false against NaN and would let it
+                // through into the output.
+                if (!double.IsFinite(velocityMag))
+                    throw new TrajectoryCannotBeCalculatedException(
+                        "The projectile velocity is not a finite number - check the ballistic coefficient and the drag table");
+
                 if (velocityMag < minimumVelocity || ry < -maximumDropMeters)
                     break;
 
@@ -490,8 +526,13 @@ namespace BallisticCalculator
 
                 // dt must go through TimeSpan to match the original's tick-precision truncation.
                 // Derived from the current vx so the along-bore advance per step ≈ effectiveCalcStep
-                // for both integrators.
+                // for both integrators. Floored at one tick: the quantization returns zero for a
+                // sub-tick step, which would stall the loop (see MinimumTimeStepSeconds).
                 double dt = TimeSpan.FromSeconds(effectiveCalcStep / (vx / mpsToVel)).TotalSeconds;
+                if (dt < MinimumTimeStepSeconds)
+                    dt = MinimumTimeStepSeconds;
+
+                double rxBefore = rx;
 
                 double dry;
                 if (Integrator == IntegrationMethod.Euler)
@@ -564,6 +605,13 @@ namespace BallisticCalculator
                     rz += vmz / mpsToVel * dt;                             // meters
                     ry += dry;
                 }
+
+                // The loop can only end by advancing downrange: every termination condition (output
+                // array full, minimum velocity, maximum drop, maximum range) is reached through rx.
+                // A step which leaves rx where it was, or moves it backwards, makes all of them
+                // unreachable and the loop would spin forever, so the parameters cannot be integrated.
+                if (rx <= rxBefore)
+                    throw new TrajectoryCannotBeCalculatedException();
 
                 distanceMeters = rx / lineOfSightCos;
                 altValue += dry * meterToAltUnit;                       // altUnit (matches Measurement operator+ FP path)

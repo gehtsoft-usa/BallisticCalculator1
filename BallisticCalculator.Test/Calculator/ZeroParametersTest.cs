@@ -213,5 +213,30 @@ namespace BallisticCalculator.Test.Calculator
             ((Action)(() => cal.CalculateZeroParameters(ammo, atmo, null, rifle.Zero))).Should().Throw<ArgumentNullException>();
             ((Action)(() => cal.CalculateZeroParameters(ammo, atmo, rifle, null))).Should().Throw<ArgumentNullException>();
         }
+
+        /// <summary>
+        /// A zero distance the projectile cannot reach (it slows below the minimum velocity and falls
+        /// long before) is reported as <see cref="ZeroRangeCantBeReachedException"/>, which stays
+        /// assignable to the <see cref="InvalidOperationException"/> thrown before it was introduced.
+        /// </summary>
+        [Fact]
+        public void UnreachableZeroDistance_ThrowsZeroRangeCantBeReached()
+        {
+            var cal = new TrajectoryCalculator();
+            var atmo = new Atmosphere();
+
+            // A slow, very low-BC pellet: nowhere near 1000 yards.
+            var pellet = new Ammunition(
+                weight: new Measurement<WeightUnit>(8, WeightUnit.Grain),
+                ballisticCoefficient: new BallisticCoefficient(0.02, DragTableId.G1),
+                muzzleVelocity: new Measurement<VelocityUnit>(600, VelocityUnit.FeetPerSecond));
+            var rifle = PlainRifle(1000);
+
+            var exception = ((Action)(() => cal.CalculateZeroParameters(pellet, atmo, rifle, rifle.Zero)))
+                .Should().Throw<ZeroRangeCantBeReachedException>().Which;
+
+            exception.Should().BeAssignableTo<InvalidOperationException>();
+            exception.Message.Should().NotBeNullOrEmpty();
+        }
     }
 }
