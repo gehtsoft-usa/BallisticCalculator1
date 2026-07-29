@@ -284,6 +284,37 @@ namespace BallisticCalculator.Test.Calculator
 
         }
 
+        /// <summary>
+        /// The whole drag term is divided by the ballistic coefficient, so a value which is not a
+        /// positive finite number is rejected instead of producing an infinite or negative drag
+        /// (which used to turn the velocity into NaN and the trajectory into garbage rows).
+        /// </summary>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(-0.325)]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        public void UnusableBallisticCoefficientException(double coefficient)
+        {
+            TableLoader template = TableLoader.FromResource("g1_nowind");
+            template.Ammunition.BallisticCoefficient = new BallisticCoefficient(coefficient, DragTableId.G1);
+
+            var cal = new TrajectoryCalculator();
+
+            ShotParameters shot = new ShotParameters()
+            {
+                Step = new Measurement<DistanceUnit>(50, DistanceUnit.Yard),
+                MaximumDistance = new Measurement<DistanceUnit>(1000, DistanceUnit.Yard),
+                ZeroDropAdjustment = new Measurement<AngularUnit>(10, AngularUnit.MOA),
+            };
+
+            ((Action)(() => cal.Calculate(template.Ammunition, template.Rifle, template.Atmosphere, shot, null)))
+                .Should().Throw<ArgumentOutOfRangeException>();
+
+            ((Action)(() => cal.CalculateZeroParameters(template.Ammunition, template.Atmosphere, template.Rifle, template.Rifle.Zero)))
+                .Should().Throw<ArgumentOutOfRangeException>();
+        }
+
         class MyDrag : DragTable
         {
             public override DragTableId TableId => DragTableId.GC;

@@ -302,12 +302,31 @@ concurrent `Calculate`/`CalculateZeroParameters` (don't mutate `Integrator`/step
 - **Mach** uses the *air-relative* speed; the drag node walks `Previous` as Mach falls.
 - **Sound speed / density** are refreshed only when altitude changes by >1 m (perf guard).
 - **`CalculateZeroParameters`**: Newton-iterates (≤100 passes) the vertical **and** horizontal
-  barrel adjustments, each pass driving `Calculate` to `zero.Distance` and correcting drop→`VerticalOffset`
+  barrel adjustments, each pass driving `Calculate` to `zero.Distance` (as ten output steps) and correcting drop→`VerticalOffset`
   and windage→`HorizontalOffset` within `accuracy` (default 0.1 mm). Because it uses the full trajectory,
   spin drift, Coriolis (if `Latitude` supplied), aero jump and wind are folded into the zero. Windage
   stays `null` when there's nothing to correct.
 - **Termination**: velocity < 50 ft/s, drop below −10000 ft, or output array full. Steep-angle
   shots can end one output step early.
+- **`dt = effectiveCalcStep / vx`** (horizontal velocity), quantized to `TimeSpan` tick precision to
+  match the pre-doubles engine, then floored at one tick (`MinimumTimeStepSeconds = 1e-7`). The
+  quantization returns **0** for a sub-tick step, which stalls the loop forever (every termination
+  condition is reached through `rx`); the floor never over-advances, because a floored step covers at
+  least what the step it replaced would have. ⚠️ Both the quantization and the `/vx` are fragile —
+  don't "simplify" the expression: `Math.Round(x * 1e-7) / 1e7` instead of `* 1e7` silently pins `dt`
+  to the floor on every step (a 1000 yd zero then takes ~114k steps per pass and looks like a hang).
+- **Non-integrable inputs throw** (`Calculate`, both new in 1.1.13, `InvalidOperationException`-derived):
+  `TrajectoryCannotBeCalculatedException` when a step doesn't move the projectile downrange
+  (`rx <= rxBefore`) or `velocityMag` isn't finite — the drop/velocity limits compare false against
+  NaN, so a blown-up velocity used to reach the output. `CalculateZeroParameters` translates it into
+  `ZeroRangeCantBeReachedException` (also thrown for a missing row at the zero distance and for
+  non-convergence in 100 passes). A **non-positive or non-finite BC** is rejected up front with
+  `ArgumentOutOfRangeException`.
+- ⚠️ **`dt` explodes when `vx` decays** while the projectile keeps falling: `MinimumVelocity` tests the
+  *total* speed, which a vertically-plunging projectile satisfies via `vy` alone. Measured on an
+  8 gr / 0.02 BC pellet at 1000 yd: `vx` = 0.29 ft/s with |v| = 125 ft/s gives **dt = 8 s**, the RK2
+  midpoint `vmx` goes negative and `rx` walks backwards (now the throw above, previously a spin or a
+  garbage table). A reachable 1000 yd zero is unaffected — its crossing step is ~0.2 m, `dt` ~4.7e-4 s.
 
 ### Drift / spin drift (only if `Rifling != null && BulletDiameter != null && BulletLength != null`)
 - **Miller stability** `Sg` (`CalculateStabilityCoefficient`):
@@ -400,6 +419,11 @@ crosswind with a shot angle produces a small vertical component.
   lighter than air, so **dry** air is denser). `WarnerReportTest` cross-checks the two tables.
 - **50 ft/s floor & early stop**: subsonic long-range or steep-angle runs may return fewer rows
   than `MaximumDistance/Step + 1`; guard for trailing `null`s in the returned array.
+- **`Calculate` can throw** since 1.1.13 — it is no longer "returns a table or fewer rows". Degenerate
+  inputs (BC ≤ 0 or non-finite ⇒ `ArgumentOutOfRangeException`) and an integration that stops advancing
+  or blows up (⇒ `TrajectoryCannotBeCalculatedException`) are reported instead of hanging or returning
+  garbage rows. Both are `ArgumentException`/`InvalidOperationException`-derived, so existing catch
+  blocks for those keep working. See §5 for the mechanisms.
 
 ---
 

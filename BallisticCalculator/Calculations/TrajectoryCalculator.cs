@@ -312,7 +312,18 @@ namespace BallisticCalculator
 
             // Drag: PIR * (velUnit->fps factor) / BC — combines all constant multipliers
             double adjustToFps = Measurement<VelocityUnit>.Convert(1, velUnit, VelocityUnit.FeetPerSecond);
-            double ballisticFactor = 1.0 / ammunition.GetBallisticCoefficient();
+
+            // The whole drag term is divided by the ballistic coefficient, so a zero or negative one
+            // makes the drag infinite or negative and the integration meaningless (an infinite drag
+            // turns the velocity into NaN on the second step). The form-factor path of
+            // GetBallisticCoefficient validates its own inputs; a coefficient is taken as given, so
+            // check it here where it is first used.
+            double ballisticCoefficient = ammunition.GetBallisticCoefficient();
+            if (!double.IsFinite(ballisticCoefficient) || ballisticCoefficient <= 0)
+                throw new ArgumentOutOfRangeException(nameof(ammunition),
+                    "The ballistic coefficient must be a positive finite number");
+
+            double ballisticFactor = 1.0 / ballisticCoefficient;
             double accumulatedFactor = PIR * adjustToFps * ballisticFactor;
 
             // Gravity acceleration in velUnit per second (e.g. ~32.17 ft/s^2)
