@@ -133,7 +133,7 @@ namespace BallisticCalculator
             // Single output row exactly at the zero distance (the range clamp lands it there).
             var solveShot = new ShotParameters
             {
-                Step = zero.Distance / 10,          //reach distance in 10 steps, then clamp to the exact distance for the output row
+                Step = zero.Distance,               //one output row, at the zero distance
                 MaximumDistance = zero.Distance,
                 ZeroDropAdjustment = Measurement<AngularUnit>.ZERO,
                 ShotAngle = shot?.ShotAngle,
@@ -425,7 +425,14 @@ namespace BallisticCalculator
                     throw new TrajectoryCannotBeCalculatedException(
                         "The projectile velocity is not a finite number - check the ballistic coefficient and the drag table");
 
-                if (velocityMag < minimumVelocity || ry < -maximumDropMeters)
+                // MinimumVelocity tests the total speed, which a projectile plunging at terminal velocity
+                // keeps satisfying through vy alone. Since the step is derived from vx, a projectile whose
+                // horizontal velocity has decayed keeps the loop alive with an ever growing dt (seconds
+                // per step, until the midpoint velocity turns negative and the integration reverses). It
+                // is no longer going downrange, so end the trajectory here: that also caps dt at
+                // effectiveCalcStep / minimumVelocity. Unreachable for any normal shot - even a plunging
+                // one keeps vx far above the floor - so the returned rows are unchanged.
+                if (vx < minimumVelocity || velocityMag < minimumVelocity || ry < -maximumDropMeters)
                     break;
 
                 if (rx >= nextWindRangeMeters)

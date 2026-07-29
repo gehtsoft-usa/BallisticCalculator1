@@ -302,12 +302,12 @@ concurrent `Calculate`/`CalculateZeroParameters` (don't mutate `Integrator`/step
 - **Mach** uses the *air-relative* speed; the drag node walks `Previous` as Mach falls.
 - **Sound speed / density** are refreshed only when altitude changes by >1 m (perf guard).
 - **`CalculateZeroParameters`**: Newton-iterates (≤100 passes) the vertical **and** horizontal
-  barrel adjustments, each pass driving `Calculate` to `zero.Distance` (as ten output steps) and correcting drop→`VerticalOffset`
+  barrel adjustments, each pass driving `Calculate` to `zero.Distance` (as a single output step) and correcting drop→`VerticalOffset`
   and windage→`HorizontalOffset` within `accuracy` (default 0.1 mm). Because it uses the full trajectory,
   spin drift, Coriolis (if `Latitude` supplied), aero jump and wind are folded into the zero. Windage
   stays `null` when there's nothing to correct.
-- **Termination**: velocity < 50 ft/s, drop below −10000 ft, or output array full. Steep-angle
-  shots can end one output step early.
+- **Termination**: velocity < 50 ft/s — **total or horizontal (`vx`)**, see the `dt` note below —
+  drop below −10000 ft, or output array full. Steep-angle shots can end one output step early.
 - **`dt = effectiveCalcStep / vx`** (horizontal velocity), quantized to `TimeSpan` tick precision to
   match the pre-doubles engine, then floored at one tick (`MinimumTimeStepSeconds = 1e-7`). The
   quantization returns **0** for a sub-tick step, which stalls the loop forever (every termination
@@ -322,11 +322,14 @@ concurrent `Calculate`/`CalculateZeroParameters` (don't mutate `Integrator`/step
   `ZeroRangeCantBeReachedException` (also thrown for a missing row at the zero distance and for
   non-convergence in 100 passes). A **non-positive or non-finite BC** is rejected up front with
   `ArgumentOutOfRangeException`.
-- ⚠️ **`dt` explodes when `vx` decays** while the projectile keeps falling: `MinimumVelocity` tests the
-  *total* speed, which a vertically-plunging projectile satisfies via `vy` alone. Measured on an
-  8 gr / 0.02 BC pellet at 1000 yd: `vx` = 0.29 ft/s with |v| = 125 ft/s gives **dt = 8 s**, the RK2
-  midpoint `vmx` goes negative and `rx` walks backwards (now the throw above, previously a spin or a
-  garbage table). A reachable 1000 yd zero is unaffected — its crossing step is ~0.2 m, `dt` ~4.7e-4 s.
+- ⚠️ **Why `vx` is in the termination test**: `dt` explodes when `vx` decays while the projectile keeps
+  falling, because `MinimumVelocity` on the *total* speed is satisfied by `vy` alone. Measured on an
+  8 gr / 0.02 BC pellet at 1000 yd: `vx` = 0.29 ft/s with |v| = 125 ft/s gave **dt = 8 s**, the RK2
+  midpoint `vmx` went negative and `rx` walked backwards (previously an endless spin, then the throw
+  above). The `vx < minimumVelocity` break ends such a run as a short table and caps `dt` at
+  `effectiveCalcStep / minimumVelocity` (~30 ms). No normal shot comes near it — an 80° plunge at
+  400 m/s still has `vx` ≈ 230 ft/s — and a reachable 1000 yd zero is nowhere close: its crossing
+  step is ~0.2 m at `dt` ~4.7e-4 s. So the **large** `dt` end is the dangerous one, not the sub-tick end.
 
 ### Drift / spin drift (only if `Rifling != null && BulletDiameter != null && BulletLength != null`)
 - **Miller stability** `Sg` (`CalculateStabilityCoefficient`):
