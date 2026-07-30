@@ -1,0 +1,34 @@
+Bullet:
+HORNADY 22 CAL 75 GR BTHP
+Muzzle Velocity (ft/s)
+2790
+Wind Angle (°)
+90
+Barrel Twist (in/rev)
+8
+Altitude (ft)
+7000
+Bore Diameter (in)
+0.224
+Pressure (inHg)
+29.92
+Sight Height (in)
+1.5
+Temperature (°F)
+59
+Axial Form Factor
+1
+Humidity (%)
+50
+Zero Range (yd)
+100
+Shooting Angle (°)
+0
+Zero Angle (°)
+0.06149
+Max Range (yd)
+1500
+Wind Speed (mph)
+0
+Interval (yd)
+50

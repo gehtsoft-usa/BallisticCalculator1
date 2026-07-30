@@ -270,6 +270,27 @@ For a general ranging capability, prefer fine graduations on the main axes (patt
 user the formula: `range_m = target_mm / mrad`, `range_yd = target_in × 27.78 / mrad`,
 `range_yd = target_in × 95.5 / MOA`.
 
+## Punching a hole through a thick element
+
+Heavy posts with cut-outs are common on military glass — the oval holds inside the lower post of
+Trijicon's ACOG .308 crosshair, for one. Draw the post **continuous**, then overpaint each hole as a
+white filled shape *after* it:
+
+```python
+# post first, holes second - document order is what makes this work
+print(f'<reticle-line start-x="0moa" start-y="-{top}moa" end-x="0moa" end-y="-{bottom}moa" '
+      f'line-width="{post_w}moa" line-color="black" />')
+for drop, width in HOLES:
+    print(f'<reticle-circle center-x="0moa" center-y="-{drop}moa" radius="{width/2}moa" '
+      f'fill="true" line-width="0.25moa" color="white" />')
+```
+
+Resist the temptation to break the post into segments around each hole: it looks similar in the preview
+but misstates the etching, and the hold becomes a gap rather than a mark. Note the format has no ellipse,
+so a genuinely oval hole is approximated by a circle at its width — say so in the write-up, because the
+hold position stays exact while the shape does not. Full detail in `file-format.md`, *Drawing order, and
+how to punch a hole*.
+
 ## Composing a new design
 
 Most briefs are one of these with adjustments. The order that works:

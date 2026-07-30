@@ -200,7 +200,10 @@ Elements, in one line each — full attribute lists, types and defaults are in
 | `reticle-path` | `<elements>` of move-to / line-to / arc | chevrons, tapered posts, arc segments |
 | `bdc` | `position-x/y`, `text-offset`, `text-height` | **invisible anchor**, not a drawn mark |
 
-Elements are drawn in document order, so later elements paint over earlier ones.
+Elements are drawn in document order, so later elements paint over earlier ones. That is also how you
+**punch a hole** through a thick element — draw it continuous, then overpaint a `fill="true"` `white`
+shape after it, rather than breaking it into segments around the gap. See `references/file-format.md`,
+*Drawing order, and how to punch a hole*.
 
 `<bdc>` points deserve emphasis because they surprise people: they draw *nothing*. They are anchors
 that `ReticleDrawController.DrawBulletDropCompensator` labels with distances computed from a real

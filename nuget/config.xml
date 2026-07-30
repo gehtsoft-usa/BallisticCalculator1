@@ -2,6 +2,7 @@
 <nuget xmlns="http://www.gehtsoft.com/build/nuget">
  <!-- versions. the FIRST version is the current -->
  <versions>
+  <version id="1.1.14">Further changes...</version>
   <version id="1.1.13">Fix mildot reticle, fix draw target in library, fix trajectory calculation stall under specific conditions</version>
   <version id="1.1.12">Reticle model improved, few fixes in DRG approximation and DRG I/O</version>
   <version id="1.1.11.3">Fix multi-BC calculator density handling</version>

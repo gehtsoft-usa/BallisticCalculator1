@@ -163,6 +163,41 @@ All five carry an optional `line-width` (a `Measurement<AngularUnit>`, i.e. stro
 an *angle*) and an optional colour whose attribute name differs per element. Omitting `line-width`
 gives the thinnest line the canvas can draw.
 
+### Drawing order, and how to punch a hole
+
+Elements are emitted to the canvas in **document order**, so a later element paints over an earlier one.
+There is no z-index, no grouping and no clipping — order is the only control you have, and it is
+load-bearing.
+
+That gives the only way to represent a **hole through a thick element**, which several real reticles have:
+the oval cut-outs in the lower post of Trijicon's ACOG .308 crosshair, the open centre of a heavy chevron,
+a gap in a filled ring. Draw the thick element as **one continuous shape**, then draw a **`fill="true"`
+shape in `white` over it, after it**:
+
+```xml
+<!-- one continuous post ... -->
+<reticle-line start-x="0moa" start-y="-14moa" end-x="0moa" end-y="-33moa"
+              line-width="2.6moa" line-color="black" />
+<!-- ... then the holes, painted over it -->
+<reticle-circle center-x="0moa" center-y="-19.1moa" radius="1.1moa"
+                fill="true" line-width="0.25moa" color="white" />
+<reticle-circle center-x="0moa" center-y="-25.5moa" radius="1moa"
+                fill="true" line-width="0.25moa" color="white" />
+```
+
+`white` is a real colour here, not a transparency — it is passed through to the SVG `fill` and covers what
+is beneath it. Two things to get right:
+
+- **Order.** Put the overpaint after the element it cuts into. A generator that emits all lines and then
+  all circles happens to work; one that emits circles first silently loses the holes.
+- **Do not fake it with gaps.** Breaking the thick element into segments either side of the hole looks
+  similar in a preview but is wrong: it misrepresents the etching (the post really is continuous), the
+  seams show at high magnification, and the "hole" becomes an absence of ink rather than a shape, so it
+  reads differently against a light target.
+
+The same idiom inverts: a white element under a black one is invisible, so overpainting is strictly a
+foreground operation.
+
 ### `reticle-line`
 
 Two endpoints. The workhorse element — stadia, posts, tick marks, ladder rungs.
