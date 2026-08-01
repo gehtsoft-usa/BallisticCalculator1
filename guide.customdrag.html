@@ -1,0 +1,150 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Custom drag: GC and .drg tables</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Custom drag: GC and .drg tables</h1>
+<h2>Brief</h2>
+<p>Use a measured or custom drag curve instead of a standard G-table.</p>
+<h2>Details</h2><p>When a standard G1/G7 curve does not describe a bullet well, supply your own drag curve.
+A custom curve uses the <code class="ctag">GC</code> table id and is passed directly to both the zeroing
+calculation and Calculate.</p>
+<p></p>
+<h2>A custom drag table in code</h2>
+<p>Derive from <a href="BallisticCalculator.DragTable.html"><code>DragTable</code></a>, return
+<code class="ctag">DragTableId.GC</code>, and feed it drag points (Mach, drag coefficient). The ammunition
+uses a <a href="BallisticCalculator.BallisticCoefficient.html"><code>BallisticCoefficient</code></a> with
+the <code class="ctag">GC</code> table id.</p><div id="open4" style="display:none">
+  <p>Running a custom GC curve&nbsp;<a href="javascript: showdiv('close4'); hidediv('open4');" onclick="javascript: showdiv('close4'); hidediv('open4');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close4" style="display:inline">
+  <p>Running a custom GC curve&nbsp;<a href="javascript: showdiv('open4'); hidediv('close4');" onclick="javascript: showdiv('open4'); hidediv('close4');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example4"><code class="cs">class MyDrag : DragTable
+{
+    public override DragTableId TableId =&gt; DragTableId.GC;
+    private static readonly DragTableDataPoint[] Points =
+    {
+        new DragTableDataPoint(0.00, 0.180), new DragTableDataPoint(0.60, 0.129),
+        new DragTableDataPoint(0.80, 0.136), new DragTableDataPoint(0.90, 0.177),
+        new DragTableDataPoint(1.00, 0.427), new DragTableDataPoint(1.05, 0.452),
+        new DragTableDataPoint(1.20, 0.429), new DragTableDataPoint(1.50, 0.394),
+        new DragTableDataPoint(2.00, 0.339), new DragTableDataPoint(2.50, 0.297),
+        new DragTableDataPoint(3.00, 0.250), new DragTableDataPoint(5.00, 0.180),
+    };
+    public MyDrag() : base(Points) { }
+}
+ 
+var table = new MyDrag();
+var ammo = new Ammunition(
+    weight: new Measurement&lt;WeightUnit&gt;(168, WeightUnit.Grain),
+    ballisticCoefficient: new BallisticCoefficient(0.5, DragTableId.GC),
+    muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(2700, VelocityUnit.FeetPerSecond));
+ 
+var rifle = new Rifle(
+    sight: new Sight(new Measurement&lt;DistanceUnit&gt;(1.5, DistanceUnit.Inch),
+                     Measurement&lt;AngularUnit&gt;.ZERO, Measurement&lt;AngularUnit&gt;.ZERO),
+    zero: new ZeroingParameters(new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard), null, null));
+ 
+var atmosphere = new Atmosphere();
+var calc = new TrajectoryCalculator();
+var shot = new ShotParameters
+{
+    MaximumDistance = new Measurement&lt;DistanceUnit&gt;(1000, DistanceUnit.Yard),
+    Step = new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard),
+    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero, dragTable: table).ZeroDropAdjustment,
+};
+ 
+foreach (var p in calc.Calculate(ammo, rifle, atmosphere, shot, null, table))
+    Console.WriteLine($&quot;{p.Distance.In(DistanceUnit.Yard),5:N0} &quot; +
+        $&quot;{p.Velocity.In(VelocityUnit.FeetPerSecond),6:N0} &quot; +
+        $&quot;{p.Drop.In(DistanceUnit.Inch),8:N1}&quot;);</code></pre>
+</div><p>Output (every 200 yd):</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>dist (yd)</p></td>
+    <td class="thdr"><p>vel (fps)</p></td>
+    <td class="thdr"><p>drop (in)</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>0</p></td>
+    <td class="tmain"><p>2,700</p></td>
+    <td class="tmain"><p>-1.5</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>200</p></td>
+    <td class="tmain"><p>2,499</p></td>
+    <td class="tmain"><p>-3.6</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>400</p></td>
+    <td class="tmain"><p>2,305</p></td>
+    <td class="tmain"><p>-28.1</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>600</p></td>
+    <td class="tmain"><p>2,117</p></td>
+    <td class="tmain"><p>-78.8</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>800</p></td>
+    <td class="tmain"><p>1,936</p></td>
+    <td class="tmain"><p>-160.7</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>1,000</p></td>
+    <td class="tmain"><p>1,762</p></td>
+    <td class="tmain"><p>-279.7</p></td>
+  </tr>
+</table><p></p>
+<h2>Loading a radar .drg file</h2>
+<p>A measured Doppler-radar curve is usually distributed as a <code class="ctag">.drg</code> file. Load it with
+<a href="BallisticCalculator.DrgDragTable.html"><code>DrgDragTable</code></a>.Open and use it exactly like
+the custom table above (pass it to CalculateZeroParameters and Calculate):</p><div id="open5" style="display:none">
+  <p>Loading a .drg file&nbsp;<a href="javascript: showdiv('close5'); hidediv('open5');" onclick="javascript: showdiv('close5'); hidediv('open5');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close5" style="display:inline">
+  <p>Loading a .drg file&nbsp;<a href="javascript: showdiv('open5'); hidediv('close5');" onclick="javascript: showdiv('open5'); hidediv('close5');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example5"><code class="cs">var table = DrgDragTable.Open(&quot;308-168gr.drg&quot;);
+// then use `table` the same way as a custom DragTable</code></pre>
+</div><p>The bullet metadata from the file header is available through the table's
+<code class="ctag">Ammunition</code> entry: the name, the weight, the diameter, the bullet length and the
+data source. The length matters - it is one of the values the spin drift and the
+aerodynamic jump need, so a file that carries it saves you from filling it in by hand.</p><div id="open6" style="display:none">
+  <p>Reading the metadata of a drg file&nbsp;<a href="javascript: showdiv('close6'); hidediv('open6');" onclick="javascript: showdiv('close6'); hidediv('open6');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close6" style="display:inline">
+  <p>Reading the metadata of a drg file&nbsp;<a href="javascript: showdiv('open6'); hidediv('close6');" onclick="javascript: showdiv('open6'); hidediv('close6');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example6"><code class="cs">var table = DrgDragTable.Open(&quot;308-168gr.drg&quot;);
+var bullet = table.Ammunition.Ammunition;      // weight, diameter, length
+var origin = table.Ammunition.Source;          // &quot;Radar Data&quot;, for instance</code></pre>
+</div><p>A table can also be built in code from your own measured points and saved as a
+<code class="ctag">.drg</code> file. The constructor takes the same values the file header carries, so
+nothing is lost on the way back to disk:</p><div id="open7" style="display:none">
+  <p>Building and saving a custom drg table&nbsp;<a href="javascript: showdiv('close7'); hidediv('open7');" onclick="javascript: showdiv('close7'); hidediv('open7');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close7" style="display:inline">
+  <p>Building and saving a custom drg table&nbsp;<a href="javascript: showdiv('open7'); hidediv('close7');" onclick="javascript: showdiv('open7'); hidediv('close7');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example7"><code class="cs">var table = new DrgDragTable(points, &quot;308 168gr custom&quot;,
+    new Measurement&lt;WeightUnit&gt;(168, WeightUnit.Grain),
+    new Measurement&lt;DistanceUnit&gt;(0.308, DistanceUnit.Inch),
+    bulletLength: new Measurement&lt;DistanceUnit&gt;(1.226, DistanceUnit.Inch),
+    source: &quot;Doppler radar, 2026&quot;);
+table.Save(&quot;308-168gr.drg&quot;);</code></pre>
+</div><p>
+  <center><a href="guide.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

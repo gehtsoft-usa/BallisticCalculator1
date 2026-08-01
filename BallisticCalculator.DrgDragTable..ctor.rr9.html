@@ -1,0 +1,76 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>DrgDragTable.DrgDragTable</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>public constructor <b>DrgDragTable.DrgDragTable</b></code></h1><h2>Brief</h2>
+<p>Constructs a custom table from measured drag points and the bullet metadata.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>DrgDragTable</b> (<a href="BallisticCalculator.DragTableDataPoint.html">DragTableDataPoint</a> [] points, string name, Measurement&lt;WeightUnit&gt; bulletWeight, Measurement&lt;DistanceUnit&gt; bulletDiameter, Measurement&lt;DistanceUnit&gt;? bulletLength = null, string source = null, Measurement&lt;VelocityUnit&gt;? muzzleVelocity = null) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>points</code></td>
+    <td class="tmain" width="69%"><p>The drag points. They must be sorted in ascending order by the Mach number and at least two points are required.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>name</code></td>
+    <td class="tmain" width="69%"><p>The name of the projectile.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>bulletWeight</code></td>
+    <td class="tmain" width="69%"><p>The bullet weight.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>bulletDiameter</code></td>
+    <td class="tmain" width="69%"><p>The bullet diameter.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>bulletLength</code></td>
+    <td class="tmain" width="69%"><p>The optional bullet length. It is not used by the drag curve, but it is required for the spin drift and the aerodynamic jump.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>source</code></td>
+    <td class="tmain" width="69%"><p>The optional description of the data origin.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>muzzleVelocity</code></td>
+    <td class="tmain" width="69%"><p>The optional muzzle velocity of the reference load. When it is not specified, a placeholder of 500 meters per second is used.</p></td>
+  </tr>
+</table><h2>Details</h2><p>The parameters are exactly the values a drg file header carries, so a table built this
+way and saved keeps all of its metadata.</p><p>Declared in <a href="BallisticCalculator.DrgDragTable.html">DrgDragTable</a></p>
+<p>
+  <center><a href="BallisticCalculator.DrgDragTable.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('BallisticCalculator.DrgDragTable');</script></body></html>

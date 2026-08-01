@@ -1,0 +1,128 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>HitProbabilityParameters</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>class <b>HitProbabilityParameters</b></code></h1>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parents</b></td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>object</code></p>
+    </td>
+  </tr>
+</table>
+<h2>Brief</h2>
+<p>The error inputs for a <a href="BallisticCalculator.Tools.HitProbability.html"><code>HitProbability</code></a> estimate.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Properties</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.DistanceErrorPercent.LF5.html">DistanceErrorPercent</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The distance estimation error, as a one-standard-deviation percent of the range.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.GroupSize.qO4.html">GroupSize</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The shooter's group size (angular), taken directly as the per-axis standard deviation of the aim.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.HorizontalPositionMultiplier.SE5.html">HorizontalPositionMultiplier</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Widens the horizontal aim scatter relative to the fully supported group, for the shooting position.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.MuzzleVelocityDeviationPercent.7Y4.html">MuzzleVelocityDeviationPercent</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The muzzle velocity standard deviation, in percent of the muzzle velocity.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.Seed.yt4.html">Seed</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>An optional random seed for reproducible runs; when null the run is non-deterministic.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.Shots.asD.html">Shots</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The number of shots to simulate; the default is 1000.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.TargetSize.1u7.html">TargetSize</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The target size (diameter of a circular vital zone); a shot hits when it lands within half of it from the center.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.VerticalPositionMultiplier.ol5.html">VerticalPositionMultiplier</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Widens the vertical aim scatter relative to the fully supported group, for the shooting position.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters.WindErrorPercent.TaF.html">WindErrorPercent</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The wind estimation error, as a one-standard-deviation percent of the wind speed.</p>
+    </td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Constructors</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.HitProbabilityParameters..ctor.qw9.html">HitProbabilityParameters</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p></p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="BallisticCalculator.Tools.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

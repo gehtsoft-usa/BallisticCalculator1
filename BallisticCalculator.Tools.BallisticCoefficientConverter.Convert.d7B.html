@@ -1,0 +1,63 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>BallisticCoefficientConverter.Convert</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>BallisticCoefficientConverter.Convert</b></code></h1><h2>Brief</h2>
+<p>Converts a ballistic coefficient to another drag table at the specified reference velocity.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code><a href="BallisticCalculator.BallisticCoefficient.html">BallisticCoefficient</a>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>Convert</b> (<a href="BallisticCalculator.BallisticCoefficient.html">BallisticCoefficient</a> source, <a href="BallisticCalculator.DragTableId.html">DragTableId</a> targetTable, Measurement&lt;VelocityUnit&gt; referenceVelocity, <a href="BallisticCalculator.Atmosphere.html">Atmosphere</a> atmosphere = null) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>source</code></td>
+    <td class="tmain" width="69%"><p>The source ballistic coefficient. Must be a coefficient (not a form factor) and not a custom (GC) table.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>targetTable</code></td>
+    <td class="tmain" width="69%"><p>The drag table to convert to. Must not be GC.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>referenceVelocity</code></td>
+    <td class="tmain" width="69%"><p>The velocity representative of the intended range band. Must be greater than 0.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>atmosphere</code></td>
+    <td class="tmain" width="69%"><p>The atmosphere whose speed of sound sets the Mach number. When null, the standard atmosphere is used.</p></td>
+  </tr>
+</table><p>Declared in <a href="BallisticCalculator.Tools.BallisticCoefficientConverter.html">BallisticCoefficientConverter</a></p>
+<p>
+  <center><a href="BallisticCalculator.Tools.BallisticCoefficientConverter.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('BallisticCalculator.Tools.BallisticCoefficientConverter');</script></body></html>

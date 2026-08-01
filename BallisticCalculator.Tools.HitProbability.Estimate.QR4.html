@@ -1,0 +1,79 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>HitProbability.Estimate</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>HitProbability.Estimate</b></code></h1><h2>Brief</h2>
+<p>Estimates hit probability for the given shot and error budget. The target is at the shot's maximum distance.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code><a href="BallisticCalculator.Tools.HitProbabilityResult.html">BallisticCalculator.Tools.HitProbabilityResult</a>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>Estimate</b> (<a href="BallisticCalculator.TrajectoryCalculator.html">TrajectoryCalculator</a> calculator, <a href="BallisticCalculator.Ammunition.html">Ammunition</a> ammunition, <a href="BallisticCalculator.Atmosphere.html">Atmosphere</a> atmosphere, <a href="BallisticCalculator.Rifle.html">Rifle</a> rifle, <a href="BallisticCalculator.ShotParameters.html">ShotParameters</a> shot, <a href="BallisticCalculator.Wind.html">Wind</a> [] wind, <a href="BallisticCalculator.Tools.HitProbabilityParameters.html">BallisticCalculator.Tools.HitProbabilityParameters</a> parameters, <a href="BallisticCalculator.DragTable.html">DragTable</a> dragTable = null) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>calculator</code></td>
+    <td class="tmain" width="69%"><p>The trajectory calculator.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>ammunition</code></td>
+    <td class="tmain" width="69%"><p>The ammunition.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>atmosphere</code></td>
+    <td class="tmain" width="69%"><p>The atmosphere; when null a sea-level standard atmosphere is used.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>rifle</code></td>
+    <td class="tmain" width="69%"><p>The rifle.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>shot</code></td>
+    <td class="tmain" width="69%"><p>The shot parameters; its maximum distance is the target range.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>wind</code></td>
+    <td class="tmain" width="69%"><p>The true wind (the shooter estimates it with error); may be null.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>parameters</code></td>
+    <td class="tmain" width="69%"><p>The target size and error budget.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>dragTable</code></td>
+    <td class="tmain" width="69%"><p>Custom drag table (required when the ballistic coefficient table is GC).</p></td>
+  </tr>
+</table><p>Declared in <a href="BallisticCalculator.Tools.HitProbability.html">HitProbability</a></p>
+<p>
+  <center><a href="BallisticCalculator.Tools.HitProbability.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('BallisticCalculator.Tools.HitProbability');</script></body></html>

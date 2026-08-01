@@ -1,0 +1,73 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>BarrelTwist.Recommend</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>BarrelTwist.Recommend</b></code></h1><h2>Brief</h2>
+<p>Recommends the slowest, optimal, and fastest twists for the projectile, targeting the given</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code><a href="BallisticCalculator.Tools.TwistRecommendation.html">BallisticCalculator.Tools.TwistRecommendation</a>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>Recommend</b> (<a href="BallisticCalculator.Ammunition.html">Ammunition</a> ammunition, <a href="BallisticCalculator.Atmosphere.html">Atmosphere</a> atmosphere = null, double minimumStability = 1.5, double optimalStability = 2, double maximumStability = 3) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>ammunition</code></td>
+    <td class="tmain" width="69%"><p>The projectile. Bullet diameter and length are required.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>atmosphere</code></td>
+    <td class="tmain" width="69%"><p>The atmosphere for the temperature/pressure correction. Null means ICAO standard.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>minimumStability</code></td>
+    <td class="tmain" width="69%"><p>Stability target for the slowest twist (longest step).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>optimalStability</code></td>
+    <td class="tmain" width="69%"><p>Stability target for the recommended twist.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>maximumStability</code></td>
+    <td class="tmain" width="69%"><p>Stability target for the fastest twist (shortest step).</p></td>
+  </tr>
+</table><h2>Details</h2><p>minimum, optimal, and maximum gyroscopic stability factors.</p>
+<p>Defaults are grounded in Litz/Berger practice and cross-checked against published minimum
+twists: minimum 1.5 (the recommended floor for full stability and undegraded BC — below it the
+bullet flies but BC drops; this reproduces manufacturers' published minimum twists), optimal 2.0
+(a comfortable margin robust to cold/dense air, low muzzle velocity, and lot variation), maximum
+3.0 (an over-stabilization ceiling — beyond it precision may suffer slightly). The theoretical
+stability threshold is 1.0, but it is not a usable recommendation.</p><p>Declared in <a href="BallisticCalculator.Tools.BarrelTwist.html">BarrelTwist</a></p>
+<p>
+  <center><a href="BallisticCalculator.Tools.BarrelTwist.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('BallisticCalculator.Tools.BarrelTwist');</script></body></html>

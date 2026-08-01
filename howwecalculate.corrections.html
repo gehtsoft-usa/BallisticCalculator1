@@ -1,0 +1,217 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>The empirical corrections</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>The empirical corrections</h1>
+<h2>Brief</h2>
+<p>Spin drift, aerodynamic jump and earth rotation, added to the trajectory rather than integrated with it.</p>
+<h2>Details</h2><p><b>Goal of this article:</b> document the four effects that are <i>not</i> integrated with the trajectory
+but added to it afterwards, where each formula comes from, and what each one needs from you to appear
+at all.</p>
+<p><a href="howwecalculate.3dof.html">The 3DOF model</a> integrates two forces, drag and gravity. Everything
+else in the reported drop and windage arrives here.</p>
+<p></p>
+<h2>What &quot;applied at output&quot; means</h2>
+<p>Each of these corrections is evaluated **per trajectory point, in closed form, from the integrated
+state** — range, time of flight, velocity — and added to the reported drop or windage. None of them
+feeds back into the integration.</p>
+<p>The consequence is precise and worth being clear about: **they do not change velocity, time of flight,
+or range.** A shot fired east and the same shot fired west have identical <code class="ctag">Velocity</code> and <code class="ctag">Time</code>;
+only the <code class="ctag">Drop</code> differs. In reality the coupling exists but is negligible at these magnitudes, and
+this is the form the field references the engine is validated against use.</p>
+<p>There is a second, deeper reason these are add-ons rather than terms in the equations of motion: three
+of the four are consequences of the bullet's <b>orientation and spin</b>, and a point mass has neither.
+They are empirical formulae, fitted to measurement and published, grafted onto a model that cannot
+derive them. That makes them the least fundamental part of the calculation and the first place to be
+sceptical when a number looks odd.</p>
+<p>The four are mutually independent and simply sum. Two are horizontal, two are vertical:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Correction</p></td>
+    <td class="thdr"><p>Moves the impact</p></td>
+    <td class="thdr"><p>Needs</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Spin drift</p></td>
+    <td class="tmain"><p>horizontally, with the twist direction</p></td>
+    <td class="tmain"><p>twist + bullet diameter + bullet <b>length</b></p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Aerodynamic jump</p></td>
+    <td class="tmain"><p><b>vertically</b></p></td>
+    <td class="tmain"><p>the above, plus a crosswind</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Coriolis, horizontal</p></td>
+    <td class="tmain"><p>horizontally, right in the N hemisphere</p></td>
+    <td class="tmain"><p>latitude</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Coriolis, vertical (Eötvös)</p></td>
+    <td class="tmain"><p>vertically</p></td>
+    <td class="tmain"><p>latitude <b>and</b> barrel azimuth</p></td>
+  </tr>
+</table><p></p>
+<h2>The gyroscopic stability coefficient</h2>
+<p>Both spin corrections are scaled by the <b>Miller twist-rate stability coefficient</b>, computed once at
+the muzzle:</p>
+<p>$$S_g = \frac{30\,w_{\text{gr}}}{t^{2}\,d_{\text{in}}^{3}\,L\,(1+L^{2})}\cdot\left(\frac{V_0}{2800}\right)^{1/3}\cdot\frac{T_F+460}{519}\cdot\frac{29.92}{P}$$</p><ul class="main">
+  <li><p>$S_g$ — the stability coefficient, dimensionless; above 1 the bullet is gyroscopically stable</p></li>
+  <li><p>$w_{\text{gr}}$ — bullet weight in <b>grains</b></p></li>
+  <li><p>$d_{\text{in}}$ — bullet diameter in <b>inches</b></p></li>
+  <li><p>$t$ — the twist expressed in <b>calibres</b>, $t = \text{twist}/d_{\text{in}}$: inches of barrel per
+turn, from <a href="BallisticCalculator.Rifling.html"><code>Rifling</code></a>.RiflingStep, divided by the diameter</p></li>
+  <li><p>$L$ — the bullet length in <b>calibres</b>, $L = \text{length}/d_{\text{in}}$</p></li>
+  <li><p>$V_0$ — muzzle velocity in <b>ft/s</b></p></li>
+  <li><p>$T_F$ — air temperature in <b>Fahrenheit</b>, $P$ — pressure in <b>inches of mercury</b></p></li>
+  <li><p>$30$ — Miller's empirical constant, which carries the units of the first factor</p></li>
+</ul><p>The three factors are, in order: Miller's base formula from the bullet's geometry and mass, a velocity
+correction normalised to 2800 ft/s, and an air correction normalised to standard sea-level conditions,
+where $519 = 59 + 460$ is 59 °F in Rankine and 29.92 inHg is standard pressure, so both fractions are
+1 in standard air.</p>
+<p>Two things about $S_g$ in this engine:</p><ul class="main">
+  <li><p><b>It needs three inputs: twist, diameter and length.</b> That is
+<a href="BallisticCalculator.Rifle.html"><code>Rifle</code></a>.Rifling,
+<a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>.BulletDiameter and
+<a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>.BulletLength. Miss any one of them and
+$S_g$ cannot be computed, so spin drift and aerodynamic jump are both <b>silently absent</b> from the
+answer. Not zero because physics says so; simply not there. This is the most common reason two
+solvers disagree on windage at long range.</p></li>
+  <li><p><b>It is computed at the muzzle and never updated.</b> The corrections below use that muzzle value for
+the whole flight. The <i>reported</i> <code class="ctag">GyroscopicStability</code> is different: it is grown downrange as</p></li>
+</ul><p>$$S_g(x) = S_g\left(\frac{V_0}{\lvert\mathbf{v}\rvert}\right)^{1.25}$$</p>
+<p>where $S_g(x)$ is the value reported at downrange distance $x$ and $\lvert\mathbf{v}\rvert$ the
+velocity there, both from the integrated trajectory, because spin decays more slowly than forward
+velocity, so stability rises with range. That growth is displayed but not fed back into the drift.</p>
+<p>$S_g$ is also never judged. A bullet that comes out marginally stabilised, $S_g$ near or below 1.4, is
+treated exactly like one that flies perfectly, because a point mass cannot be unstable. Nothing warns
+you. <a href="BallisticCalculator.Tools.BarrelTwist.html"><code>BarrelTwist</code></a> is the separate tool that
+answers the stability question directly.</p>
+<p></p>
+<h2>Spin drift</h2>
+<p>A spin-stabilised bullet flies at a small <b>yaw of repose</b>: its nose sits slightly off the velocity
+vector, to the side, and the resulting lift component pushes it laterally, right for a right-hand
+twist. This is a genuine consequence of gyroscopic precession, which the 3DOF state cannot represent,
+so it is supplied by Litz's approximation:</p>
+<p>$$\Delta z_{\text{drift}} = 1.25\,(S_g + 1.2)\;t_{\text{flight}}^{1.83}\;\cdot s_{\text{twist}}\cdot\cos\alpha$$</p><ul class="main">
+  <li><p>$\Delta z_{\text{drift}}$ — the lateral displacement, in <b>inches</b>, added to the reported <code class="ctag">Windage</code></p></li>
+  <li><p>$S_g$ — the muzzle stability coefficient above; $1.25$ and $1.2$ are Litz's fitted constants</p></li>
+  <li><p>$t_{\text{flight}}$ — time of flight to that point, in <b>seconds</b></p></li>
+  <li><p>$s_{\text{twist}}$ — the twist sign: $-1$ for a right-hand
+<a href="BallisticCalculator.TwistDirection.html"><code>TwistDirection</code></a>, drift to the right, which is
+negative in the left-positive convention of the frame; $+1$ for a left-hand one</p></li>
+  <li><p>$\alpha$ — the shot angle, so $\cos\alpha$ projects the drift for an inclined shot</p></li>
+</ul><p>Note what it depends on: <b>time of flight, not range.</b> A slower bullet drifts more at the same
+distance, and the exponent 1.83 means drift grows appreciably faster than linearly, a few inches at
+500 yd, roughly a foot at 1000 yd for a typical match load.</p>
+<p>It is folded into the reported <code class="ctag">Windage</code> and never listed on its own, so a windage figure in calm air
+is spin drift plus Coriolis, not zero.</p>
+<p></p>
+<h2>Crosswind aerodynamic jump</h2>
+<p>The counter-intuitive one: <b>a purely horizontal crosswind moves the impact vertically.</b></p>
+<p>The mechanism is again gyroscopic. A crosswind changes the direction of the air flow over the bullet
+as it leaves the muzzle; the bullet's nose responds by precessing <i>perpendicular</i> to that change,
+upwards for a wind from the right with a right-hand twist. The deflection is imparted in the first
+moments of flight and then persists as a constant <b>angle</b>. From Litz, <i>Applied Ballistics</i> Eq. 5.4:</p>
+<p>$$\Delta y'_{\mathrm{MOA}} = \left(0.01\,S_g - 0.0024\,L + 0.032\right)\,W_\perp\cdot s_{\text{twist}}$$</p><ul class="main">
+  <li><p>$\Delta y'_{\mathrm{MOA}}$ — the jump <b>angle</b>, in MOA; the same for every range</p></li>
+  <li><p>$S_g$ and $L$ — the stability coefficient and the bullet length in calibres, as above</p></li>
+  <li><p>$W_\perp$ — the crosswind component in <b>mph</b>, positive from the right</p></li>
+  <li><p>$s_{\text{twist}}$ — the same twist sign as for spin drift</p></li>
+</ul><p>Only the <b>first wind zone</b> contributes to $W_\perp$, because the jump happens at the muzzle; a wind
+that starts 300 yards downrange produces none of it.</p>
+<p>Being an angle, it becomes a vertical offset <b>linear in range</b>:</p>
+<p>$$\Delta\text{drop} = \Delta y' \cdot R$$</p>
+<p>with $R$ the line-of-sight distance to the point, and the result added to the reported drop.</p>
+<p>That linearity is the signature to look for: a 10 mph full-value crosswind might lift the impact a
+fraction of a MOA, constant in angular terms at every distance, which is why it is easy to mistake for
+a zeroing error rather than a wind effect.</p>
+<p></p>
+<h2>Earth rotation, term one: horizontal</h2>
+<p>The rotating frame of the earth deflects a projectile sideways. This term depends on <b>latitude only</b>
+and is completely independent of which way you are facing:</p>
+<p>$$\Delta z_{\text{Coriolis}} = -\,\Omega\sin\phi\;R\,t_{\text{flight}}, \qquad \Omega = 7.2921159\times10^{-5}\ \mathrm{rad/s}$$</p><ul class="main">
+  <li><p>$\Delta z_{\text{Coriolis}}$ — the lateral displacement added to the reported <code class="ctag">Windage</code></p></li>
+  <li><p>$\Omega$ — the earth's rotation rate, in radians per second</p></li>
+  <li><p>$\phi$ — the shooter's <b>latitude</b>, <code class="ctag">ShotParameters.Latitude</code>, positive north</p></li>
+  <li><p>$R$ and $t_{\text{flight}}$ — the line-of-sight distance to the point and the time of flight to it</p></li>
+</ul><p>The sign is carried by $\sin\phi$: positive latitudes (northern hemisphere) deflect the bullet
+<b>right</b>, which is why the term is subtracted in the left-positive windage convention. It vanishes at
+the equator and is largest at the poles. The product $R\,t$ means it grows roughly with the square of
+range.</p>
+<p></p>
+<h2>Earth rotation, term two: vertical (Eötvös)</h2>
+<p>The second earth-rotation term depends on the <b>compass bearing</b>, and acts vertically. Firing east,
+in the direction of the earth's rotation, adds to the bullet's absolute velocity and effectively
+lightens it; firing west does the opposite. It is expressed as a ratio of effective to true gravity,
+constant for the shot:</p>
+<p>$$\frac{g_{\text{eff}}}{g} = 1 - \frac{2\,\Omega\cos\phi\,\sin(Az)\,V_0}{g}$$</p><ul class="main">
+  <li><p>$g_{\text{eff}}/g$ — the effective gravity as a fraction of the true value; dimensionless and
+constant for the shot</p></li>
+  <li><p>$g$ — gravity, <code class="ctag">9.80665 m/s²</code>, and $\Omega$, $\phi$ — as above</p></li>
+  <li><p>$Az$ — <code class="ctag">ShotParameters.BarrelAzimuth</code>: the compass bearing of the shot, measured clockwise from
+north, so due east is 90° and $\sin(Az) = 1$</p></li>
+  <li><p>$V_0$ — the muzzle velocity, in metres per second to match $g$</p></li>
+</ul><p>East ($\sin Az &gt; 0$) lifts the bullet, less drop; west lowers it; due north or south cancels it
+entirely. Note it uses the <b>muzzle</b> velocity, not the current one.</p>
+<p>Because this is a modification of <i>gravity</i>, it may only act on the part of the trajectory that
+gravity produced: the fall below the no-gravity bore line. So the fall is scaled and the ordinate
+rebuilt:</p>
+<p>$$y_{\text{bore}} = x\tan\theta - h, \qquad y_{\text{eff}} = y_{\text{bore}} + (y - y_{\text{bore}})\cdot\frac{g_{\text{eff}}}{g}$$</p><ul class="main">
+  <li><p>$y_{\text{bore}}$ — the vacuum bore line: where the bullet would be with no gravity at all</p></li>
+  <li><p>$x$, $y$, $\theta$, $h$ — as in the 3DOF frame: downrange distance, vertical ordinate, launch
+elevation and sight height</p></li>
+  <li><p>$y_{\text{eff}}$ — the ordinate the reported drop is then computed from</p></li>
+</ul><p>Scaling the fall rather than the whole ordinate is what keeps the launch geometry untouched, in
+particular the exact $-h$ drop at the muzzle, where the fall is zero and the correction must therefore
+do nothing. The integrator's own $y$ is never modified; $y_{\text{eff}}$ is a display quantity,
+computed per point.</p>
+<p><b>Latitude alone is a valid input.</b> Give <code class="ctag">Latitude</code> without a <code class="ctag">BarrelAzimuth</code> and you get the
+horizontal term correctly and the vertical term not at all, which is the honest answer when you do not
+know which way you are facing.</p>
+<p></p>
+<h2>Magnitudes, and why they are ordered this way</h2>
+<p>For a typical centrefire rifle load at long range, these effects rank roughly:</p><ol class="main">
+  <li><p><b>Spin drift</b> — inches, growing with $t^{1.83}$; the largest of the four, and the one most often
+missing from a comparison because of the bullet-length requirement.</p></li>
+  <li><p><b>Aerodynamic jump</b> — a fraction of a MOA per 10 mph of crosswind, constant in angle.</p></li>
+  <li><p><b>Horizontal Coriolis</b> — inches at 1000 yd and beyond, negligible closer.</p></li>
+  <li><p><b>Eötvös</b> — the smallest, and zero on a north-south shot.</p></li>
+</ol><p>All four are smaller than a wind call error, and all four are smaller than the difference between a
+guessed G1 BC and a measured drag curve. They are included because they are systematic — they do not
+average out over a string of shots the way a wind misjudgement does — not because they dominate.</p>
+<p></p>
+<h2>Summary</h2><ul class="main">
+  <li><p>Four corrections, applied per trajectory point from the integrated state, never fed back into it:
+velocity, time of flight and range are unaffected by all of them.</p></li>
+  <li><p>Three of the four exist because the bullet spins, which a point mass cannot express, so they are
+empirical formulae (Miller, Litz) rather than derived terms.</p></li>
+  <li><p>Spin drift and aerodynamic jump both require twist, bullet diameter <b>and</b> bullet length; without
+all three they are silently absent.</p></li>
+  <li><p>Coriolis is two independent effects: horizontal from latitude alone, vertical from latitude and
+bearing together.</p></li>
+  <li><p>$S_g$ is computed at the muzzle, used constant, reported grown, and never judged.</p></li>
+</ul><p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="howwecalculate.3dof.html">The 3DOF point-mass model</a></p></li>
+  <li><p><a href="howwecalculate.integration.html">Integration modes</a></p></li>
+  <li><p><a href="guide.atmosphere.html">Atmosphere, wind, and drift</a></p></li>
+</ul><p>
+  <center><a href="howwecalculate.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

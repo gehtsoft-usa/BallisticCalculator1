@@ -1,0 +1,294 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Integration modes</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Integration modes</h1>
+<h2>Brief</h2>
+<p>Semi-implicit Euler against midpoint Runge-Kutta, and measured figures for what the choice is worth.</p>
+<h2>Details</h2><p><b>Goal of this article:</b> explain how the continuous equations of motion become a finite number of
+arithmetic steps, what the two schemes of
+<a href="BallisticCalculator.IntegrationMethod.html"><code>IntegrationMethod</code></a> do differently, and what that
+difference is measured to be worth.</p>
+<p>This is the only article in the series about <b>numerical</b> accuracy rather than physics. The equations
+being discretized are in <a href="howwecalculate.3dof.html">the 3DOF model</a>; the corrections applied
+afterwards are the same in both schemes and are covered in
+<a href="howwecalculate.corrections.html">the empirical corrections</a>.</p>
+<p></p>
+<h2>Why there is a step at all</h2>
+<p>The equations of motion have no closed-form solution: drag depends on velocity through a tabulated
+curve, so the trajectory has to be advanced in small increments. Every result the library returns is
+the sum of thousands of such increments, and two questions follow — <b>how big is a step</b>, and **how
+is the acceleration used within it**. The first sets the cost, the second sets how much error each
+step leaves behind.</p>
+<p></p>
+<h2>How big a step</h2>
+<p><a href="BallisticCalculator.ShotParameters.html"><code>ShotParameters</code></a>.Step is an <b>output</b> step: it
+decides how many points the returned array has. The integration step is derived from it, and is
+always finer:</p><ol class="main">
+  <li><p>Halve the output step.</p></li>
+  <li><p>If the result still exceeds
+<a href="BallisticCalculator.TrajectoryCalculator.html"><code>TrajectoryCalculator</code></a>.MaximumCalculationStepSize
+(default <b>1 m</b>), divide it by a power of ten until it does, specifically by
+$10^{(\text{order} - \text{maxOrder} + 1)}$, comparing decimal orders of magnitude.</p></li>
+</ol><p>The powers-of-ten quantization means the internal step changes in decade jumps rather than
+continuously:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Output step</p></td>
+    <td class="thdr"><p>Halved</p></td>
+    <td class="thdr"><p>Internal step (1 m cap)</p></td>
+    <td class="thdr"><p>Steps per 1000 yd</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>25 yd (22.86 m)</p></td>
+    <td class="tmain"><p>11.43 m</p></td>
+    <td class="tmain"><p><b>11.4 cm</b></p></td>
+    <td class="tmain"><p>~8 000</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>100 m</p></td>
+    <td class="tmain"><p>50 m</p></td>
+    <td class="tmain"><p><b>50 cm</b></p></td>
+    <td class="tmain"><p>~1 800</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>2.5 m</p></td>
+    <td class="tmain"><p>1.25 m</p></td>
+    <td class="tmain"><p><b>12.5 cm</b></p></td>
+    <td class="tmain"><p>~7 300</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>1 m</p></td>
+    <td class="tmain"><p>0.5 m</p></td>
+    <td class="tmain"><p><b>50 cm</b> — unchanged, already under the cap</p></td>
+    <td class="tmain"><p>~1 800</p></td>
+  </tr>
+</table><p>So the output step affects accuracy only through this quantization, and coarsely. **The number of
+points you ask for is not what decides how accurately they were computed** — the cap is. The step that
+would cross an output range is shortened so the point lands on the requested distance rather than up
+to one full step past it. That costs roughly one short step per point.</p>
+<p>Time comes from distance via the current horizontal velocity, $\Delta t = \Delta s / v_x$, quantized to
+a 100 ns tick. The step is constant in <i>distance</i>, so it grows in <i>time</i> as the bullet slows.</p>
+<p></p>
+<h2>The two schemes</h2>
+<p>Both advance the same state with the same acceleration function</p>
+<p>$$\mathbf{a}(\mathbf{v}) = -\,k\,\frac{\rho}{\rho_0}\,C_d(M)\,\lvert\mathbf{v}_a\rvert\,\mathbf{v}_a - g\hat{\mathbf{y}}$$</p>
+<p>the drag scale $k$, the density factor $\rho/\rho_0$, the drag coefficient $C_d(M)$ at the air-relative
+Mach number, the air-relative velocity $\mathbf{v}_a$ and gravity $g$, all exactly as defined in
+<a href="howwecalculate.3dof.html">the equations of motion</a>, and differ only in where that function is
+sampled inside the step. Below, $\mathbf{v}_n$ and $\mathbf{r}_n$ are the velocity and position at the
+start of a step, $n+1$ the same at its end, and $\Delta t$ the step length in time. Note the
+acceleration depends on velocity alone; position enters only through the atmosphere, which is held
+fixed across a step, which is why both schemes are written on the velocity.</p>
+<p></p>
+<h3>Semi-implicit Euler</h3>
+<p>$$\mathbf{v}_{n+1} = \mathbf{v}_n + \mathbf{a}(\mathbf{v}_n)\,\Delta t$$</p>
+<p>$$\mathbf{r}_{n+1} = \mathbf{r}_n + \mathbf{v}_{n+1}\,\Delta t$$</p>
+<p>One acceleration evaluation per step. It is <i>semi-implicit</i> (symplectic) rather than plain explicit
+Euler because the position update uses the <b>already updated</b> velocity: cheap, and better behaved
+than using the old one.</p>
+<p>Local truncation error is $O(\Delta t^2)$, global error $O(\Delta t)$: **halve the step, halve the
+error.** This was the original engine's only scheme.</p>
+<p></p>
+<h3>Midpoint Runge-Kutta (RK2)</h3>
+<p>$$\mathbf{a}_1 = \mathbf{a}(\mathbf{v}_n)$$</p>
+<p>$$\mathbf{v}_m = \mathbf{v}_n + \mathbf{a}_1\,\tfrac{\Delta t}{2}$$</p>
+<p>$$\mathbf{a}_2 = \mathbf{a}(\mathbf{v}_m)$$</p>
+<p>$$\mathbf{v}_{n+1} = \mathbf{v}_n + \mathbf{a}_2\,\Delta t, \qquad \mathbf{r}_{n+1} = \mathbf{r}_n + \mathbf{v}_m\,\Delta t$$</p>
+<p>$\mathbf{a}_1$ is the acceleration at the start of the step, $\mathbf{v}_m$ the velocity half a step
+later, the <b>midpoint</b>, hence the name, and $\mathbf{a}_2$ the acceleration there.</p>
+<p>Two evaluations per step: probe half a step forward, then use the acceleration found <i>there</i> for the
+whole step. Position advances on the midpoint velocity, which is the matching second-order estimate
+for $\mathbf{r}' = \mathbf{v}$.</p>
+<p>Global error is $O(\Delta t^2)$: <b>halve the step, quarter the error.</b> The extra evaluation costs
+about 2x per step and buys an entire order of convergence, which is a good trade whenever the step can
+then be lengthened, and it can.</p>
+<p></p>
+<h2>What the difference is worth, measured</h2>
+<p>The repository ships a harness that answers this rather than asserting it. Method: a **converged
+reference** from a fine Euler run at a 0.114 mm internal step (800 000 steps per 1000 yd), then each
+candidate compared against it at its own emitted distances by interpolation, so output-placement
+artefacts do not contaminate the integrator comparison. Worst per-point deviation over the whole
+trajectory, in the units you actually read.</p>
+<p>The .308 168 gr G7 at 2700 ft/s, 100 yd zero, out to 1000 yd, 25 yd steps:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Scheme</p></td>
+    <td class="thdr"><p>Cap</p></td>
+    <td class="thdr"><p>Internal step</p></td>
+    <td class="thdr"><p>Worst drop</p></td>
+    <td class="thdr"><p>Worst velocity</p></td>
+    <td class="thdr"><p>Worst TOF</p></td>
+    <td class="thdr"><p>Time per run</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Euler</p></td>
+    <td class="tmain"><p>0.01 m</p></td>
+    <td class="tmain"><p>0.114 mm</p></td>
+    <td class="tmain"><p>0.0001 MOA</p></td>
+    <td class="tmain"><p>0.00 fps</p></td>
+    <td class="tmain"><p>0.00 ms</p></td>
+    <td class="tmain"><p>17.1 ms</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Euler</p></td>
+    <td class="tmain"><p>0.1 m</p></td>
+    <td class="tmain"><p>1.14 cm</p></td>
+    <td class="tmain"><p>0.0018 MOA</p></td>
+    <td class="tmain"><p>0.02 fps</p></td>
+    <td class="tmain"><p>0.02 ms</p></td>
+    <td class="tmain"><p>1.67 ms</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Euler</p></td>
+    <td class="tmain"><p>1 m</p></td>
+    <td class="tmain"><p>11.4 cm</p></td>
+    <td class="tmain"><p>0.0183 MOA</p></td>
+    <td class="tmain"><p>0.18 fps</p></td>
+    <td class="tmain"><p>0.25 ms</p></td>
+    <td class="tmain"><p>0.19 ms</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Euler</p></td>
+    <td class="tmain"><p>10 m</p></td>
+    <td class="tmain"><p>1.14 m</p></td>
+    <td class="tmain"><p>0.1834 MOA</p></td>
+    <td class="tmain"><p>1.76 fps</p></td>
+    <td class="tmain"><p>2.54 ms</p></td>
+    <td class="tmain"><p>0.03 ms</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><b>RK2</b></p></td>
+    <td class="tmain"><p>0.01 m</p></td>
+    <td class="tmain"><p>0.114 mm</p></td>
+    <td class="tmain"><p>&lt; 0.0001 MOA</p></td>
+    <td class="tmain"><p>0.00 fps</p></td>
+    <td class="tmain"><p>0.00 ms</p></td>
+    <td class="tmain"><p>33.9 ms</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><b>RK2</b></p></td>
+    <td class="tmain"><p>0.1 m</p></td>
+    <td class="tmain"><p>1.14 cm</p></td>
+    <td class="tmain"><p>&lt; 0.0001 MOA</p></td>
+    <td class="tmain"><p>0.00 fps</p></td>
+    <td class="tmain"><p>0.00 ms</p></td>
+    <td class="tmain"><p>3.41 ms</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><b>RK2</b></p></td>
+    <td class="tmain"><p><b>1 m</b></p></td>
+    <td class="tmain"><p><b>11.4 cm</b></p></td>
+    <td class="tmain"><p><b>&lt; 0.0001 MOA</b></p></td>
+    <td class="tmain"><p><b>0.00 fps</b></p></td>
+    <td class="tmain"><p><b>0.00 ms</b></p></td>
+    <td class="tmain"><p><b>0.36 ms</b></p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><b>RK2</b></p></td>
+    <td class="tmain"><p>10 m</p></td>
+    <td class="tmain"><p>1.14 m</p></td>
+    <td class="tmain"><p>&lt; 0.0001 MOA</p></td>
+    <td class="tmain"><p>0.00 fps</p></td>
+    <td class="tmain"><p>0.00 ms</p></td>
+    <td class="tmain"><p>0.05 ms</p></td>
+  </tr>
+</table><p>Read the Euler column downwards: 0.0018, 0.0183, 0.1834 for each 10x coarsening. Exactly linear,
+first-order convergence, confirmed rather than assumed. RK2 stays below the reporting resolution at
+every step tested, including 1.14 m, where Euler is off by nearly two tenths of a MOA.</p>
+<p>The comparison that matters is the bold row against the second: **RK2 at its 11.4 cm default is about
+4.7x faster than Euler at the historical 1.14 cm default, and simultaneously two orders of magnitude
+closer to the converged answer.** That is the whole reason for the change; it is not a
+speed-for-accuracy trade.</p>
+<p>The other three cases in the harness, a .338 250 gr to 1500 yd, a subsonic .22 LR to 300 yd, and the
+.308 with a 10 mph full-value crosswind, behave the same. The largest Euler-at-default drop error
+among them is 0.0039 MOA (the subsonic case, where velocities are low and the step in time is long);
+RK2 never exceeded 0.0001 MOA anywhere, at any step.</p>
+<p><i>Times are one development machine's, .NET 8 release build, and only the ratios are meaningful.</i></p>
+<p></p>
+<h2>The defaults</h2>
+<p>A fresh <a href="BallisticCalculator.TrajectoryCalculator.html"><code>TrajectoryCalculator</code></a> is
+<code class="ctag">MidpointRK2</code> at the 1 m cap, the bold line above: roughly 8 000 integration steps per 1000 yd, at a
+numerical error far below anything else in the answer. Both are properties, so a calculator can be
+configured once and shared.</p><div id="open10" style="display:none">
+  <p>Selecting the historical scheme&nbsp;<a href="javascript: showdiv('close10'); hidediv('open10');" onclick="javascript: showdiv('close10'); hidediv('open10');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close10" style="display:inline">
+  <p>Selecting the historical scheme&nbsp;<a href="javascript: showdiv('open10'); hidediv('close10');" onclick="javascript: showdiv('open10'); hidediv('close10');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example10"><code class="cs">var calc = new TrajectoryCalculator
+{
+    Integrator = IntegrationMethod.Euler,
+    MaximumCalculationStepSize = new Measurement&lt;DistanceUnit&gt;(0.1, DistanceUnit.Meter),
+};</code></pre>
+</div><p>Euler is retained for reproducing the historical engine's numbers when a result needs to be checked
+against an older version; lower the cap to 0.1 m with it, as above, to get the historical accuracy
+back. The zeroing solve inherits the same configuration and runs the trajectory once per Newton pass,
+so the integrator choice affects the zero at exactly the same relative cost.</p>
+<p></p>
+<h2>Putting the numbers in perspective</h2>
+<p>Numerical error is the smallest error in the system, and deliberately so:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Source</p></td>
+    <td class="thdr"><p>Order of magnitude</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Integration (RK2 at the default step)</p></td>
+    <td class="tmain"><p>&lt; 0.0001 MOA</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Zero solve tolerance</p></td>
+    <td class="tmain"><p>0.1 mm at the zero distance</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>A published G1 BC, used outside its velocity band</p></td>
+    <td class="tmain"><p>tenths of a MOA to several MOA at distance</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Wind call, muzzle velocity spread, unmodelled vertical wind</p></td>
+    <td class="tmain"><p>the honest error budget</p></td>
+  </tr>
+</table><p>Which is the practical argument for not fiddling with the step. Lowering <code class="ctag">MaximumCalculationStepSize</code>
+below the default with RK2 buys nothing measurable, the answer is already on the converged reference,
+and costs time linearly.</p>
+<p>Two caveats:</p><ul class="main">
+  <li><p><b>The dangerous end of the step range is the large one, not the small one.</b>
+$\Delta t = \Delta s / v_x$ means a coarse cap combined with a very slow projectile produces a long
+step in time; the guards described in <a href="howwecalculate.3dof.html">the 3DOF model</a> exist for that
+case.</p></li>
+  <li><p><b>A higher-order scheme is not the next improvement.</b> RK4 would cost two more drag evaluations per
+step to reduce an error that is already three orders of magnitude below the drag data's. Better
+$C_d(M)$ is always the better investment; see
+<a href="howwecalculate.bc.html">the ballistic coefficient</a>.</p></li>
+</ul><p></p>
+<h2>Summary</h2><ul class="main">
+  <li><p>The output step is halved and then decade-quantized down to the <code class="ctag">MaximumCalculationStepSize</code> cap;
+points requested and accuracy delivered are nearly independent.</p></li>
+  <li><p>Semi-implicit Euler: one drag evaluation, error $O(\Delta t)$.</p></li>
+  <li><p>Midpoint RK2: two drag evaluations, error $O(\Delta t^2)$.</p></li>
+  <li><p>Measured, RK2 at a 10x coarser step is both faster and far more accurate than the Euler default it
+replaced; it is what a fresh calculator uses.</p></li>
+  <li><p>Numerical error is the least of the errors in a ballistic solution, and should be kept that way
+rather than optimized further.</p></li>
+</ul><p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="howwecalculate.bc.html">The ballistic coefficient</a></p></li>
+  <li><p><a href="howwecalculate.3dof.html">The 3DOF point-mass model</a></p></li>
+  <li><p><a href="howwecalculate.corrections.html">The empirical corrections</a></p></li>
+</ul><p>
+  <center><a href="howwecalculate.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

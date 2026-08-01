@@ -1,0 +1,69 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>BallisticCoefficientConverter</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>class <b>BallisticCoefficientConverter</b></code></h1>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parents</b></td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>object</code></p>
+    </td>
+  </tr>
+</table>
+<h2>Brief</h2>
+<p>Converts a ballistic coefficient from one standard drag table to another (for example G1 to G7).</p>
+<h2>Details</h2><p>The conversion is table-driven and velocity-aware: the same projectile experiences the same
+physical drag regardless of the reference used, so at a given Mach number
+<code class="ctag">BC_target = BC_source * Cd_target(M) / Cd_source(M)</code>, where the Cd values come from the two
+standard drag curves. Because the G1 and G7 curves have different shapes across Mach, a single
+converted number is only exact at the reference velocity it was computed for; pass the velocity
+(or Mach) representative of the intended range band.</p>
+<p>Accuracy against manufacturer-published G1/G7 pairs is within about 1 percent at
+supersonic velocities (Mach 1.8 to 2.5, where the G1/G7 drag ratio is near 2.0), and degrades
+toward the transonic region (near Mach 1.3, roughly 9 percent low) where the two reference
+curves diverge in shape. Use a supersonic reference velocity for the best result.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Static Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.BallisticCoefficientConverter.Convert.KT5.html">Convert</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Converts a ballistic coefficient to another drag table at the specified reference Mach number.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.BallisticCoefficientConverter.Convert.d7B.html">Convert</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Converts a ballistic coefficient to another drag table at the specified reference velocity.</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="BallisticCalculator.Tools.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

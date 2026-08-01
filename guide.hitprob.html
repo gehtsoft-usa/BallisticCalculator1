@@ -1,0 +1,117 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Hit probability on a target</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Hit probability on a target</h1>
+<h2>Brief</h2>
+<p>Monte Carlo over the shooter's error budget, plotted on the target.</p>
+<h2>Details</h2><p><a href="BallisticCalculator.Tools.HitProbability.html"><code>HitProbability</code></a> (in the
+<code class="ctag">BallisticCalculator.Tools</code> namespace) answers a practical question: given my rifle,
+my ammunition, and how well I can read the range and wind, how often do I hit? It runs a
+Monte Carlo over five error sources - muzzle velocity spread, the shooter's group, range
+estimation, wind estimation, and (through them) the trajectory itself - and returns the
+simulated impacts, the single-shot hit probability, and the number of shots needed for a
+given confidence.</p>
+<p></p>
+<h2>Group size</h2>
+<p><code class="ctag">GroupSize</code> is the per-axis standard deviation of the shooter's aim. Give it your best
+group of up to about ten shots from a fully supported position - that is close to a
+<b>one-standard-deviation</b> group. As capability tiers, <b>4 MOA</b> is an ordinary shooter and
+rifle and <b>1 MOA</b> is a precision setup. The <b>extreme spread</b> of a large group runs about
+four times larger, so the 4 MOA group used below produces a cloud spanning roughly 16 MOA
+edge to edge. A shooting position widens that supported group per axis through
+<code class="ctag">HorizontalPositionMultiplier</code> and <code class="ctag">VerticalPositionMultiplier</code> (roughly prone 2,
+kneeling 3 to 4, standing 4 to 5); the example below is fired from full support.</p><div id="open9" style="display:none">
+  <p>A .223 at 300 yards, 4 MOA group, 20-inch target&nbsp;<a href="javascript: showdiv('close9'); hidediv('open9');" onclick="javascript: showdiv('close9'); hidediv('open9');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close9" style="display:inline">
+  <p>A .223 at 300 yards, 4 MOA group, 20-inch target&nbsp;<a href="javascript: showdiv('open9'); hidediv('close9');" onclick="javascript: showdiv('open9'); hidediv('close9');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example9"><code class="cs">// using BallisticCalculator.Tools;
+var ammo = new Ammunition(
+    weight: new Measurement&lt;WeightUnit&gt;(55, WeightUnit.Grain),
+    ballisticCoefficient: new BallisticCoefficient(0.243, DragTableId.G1),
+    muzzleVelocity: new Measurement&lt;VelocityUnit&gt;(3200, VelocityUnit.FeetPerSecond),
+    bulletDiameter: new Measurement&lt;DistanceUnit&gt;(0.224, DistanceUnit.Inch),
+    bulletLength: new Measurement&lt;DistanceUnit&gt;(0.75, DistanceUnit.Inch));
+ 
+var rifle = new Rifle(
+    sight: new Sight(new Measurement&lt;DistanceUnit&gt;(2.6, DistanceUnit.Inch),
+                     Measurement&lt;AngularUnit&gt;.ZERO, Measurement&lt;AngularUnit&gt;.ZERO),
+    zero: new ZeroingParameters(new Measurement&lt;DistanceUnit&gt;(100, DistanceUnit.Yard), null, null),
+    rifling: new Rifling(new Measurement&lt;DistanceUnit&gt;(8, DistanceUnit.Inch), TwistDirection.Right));
+ 
+var atmosphere = new Atmosphere();
+var calc = new TrajectoryCalculator();
+ 
+var shot = new ShotParameters
+{
+    Step = new Measurement&lt;DistanceUnit&gt;(50, DistanceUnit.Yard),
+    MaximumDistance = new Measurement&lt;DistanceUnit&gt;(300, DistanceUnit.Yard),   // the target range
+    ZeroDropAdjustment = calc.CalculateZeroParameters(ammo, atmosphere, rifle, rifle.Zero).ZeroDropAdjustment,
+};
+var wind = new[]
+{
+    new Wind(new Measurement&lt;VelocityUnit&gt;(10, VelocityUnit.MilesPerHour),
+             new Measurement&lt;AngularUnit&gt;(90, AngularUnit.Degree)),
+};
+ 
+var parameters = new HitProbabilityParameters
+{
+    TargetSize = new Measurement&lt;DistanceUnit&gt;(20, DistanceUnit.Inch),
+    MuzzleVelocityDeviationPercent = 5,    // 5% muzzle velocity standard deviation
+    GroupSize = new Measurement&lt;AngularUnit&gt;(4, AngularUnit.MOA),   // 4 MOA 1-sigma group (ordinary shooter/rifle)
+    DistanceErrorPercent = 10,             // 10% range estimation error
+    WindErrorPercent = 10,                 // 10% wind estimation error
+    Shots = 500,
+    Seed = 20250723,                       // fixed for a reproducible cloud
+};
+ 
+var result = HitProbability.Estimate(calc, ammo, atmosphere, rifle, shot, wind, parameters);
+ 
+Console.WriteLine($&quot;Hit probability: {result.HitProbability:P1}&quot;);
+Console.WriteLine($&quot;Shots for 95%:   {result.ShotsFor95Percent}&quot;);
+foreach (var s in result.Shots)   // each impact is relative to the point of aim
+    Plot(s.Horizontal.In(DistanceUnit.Inch), s.Vertical.In(DistanceUnit.Inch));</code></pre>
+</div><p>Plotting the 500 impacts on the target (green inside the 20-inch zone, red outside):</p>
+<p><img src="hitprob-223-300yd.svg"></p>
+<p>The 4 MOA group dominates the spread, so the cloud is large and roughly round, with a slight
+vertical stretch added by the range and muzzle-velocity errors. Most shots fall outside the
+20-inch zone. The results:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Result</p></td>
+    <td class="thdr"><p>Value</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Single-shot hit probability</p></td>
+    <td class="tmain"><p>20.8%</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Shots for 50% / 75% / 90%</p></td>
+    <td class="tmain"><p>3 / 6 / 10</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Shots for 95% / 98%</p></td>
+    <td class="tmain"><p>13 / 17</p></td>
+  </tr>
+</table><p>A hit is scored inside a circular zone of the given <code class="ctag">TargetSize</code> (diameter). The
+<code class="ctag">ShotsForNN</code> values come from the single-shot probability <code class="ctag">p</code> as the smallest
+<code class="ctag">n</code> with <code class="ctag">1 - (1-p)^n</code> at least the target confidence.</p><p>
+  <center><a href="guide.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

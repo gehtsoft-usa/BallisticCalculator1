@@ -1,0 +1,62 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>PointBlankRange.Analyze</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>PointBlankRange.Analyze</b></code></h1><h2>Brief</h2>
+<p>Analyzes a trajectory for its point-blank corridor against the given vital zone size and aim.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code><a href="BallisticCalculator.Tools.PointBlankRangeResult.html">BallisticCalculator.Tools.PointBlankRangeResult</a>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>Analyze</b> (<a href="BallisticCalculator.TrajectoryPoint.html">TrajectoryPoint</a> [] trajectory, Measurement&lt;DistanceUnit&gt; vitalZoneSize, <a href="BallisticCalculator.Tools.PointBlankAim.html">BallisticCalculator.Tools.PointBlankAim</a> aim = PointBlankAim.Center) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>trajectory</code></td>
+    <td class="tmain" width="69%"><p>The computed trajectory (as returned by the calculator).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>vitalZoneSize</code></td>
+    <td class="tmain" width="69%"><p>The full vital zone height.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>aim</code></td>
+    <td class="tmain" width="69%"><p>Where the line of sight sits within the vital zone.</p></td>
+  </tr>
+</table><h2>Details</h2><p>The vital zone size is the full target height. With a center aim the corridor is half the zone
+above and below the line of sight; with a bottom aim it is the whole zone above the line of sight.
+The trajectory must extend past the corridor so the far edge can be found, and all ranges are reported
+at the resolution of the trajectory's output points.</p><p>Declared in <a href="BallisticCalculator.Tools.PointBlankRange.html">PointBlankRange</a></p>
+<p>
+  <center><a href="BallisticCalculator.Tools.PointBlankRange.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('BallisticCalculator.Tools.PointBlankRange');</script></body></html>

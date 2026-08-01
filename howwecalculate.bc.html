@@ -1,0 +1,206 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>The ballistic coefficient</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>The ballistic coefficient</h1>
+<h2>Brief</h2>
+<p>The drag law itself, and what the coefficient divides.</p>
+<h2>Details</h2><p><b>Goal of this article:</b> show exactly where the ballistic coefficient enters the calculation, so
+that &quot;BC 0.223 G7&quot; stops being a magic number and becomes a term in an equation you can read.</p>
+<p></p>
+<h2>Start with the drag force, not the coefficient</h2>
+<p>A projectile in air feels a drag force opposing its motion through that air:</p>
+<p>$$F_d = \tfrac{1}{2}\,\rho\,v^2\,C_d(M)\,A$$</p><ul class="main">
+  <li><p>$F_d$ — the drag force</p></li>
+  <li><p>$\rho$ — air density</p></li>
+  <li><p>$v$ — speed <b>relative to the air</b>, not relative to the ground</p></li>
+  <li><p>$C_d(M)$ — the drag coefficient, which is a function of Mach number $M$, not a constant</p></li>
+  <li><p>$A$ — the projectile's frontal area, $\pi d^2 / 4$ for a bullet of diameter $d$</p></li>
+</ul><p>What moves the bullet is acceleration, so divide by mass:</p>
+<p>$$a_d = \frac{F_d}{m} = \frac{\pi}{8}\,\rho\,v^2\,C_d(M)\,\frac{d^2}{m}$$</p><ul class="main">
+  <li><p>$a_d$ — the deceleration drag produces</p></li>
+  <li><p>$m$ — the projectile's mass</p></li>
+</ul><p>Everything about <i>this particular bullet</i> has collapsed into two groups: its shape, which lives in
+$C_d(M)$, and the ratio $d^2/m$, which is pure geometry and mass. The ballistic coefficient is the
+device that packages both.</p>
+<p></p>
+<h2>Sectional density and the form factor</h2>
+<p><b>Sectional density</b> is mass over frontal area, strictly mass over diameter squared:</p>
+<p>$$\mathrm{SD} = \frac{m}{d^2}$$</p>
+<p>In the library's units that is grains converted to pounds over square inches, which is how it is
+computed from <a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>.Weight and
+<a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>.BulletDiameter:</p>
+<p>$$\mathrm{SD} = \frac{w_{\text{gr}}}{7000\,d_{\text{in}}^{2}} \quad \mathrm{lb/in^2}$$</p><ul class="main">
+  <li><p>$w_{\text{gr}}$ — the bullet weight in <b>grains</b></p></li>
+  <li><p>$d_{\text{in}}$ — the bullet diameter in <b>inches</b></p></li>
+  <li><p>$7000$ — grains per pound, so the quotient comes out in <code class="ctag">lb/in²</code></p></li>
+</ul><p><b>Form factor</b> $i$ is the shape term. It compares this bullet's drag coefficient to that of a
+<i>reference</i> projectile, a standard shape whose $C_d(M)$ curve has been measured once and tabulated:</p>
+<p>$$C_{d,\text{bullet}}(M) = i \cdot C_{d,\text{table}}(M)$$</p>
+<p>A sleeker bullet than the reference has $i &lt; 1$; a blunter one has $i &gt; 1$. The assumption buried in
+that single line is the important one: it says the bullet's drag curve has the <b>same shape</b> as the
+reference curve, differing only by a constant multiplier. That assumption is what fails at some
+velocities, and it is the reason for everything in the second half of this article.</p>
+<p>The ballistic coefficient is the two combined:</p>
+<p>$$\mathrm{BC} = \frac{\mathrm{SD}}{i} = \frac{m}{d^{2}\,i}$$</p>
+<p>Substituting $d^2/m = 1/\mathrm{SD}$ and $C_{d,\text{bullet}} = i\,C_{d,\text{table}}$ back into the
+acceleration:</p>
+<p>$$a_d = \frac{\pi}{8}\,\rho\,v^2\,\frac{C_{d,\text{table}}(M)}{\mathrm{BC}}$$</p>
+<p>That is the whole point of a BC. <b>One number divides the drag.</b> Double the BC and the bullet
+decelerates half as fast; that is not a rule of thumb, it is the equation.</p>
+<p>Its units are mass over area, <code class="ctag">lb/in²</code> here, which is why a BC is not dimensionless and why comparing
+one to a drag coefficient is a category error. The G1 reference projectile is one inch in diameter and
+one pound in mass, so its own BC is exactly $1.0\ \mathrm{lb/in^2}$; every published BC is effectively
+&quot;this bullet's retardation, as a fraction of that standard bullet's&quot;.</p>
+<p></p>
+<h2>What the engine actually evaluates</h2>
+<p>In code the constants are folded together. <code class="ctag">PIR</code> is the fixed part of the coefficient:</p>
+<p>$$\mathrm{PIR} = \frac{\pi}{8}\cdot\frac{\rho_0}{144} = 2.08551\times10^{-4}$$</p>
+<p>with $\rho_0 = 0.076474\ \mathrm{lb/ft^3}$, the standard sea-level air density
+(<a href="BallisticCalculator.Atmosphere.html"><code>Atmosphere</code></a>.StandardDensity), and the $144$ converting
+the BC's square inches into square feet so the result comes out in <code class="ctag">ft/s²</code>. Air density enters as a
+dimensionless ratio to that standard, the <b>density factor</b> $\rho/\rho_0$, which
+<a href="BallisticCalculator.Atmosphere.html"><code>Atmosphere</code></a> produces for the bullet's current altitude.
+The acceleration, now written as the vector $\mathbf{a}_d$ rather than the scalar $a_d$, is then</p>
+<p>$$\mathbf{a}_d = -\,\mathrm{PIR}\cdot\frac{\rho}{\rho_0}\cdot\frac{C_d(M)}{\mathrm{BC}}\cdot\lvert\mathbf{v}_a\rvert\;\mathbf{v}_a$$</p>
+<p>written with the velocity vector rather than the speed, because drag acts <i>along</i> the air-relative
+velocity $\mathbf{v}_a = \mathbf{v} - \mathbf{w}$ — the projectile's velocity $\mathbf{v}$ less the
+wind vector $\mathbf{w}$ — and it is $\lvert\mathbf{v}_a\rvert\,\mathbf{v}_a$ that carries both the
+$v^2$ magnitude and the direction. This is the drag term of the equations of motion in
+<a href="howwecalculate.3dof.html">the 3DOF model</a>.</p>
+<p>Two details of the lookup are worth knowing:</p><ul class="main">
+  <li><p><b>The Mach number is local.</b> $M = \lvert\mathbf{v}_a\rvert/c$, where $c$ is the speed of sound at
+the bullet's <i>current</i> altitude and temperature, not at the muzzle. A bullet that has dropped far
+enough for the atmosphere to have shifted is read off the drag curve at a different Mach for the
+same speed.</p></li>
+  <li><p><b>The table is interpolated, not stepped.</b> Each row of a
+<a href="BallisticCalculator.DragTable.html"><code>DragTable</code></a> becomes a node carrying a quadratic fitted
+through it and its two neighbours, evaluated as $C + M(B + A M)$. The first and last segments
+degrade to linear and flat respectively. So $C_d$ is a smooth curve through the tabulated points,
+and the transonic drag rise is followed rather than approximated by a staircase.</p></li>
+</ul><p></p>
+<h2>The two ways to give the engine a BC</h2>
+<p><a href="BallisticCalculator.BallisticCoefficient.html"><code>BallisticCoefficient</code></a> carries a
+<a href="BallisticCalculator.BallisticCoefficientValueType.html"><code>BallisticCoefficientValueType</code></a>, and
+the two are not interchangeable.</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Type</p></td>
+    <td class="thdr"><p>What you supply</p></td>
+    <td class="thdr"><p>What the engine computes</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">Coefficient</code></p></td>
+    <td class="tmain"><p>the published BC, for example <code class="ctag">0.223 G7</code></p></td>
+    <td class="tmain"><p>used as-is: $\mathrm{BC} = 0.223$</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">FormFactor</code></p></td>
+    <td class="tmain"><p>the shape factor $i$, for example <code class="ctag">1.05 G7</code></p></td>
+    <td class="tmain"><p>$\mathrm{BC} = \mathrm{SD}/i$, from the bullet's weight and diameter</p></td>
+  </tr>
+</table><p>The coefficient path needs nothing but the number. The form-factor path <b>requires</b> the bullet weight
+and diameter, because without them there is no sectional density to divide, and
+<a href="BallisticCalculator.Ammunition.html"><code>Ammunition</code></a>.GetBallisticCoefficient throws rather than
+guessing.</p>
+<p>Either way the number that reaches the drag law is a BC in <code class="ctag">lb/in²</code>. The form factor is simply the
+honest way in when what you know is the bullet's shape relative to a standard, rather than a
+manufacturer's quoted figure.</p>
+<p></p>
+<h2>Why the same bullet has two different BCs</h2>
+<p>A 168 gr .308 match bullet is quoted at roughly <code class="ctag">0.450 G1</code> and <code class="ctag">0.223 G7</code>. Both are correct. Neither
+describes the bullet on its own: each describes the bullet <b>relative to a different reference shape</b>.</p>
+<p>From $\mathrm{BC} = \mathrm{SD}/i$, sectional density is a property of the bullet and cancels:</p>
+<p>$$\frac{\mathrm{BC}_{G1}}{\mathrm{BC}_{G7}} = \frac{i_{G7}}{i_{G1}}$$</p>
+<p>where $\mathrm{BC}_{G1}$ and $\mathrm{BC}_{G7}$ are the one bullet's coefficients against the two
+tables, and $i_{G1}$, $i_{G7}$ its form factors against their two reference shapes.</p>
+<p>The ratio near 2.0 says nothing about the bullet and everything about the two reference projectiles:
+the G7 standard is a long boat-tailed shape that a modern match bullet resembles closely, so $i_{G7}$
+lands near 1; the G1 standard is a blunt flat-based shape that it does not resemble at all, so
+$i_{G1}$ is about half. Quoting a BC without its table is meaningless, which is why the value and the
+<a href="BallisticCalculator.DragTableId.html"><code>DragTableId</code></a> are one inseparable struct.</p>
+<p></p>
+<h2>Where a single BC breaks down</h2>
+<p>The whole construction rests on $C_{d,\text{bullet}}(M) = i\,C_{d,\text{table}}(M)$, one constant
+multiplier at every Mach number. Real bullets do not oblige. A modern boat-tail against the G1
+reference disagrees most in the transonic region, so the multiplier that fits at 2700 ft/s is wrong by
+the time the bullet is subsonic, and the discrepancy is systematic, not noise.</p>
+<p>This is why:</p><ul class="main">
+  <li><p><b>G1 BCs are published in velocity bands.</b> The band is an admission that $i$ is not constant.</p></li>
+  <li><p><b>G7 works better for pointed rifle bullets.</b> Not because it is a better <i>table</i>, but because the
+reference shape is closer, so the constant-multiplier assumption is asked to do less work.</p></li>
+  <li><p><b>The engine accepts a whole curve instead.</b> Two of them, in fact.</p></li>
+</ul><p></p>
+<h3>A multi-BC profile</h3>
+<p>Given BC quoted at several Mach numbers as a set of
+<a href="BallisticCalculator.BcAtMach.html"><code>BcAtMach</code></a> knots,
+<a href="BallisticCalculator.DrgDragTableFactory.html"><code>DrgDragTableFactory</code></a>.Build stops treating BC as
+a scalar and builds the projectile's own drag curve on the base table's Mach grid:</p>
+<p>$$C_{d,\text{own}}(M) = \frac{C_{d,\text{base}}(M)}{\mathrm{BC}(M)}\cdot\mathrm{SD}$$</p><ul class="main">
+  <li><p>$C_{d,\text{own}}(M)$ — the projectile's own drag coefficient, the curve being built</p></li>
+  <li><p>$C_{d,\text{base}}(M)$ — the standard curve it is derived from, G1 or G7 or another</p></li>
+  <li><p>$\mathrm{BC}(M)$ — the effective BC at that Mach number, from the quoted knots</p></li>
+  <li><p>$\mathrm{SD}$ — the sectional density, from the bullet weight and diameter as above</p></li>
+</ul><p>$\mathrm{BC}(M)$ is interpolated linearly between the supplied knots and held flat beyond the end
+ones. The resulting table is then run with a <b>form factor of exactly 1</b>, which the factory stamps
+into the ammunition so the pair cannot be mismatched. Put the two together and the drag law becomes</p>
+<p>$$a_d = \mathrm{PIR}\cdot\frac{\rho}{\rho_0}\cdot\frac{C_{d,\text{base}}(M)}{\mathrm{BC}(M)}\,v^2$$</p>
+<p>the original equation with a <b>velocity-dependent BC</b> substituted for the constant one. The sectional
+density in the numerator is what puts the curve on the physical scale a <code class="ctag">.drg</code> file uses, so the
+bullet weight and diameter are as much an input as the BC knots themselves.</p>
+<p>Worked example: <a href="guide.multibc.html">Multi-BC drag tables</a>.</p>
+<p></p>
+<h3>A measured curve</h3>
+<p>A <a href="BallisticCalculator.DrgDragTable.html"><code>DrgDragTable</code></a> stores $C_d(M)$ for the projectile
+directly, measured, usually by radar, not inferred from a reference shape. There is no form factor
+left to fit, so again it runs with a form factor of 1 and the drag law reads the bullet's own curve at
+each Mach number. <a href="BallisticCalculator.Tools.RadarDragTableFactory.html"><code>RadarDragTableFactory</code></a>
+derives the same curve from measured downrange velocities.</p>
+<p>At that point the BC has disappeared from the model as a concept. It was never a physical property of
+the bullet; it was a compression of the bullet's drag curve into one number, useful exactly as long as
+the reference shape was close enough. This is the sense in which better drag data beats a better
+integrator, and beats a higher-order flight model too.</p>
+<p>Worked example: <a href="guide.customdrag.html">Custom drag: GC and .drg tables</a>.</p>
+<p></p>
+<h2>Converting between tables</h2>
+<p>Because $\mathrm{BC} = \mathrm{SD}/i$ and the two $i$ values belong to different reference curves,
+converting a G1 BC to a G7 BC means finding the pair that produce the same retardation, and they only
+do so at one velocity, because the curves differ in shape. Any single conversion factor is therefore
+tied to a reference velocity, which is why
+<a href="BallisticCalculator.Tools.BallisticCoefficientConverter.html"><code>BallisticCoefficientConverter</code></a>
+asks for one rather than pretending otherwise.</p>
+<p></p>
+<h2>Summary</h2><ul class="main">
+  <li><p>Drag acceleration is $(\pi/8)\,\rho\,v^2\,C_d(M)/\mathrm{BC}$. The BC is a divisor of drag, nothing
+more.</p></li>
+  <li><p>$\mathrm{BC} = \mathrm{SD}/i$: sectional density carries the mass and the calibre, the form factor
+carries the shape.</p></li>
+  <li><p>Units are $\mathrm{lb/in^2}$; the G1 standard projectile is 1 inch and 1 lb, hence
+$\mathrm{BC} = 1$.</p></li>
+  <li><p>A BC is meaningless without its drag table, because $i$ is measured against that table's reference.</p></li>
+  <li><p>One scalar BC assumes the bullet's drag curve is a constant multiple of the reference's. When that
+assumption hurts, replace the scalar with a curve, a multi-BC profile or a measured <code class="ctag">.drg</code>.</p></li>
+</ul><p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="howwecalculate.3dof.html">The 3DOF point-mass model</a></p></li>
+  <li><p><a href="guide.customdrag.html">Custom drag: GC and .drg tables</a></p></li>
+  <li><p><a href="guide.multibc.html">Multi-BC drag tables</a></p></li>
+</ul><p>
+  <center><a href="howwecalculate.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

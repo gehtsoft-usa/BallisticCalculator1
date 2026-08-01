@@ -1,0 +1,57 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>PointBlankRange</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>class <b>PointBlankRange</b></code></h1>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parents</b></td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>object</code></p>
+    </td>
+  </tr>
+</table>
+<h2>Brief</h2>
+<p>Finds the maximum point-blank range and danger space of a trajectory for a given vital zone.</p>
+<h2>Details</h2><p>The corridor is the contiguous range span over which the path stays inside the vital zone, so a
+fixed hold still hits. Its position relative to the line of sight depends on the aim: centered on the
+sight line for optics, or resting at the bottom of the zone for iron sights. This is pure post-processing
+of the path (its Drop relative to the line of sight) at the trajectory's own resolution: compute the
+trajectory with the intended zero and the step that suits the needed accuracy. The far edge is the
+maximum point-blank range.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Static Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="BallisticCalculator.Tools.PointBlankRange.Analyze.EuD.html">Analyze</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Analyzes a trajectory for its point-blank corridor against the given vital zone size and aim.</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="BallisticCalculator.Tools.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

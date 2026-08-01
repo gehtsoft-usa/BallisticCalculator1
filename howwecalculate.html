@@ -1,0 +1,60 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>How We Calculate</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>How We Calculate</h1>
+<h2>Brief</h2>
+<p>The mathematics the engine runs, formula by formula.</p>
+<h2>Details</h2><p>What the library actually computes, written out rather than left in the source. Read these when you
+want to check a number instead of taking it on trust, or when you are comparing this engine against
+another solver and need to know exactly which terms are in it.</p><ul class="main">
+  <li><p><a href="howwecalculate.bc.html">The ballistic coefficient</a></p></li>
+  <li><p><a href="howwecalculate.3dof.html">The 3DOF point-mass model</a></p></li>
+  <li><p><a href="howwecalculate.corrections.html">The empirical corrections</a></p></li>
+  <li><p><a href="howwecalculate.integration.html">Integration modes</a></p></li>
+</ul><p>Mathematical symbols are set as inline math; code identifiers, literal values and units stay in
+<code class="ctag">code</code> style.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Articles</b></td>
+  </tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="howwecalculate.bc.html">The ballistic coefficient</a></p>
+    <p>The drag law itself, and what the coefficient divides.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="howwecalculate.3dof.html">The 3DOF point-mass model</a></p>
+    <p>The equations of motion, the frame they are written in, and how a state becomes a trajectory point.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="howwecalculate.corrections.html">The empirical corrections</a></p>
+    <p>Spin drift, aerodynamic jump and earth rotation, added to the trajectory rather than integrated with it.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="howwecalculate.integration.html">Integration modes</a></p>
+    <p>Semi-implicit Euler against midpoint Runge-Kutta, and measured figures for what the choice is worth.</p>
+  </td>
+</tr></table>
+<p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

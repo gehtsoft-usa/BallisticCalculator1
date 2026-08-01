@@ -1,0 +1,278 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>The 3DOF point-mass model</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"><!-- prolog-header -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      // Nothing inside code is ever math: backticked identifiers, units and stray dollar
+      // signs stay literal.
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    'HTML-CSS': { linebreaks: { automatic: true } },
+    CommonHTML: { linebreaks: { automatic: true } }
+  });
+</script>
+
+</head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>The 3DOF point-mass model</h1>
+<h2>Brief</h2>
+<p>The equations of motion, the frame they are written in, and how a state becomes a trajectory point.</p>
+<h2>Details</h2><p><b>Goal of this article:</b> write down the equations the engine integrates, the frame they are written
+in, and how the integrated state becomes a
+<a href="BallisticCalculator.TrajectoryPoint.html"><code>TrajectoryPoint</code></a>.</p>
+<p>Two forces are integrated: drag and gravity. Everything else in the reported drop and windage is added
+afterwards in closed form and is the subject of a separate article,
+<a href="howwecalculate.corrections.html">the empirical corrections</a>.</p>
+<p></p>
+<h2>Three degrees of freedom</h2>
+<p>The projectile is a <b>point with mass</b>. Its state is six numbers, a position $\mathbf{r}$ and a
+velocity $\mathbf{v}$, three components each, and the model advances them through time:</p>
+<p>$$\mathbf{r} = (x, y, z), \qquad \mathbf{v} = (v_x, v_y, v_z)$$</p>
+<p>Three degrees of freedom means the three translational ones. The bullet's <b>orientation</b> is not part
+of the state: there is no yaw, no pitch, no precession, and no equation governing them. Everything the
+model says about spin is therefore an add-on rather than a consequence, which is the single fact that
+explains most of the model's limits.</p>
+<p></p>
+<h2>The frame</h2>
+<p>Axes are fixed to the ground at the muzzle:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Axis</p></td>
+    <td class="thdr"><p>Direction</p></td>
+    <td class="thdr"><p>Sign convention</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>$x$</p></td>
+    <td class="tmain"><p>horizontal, downrange, in the plane of fire</p></td>
+    <td class="tmain"><p>positive towards the target</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>$y$</p></td>
+    <td class="tmain"><p>true vertical, along gravity</p></td>
+    <td class="tmain"><p>positive <b>up</b></p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>$z$</p></td>
+    <td class="tmain"><p>horizontal, lateral</p></td>
+    <td class="tmain"><p>positive <b>left</b></p></td>
+  </tr>
+</table><p>Two consequences of that choice are worth stating explicitly, because they show up all over the
+output:</p><ul class="main">
+  <li><p><b>$y$ is vertical, not perpendicular to the line of sight.</b> Gravity is a clean $-g\hat{\mathbf{y}}$
+and needs no rotation. The line of sight is rotated <i>at output time</i> instead, which is where
+inclined-fire drop comes from below.</p></li>
+  <li><p><b>$x$ is horizontal, not along the line of sight.</b> So the line-of-sight distance a point reports,
+its <code class="ctag">Distance</code>, is $x/\cos\alpha$, where $\alpha$ is the shot angle; the horizontal $x$ itself is
+reported as <code class="ctag">DistanceFlat</code>.</p></li>
+</ul><p>The lateral sign, left positive, is what makes a positive windage adjustment cancel a right-hand spin
+drift, mirroring the way a positive elevation adjustment cancels drop.</p>
+<p></p>
+<h2>Initial conditions</h2>
+<p>The muzzle sits $h$ below the sight line, $h$ being
+<a href="BallisticCalculator.Sight.html"><code>Sight</code></a>.SightHeight above the bore:</p>
+<p>$$\mathbf{r}(0) = (0,\; -h,\; 0)$$</p>
+<p>so the very first point of any trajectory shows a drop of exactly $-h$. The velocity vector is the
+muzzle velocity $V_0$ pointed along the bore:</p>
+<p>$$\mathbf{v}(0) = V_0\,(\cos\theta\cos\psi,\;\; \sin\theta,\;\; \cos\theta\sin\psi)$$</p>
+<p>where the two launch angles accumulate everything that tilts the barrel:</p>
+<p>$$\theta = \underbrace{\theta_{\text{zero}}}_{\text{ZeroDropAdjustment}} + \underbrace{\theta_{\text{dialled}}}_{\text{ShotDropAdjustment}} + \underbrace{\alpha}_{\text{ShotAngle}}$$</p>
+<p>$$\psi = \underbrace{\psi_{\text{zero}}}_{\text{ZeroWindageAdjustment}} + \underbrace{\psi_{\text{dialled}}}_{\text{ShotWindageAdjustment}}$$</p>
+<p>all four of them properties of <a href="BallisticCalculator.ShotParameters.html"><code>ShotParameters</code></a>.
+$\theta$ is the elevation of the bore above the horizontal and $\psi$ its horizontal offset, positive
+to the left; $V_0$ is the muzzle velocity and $h$ the sight height. The shot angle enters here, as
+part of the launch direction, rather than as a rotation of gravity.</p>
+<p><b>Barrel azimuth is not in this vector.</b> <code class="ctag">BarrelAzimuth</code>, the compass bearing, does not tilt the
+muzzle: the bullet is always integrated along $x$, and the azimuth enters only as a scalar in the
+Coriolis terms. That is deliberate — steering the velocity vector by the bearing would collapse $v_x$
+(and with it the time step, which is derived from $v_x$) for a shot fired east.</p>
+<p></p>
+<h2>The equations of motion</h2>
+<p>$$\frac{d\mathbf{r}}{dt} = \mathbf{v}$$</p>
+<p>$$\frac{d\mathbf{v}}{dt} = -\,k\,\frac{\rho}{\rho_0}\,C_d(M)\,\lvert\mathbf{v}_a\rvert\,\mathbf{v}_a \;-\; g\,\hat{\mathbf{y}}$$</p>
+<p>with</p>
+<p>$$\mathbf{v}_a = \mathbf{v} - \mathbf{w}, \qquad M = \frac{\lvert\mathbf{v}_a\rvert}{c}, \qquad k = \frac{\mathrm{PIR}}{\mathrm{BC}}$$</p>
+<p>Two forces, and that is all: <b>drag along the air-relative velocity, and constant gravity.</b></p><ul class="main">
+  <li><p>$\mathbf{w}$ — the wind vector. Drag depends on motion through the <i>air</i>, so wind enters by
+shifting the velocity the drag law sees, not as a force of its own. A tailwind reduces drag; a
+crosswind produces a lateral component of drag which is what pushes the bullet sideways.</p></li>
+  <li><p>$\mathbf{v}_a$ — the air-relative velocity, which is what drag acts along, and $M$ the Mach number
+it corresponds to.</p></li>
+  <li><p>$C_d(M)$ — read from the <a href="BallisticCalculator.DragTable.html"><code>DragTable</code></a> at the local Mach
+number.</p></li>
+  <li><p>$k = \mathrm{PIR}/\mathrm{BC}$ — the drag scale: the ballistic coefficient and the fixed constant
+<code class="ctag">PIR</code> that carries the frontal-area geometry and the unit conversions. See
+<a href="howwecalculate.bc.html">the ballistic coefficient</a> for this term in full.</p></li>
+  <li><p>$\rho/\rho_0$ — the <b>density factor</b>: the air's density as a fraction of the standard sea-level
+value $\rho_0$, which is the form the drag law needs it in.</p></li>
+  <li><p>$g$ — <code class="ctag">9.80665 m/s²</code>, constant. No altitude variation.</p></li>
+  <li><p>$\hat{\mathbf{y}}$ — the vertical unit vector, so gravity acts straight down and nowhere else.</p></li>
+  <li><p>$c$ — the local speed of sound, so $M$ is evaluated against the air the bullet is <i>currently</i> in.</p></li>
+</ul><p>Note that the acceleration depends on <b>velocity alone</b>; position enters only through the atmosphere,
+which is held fixed across a step. That is why both schemes in
+<a href="howwecalculate.integration.html">integration modes</a> are written on the velocity.</p>
+<p></p>
+<h2>Velocity, and what is read off it</h2>
+<p>The <code class="ctag">Velocity</code> reported per point is the magnitude of the full velocity vector,
+$\lvert\mathbf{v}\rvert = \sqrt{v_x^2 + v_y^2 + v_z^2}$, the ground-relative speed, not the
+air-relative one. The distinction matters in a headwind: $\mathbf{v}_a$ is what the drag law and the
+Mach number use, $\mathbf{v}$ is what the point reports and what energy is computed from.</p>
+<p>Three published properties are functions of that magnitude only:</p>
+<p>$$M_{\text{reported}} = \frac{\lvert\mathbf{v}\rvert}{c}, \qquad E = \tfrac{1}{2}\,m\,\lvert\mathbf{v}\rvert^{2}$$</p>
+<p>$$\text{OGW} = w_{\text{gr}}^{2}\,\lvert\mathbf{v}\rvert^{3}\cdot1.5\times10^{-12}\ \mathrm{lb}$$</p><ul class="main">
+  <li><p>$M_{\text{reported}}$ — the <code class="ctag">Mach</code> property</p></li>
+  <li><p>$E$ — <code class="ctag">Energy</code>, the kinetic energy, from the bullet mass $m$</p></li>
+  <li><p>$\text{OGW}$ — <code class="ctag">OptimalGameWeight</code>, an empirical formula taking the bullet weight $w_{\text{gr}}$ in
+<b>grains</b> and $\lvert\mathbf{v}\rvert$ in <b>ft/s</b>. Note that $w_{\text{gr}}$, a weight, is a
+different quantity from the wind vector $\mathbf{w}$ above</p></li>
+</ul><p>Note the reported Mach uses $\lvert\mathbf{v}\rvert$, while the drag lookup inside the step uses
+$\lvert\mathbf{v}_a\rvert$; in calm air they are identical.</p>
+<p>Velocity decay is not modelled by any formula, it is whatever the integration produces. There is no
+retardation coefficient, no $v(x)$ approximation, no Pejsa-style closed form: velocity falls out of
+accumulating the drag deceleration step by step, which is why a measured $C_d(M)$ curve translates
+directly into a better velocity prediction.</p>
+<p></p>
+<h2>Wind</h2>
+<p>A <a href="BallisticCalculator.Wind.html"><code>Wind</code></a> is a <b>horizontal</b> vector, given as a speed $W$ and a
+direction $\varphi$. It is decomposed into a range component and a cross component,</p>
+<p>$$W_{\text{range}} = W\cos\varphi, \qquad W_{\text{cross}} = W\sin\varphi$$</p>
+<p>and then rotated into the shooting frame by the sight incline $\theta$ and the cant angle $\kappa$:</p>
+<p>$$w_x = W_{\text{range}}\cos\theta$$</p>
+<p>$$w_y = -W_{\text{range}}\sin\theta\,\cos\kappa + W_{\text{cross}}\sin\kappa$$</p>
+<p>$$w_z = W_{\text{cross}}\cos\kappa + W_{\text{range}}\sin\theta\,\sin\kappa$$</p>
+<p>$W_{\text{range}}$ and $W_{\text{cross}}$ are the head/tail and cross parts of the wind, and
+$w_x, w_y, w_z$ are the components of $\mathbf{w}$ along the three axes of the frame, the vector that
+enters the equations of motion above.</p>
+<p>A head- or tailwind on an inclined shot therefore acquires a vertical component, and a cant mixes the
+range and cross components into each other; both fall straight out of the rotation, with no special
+casing.</p>
+<p>Wind acts on the trajectory through <b>one mechanism only</b>: it changes $\mathbf{v}_a$, and therefore
+the magnitude and direction of the drag vector. A crosswind is not a sideways push applied to the
+bullet; it is the bullet's drag acquiring a lateral component because the air it flies through is
+moving. The familiar consequence, that wind deflection grows faster than linearly with range and that
+the first part of the flight path matters most, is a result of the integration, not an input to it.</p>
+<p><b>Zones.</b> Winds are ordered by <code class="ctag">MaximumRange</code>. The active zone's vector is substituted the moment $x$
+crosses that boundary, and the last zone extends to the end of the flight. The vector is piecewise
+constant: no blending across a boundary.</p>
+<p>What is <i>not</i> here is vertical wind. $w_y$ above is non-zero only as a projection of a horizontal
+wind on an inclined shot; updraughts and thermals have no representation.</p>
+<p></p>
+<h2>The atmosphere along the flight path</h2>
+<p>Density and speed of sound are functions of altitude, and the bullet's altitude changes as it falls:
+its vertical displacement is accumulated onto the launch altitude. The
+<a href="BallisticCalculator.Atmosphere.html"><code>Atmosphere</code></a> is re-evaluated whenever that altitude has
+moved more than <b>1 m</b> from the last evaluation, which for a long shot with a lot of drop means
+several times.</p>
+<p>Within one integration step, density and Mach are held constant. What is <i>not</i> modelled is any
+horizontal variation: one set of surface conditions describes the whole flight.</p>
+<p></p>
+<h2>The time step</h2>
+<p>The step is chosen in <b>distance</b> and converted to time using the current horizontal velocity:</p>
+<p>$$\Delta t = \frac{\Delta s}{v_x}$$</p>
+<p>so the along-bore advance per step is approximately constant, and steps automatically lengthen in time
+as the bullet slows. $\Delta t$ is quantized to a <code class="ctag">TimeSpan</code> tick (100 ns) and floored there.</p>
+<p>$\Delta s$ comes from the requested output <code class="ctag">Step</code>, not directly from it; see
+<a href="howwecalculate.integration.html">integration modes</a> for how one becomes the other, and for the
+two schemes that consume it. The sub-step that would cross the next output range is shortened so the
+point lands on the distance you asked for.</p>
+<p></p>
+<h2>Stopping</h2>
+<p>The run ends at the first of:</p><table class="tmain">
+  <tr>
+    <td class="thdr"><p>Condition</p></td>
+    <td class="thdr"><p>Value</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>requested maximum range reached</p></td>
+    <td class="tmain"><p>one calculation step past <code class="ctag">MaximumDistance</code></p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>output array full</p></td>
+    <td class="tmain"><p><code class="ctag">MaximumDistance / Step + 1</code> points</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>velocity floor</p></td>
+    <td class="tmain"><p>$\lvert\mathbf{v}\rvert &lt; 50\ \mathrm{ft/s}$, <b>or</b> $v_x &lt; 50\ \mathrm{ft/s}$</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>drop floor</p></td>
+    <td class="tmain"><p>more than <code class="ctag">10 000 ft</code> below the sight line</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>non-finite velocity</p></td>
+    <td class="tmain"><p>raises <code class="ctag">TrajectoryCannotBeCalculatedException</code></p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>a step that does not advance $x$</p></td>
+    <td class="tmain"><p>raises <code class="ctag">TrajectoryCannotBeCalculatedException</code></p></td>
+  </tr>
+</table><p>The floors are the statics <code class="ctag">TrajectoryCalculator.MinimumVelocity</code> and
+<code class="ctag">TrajectoryCalculator.MaximumDrop</code>. The $v_x$ floor is the guard for a projectile plunging
+near-vertically: total speed alone stays above the floor at terminal velocity, but a bullet that is no
+longer going downrange has no trajectory left to report, and since $\Delta t = \Delta s / v_x$,
+letting it continue would inflate the step without limit.</p>
+<p>Because the run can stop early, the returned array can hold trailing nulls; treat the first null as
+the end of the trajectory.</p>
+<p></p>
+<h2>Turning the state into a trajectory point</h2>
+<p>At each requested range the integrated state is converted into the reported figures. The
+<a href="howwecalculate.corrections.html">empirical corrections</a> are applied at this point; they adjust
+the $y$ and $z$ used below, and nothing else.</p>
+<p><b>Drop.</b> With no shot angle, <code class="ctag">Drop</code> is the vertical ordinate $y$. With one, it is measured
+<b>perpendicular to the line of sight</b>, so the ordinate is rotated into the sight frame:</p>
+<p>$$\text{drop} = \big(-x\sin\alpha + (y + h)\cos\alpha\big) - h$$</p>
+<p>The sight height is added in the vertical frame and subtracted in the rotated one; the leftover
+$h(\cos\alpha - 1)$ term is intentional, and pins the muzzle point to exactly $-h$. Both conventions
+are reported: <code class="ctag">Drop</code> is this perpendicular figure, <code class="ctag">DropFlat</code> the plain vertical one relative to the
+muzzle.</p>
+<p><b>Windage</b> is the lateral ordinate $z$, corrected as described in the other article.</p>
+<p><b>Adjustments.</b> The correction that would move the impact to the aim point, as an angle:</p>
+<p>$$\theta_{\text{adj}} = \arctan\!\left(\frac{\text{drop}}{R}\right)$$</p>
+<p>where $\theta_{\text{adj}}$ is <code class="ctag">DropAdjustment</code>, $R = x/\cos\alpha$ the line-of-sight distance to the
+point being reported, and $\text{drop}$ the figure above. The same expression gives
+<code class="ctag">WindageAdjustment</code> from the windage. This is a true angle, not the small-angle approximation.</p>
+<p><b>Reference lines.</b> Two straight lines are reported alongside, both linear in $x$:
+<code class="ctag">LineOfSightElevation</code> is $x\tan\alpha$, and <code class="ctag">LineOfDepartureElevation</code>, the bore line, is
+$x\tan\theta - h$.</p>
+<p></p>
+<h2>Zeroing is the same model, solved backwards</h2>
+<p>The launch angle $\theta_{\text{zero}}$ is not given, it is found.
+<a href="BallisticCalculator.TrajectoryCalculator.html"><code>TrajectoryCalculator</code></a>.CalculateZeroParameters
+runs the <b>full</b> trajectory to the zero distance and corrects the launch angles by Newton steps until
+the impact lands on the aim point:</p>
+<p>$$\theta \leftarrow \theta + \arctan\!\left(\frac{\text{miss}}{D}\right)$$</p>
+<p>where $D$ is <a href="BallisticCalculator.ZeroingParameters.html"><code>ZeroingParameters</code></a>.Distance and
+$\text{miss}$ how far the impact at that distance falls short of the aim point, the target offset less
+the computed drop, in the same perpendicular convention as above.</p>
+<p>The linear miss over the zero distance is, to first order, exactly the angular correction needed, so
+convergence takes a handful of passes; the loop allows up to 100 and a default tolerance of
+<b>0.1 mm</b>. The result is a
+<a href="BallisticCalculator.ZeroCalculatedParameters.html"><code>ZeroCalculatedParameters</code></a>, which
+<a href="BallisticCalculator.ShotParameters.html"><code>ShotParameters</code></a>.Apply puts on the shot.</p>
+<p>Because each pass runs the complete trajectory, the corrections and the zeroing wind are all
+<i>inside</i> the zero, which is what lets a rifle be zeroed with one cartridge, atmosphere or wind and
+fired with another. Windage is solved the same way, and only when there is a horizontal effect to
+correct.</p>
+<p>If the required elevation walks past the vertical, the launch no longer sends the projectile downrange
+and the solve reports <code class="ctag">ZeroRangeCantBeReachedException</code> rather than a bad number.</p>
+<p></p>
+<h2>What this buys, and what it does not</h2>
+<p>The model is exact about the two forces it includes and honest about the rest. Its accuracy is set,
+overwhelmingly, by the quality of $C_d(M)$, not by the integrator, and not by the missing degrees of
+freedom. A point-mass solver running a measured drag curve tracks a 4DOF solver closely; the same
+solver fed a guessed G1 coefficient does not.</p>
+<p>What a fourth degree of freedom would add is the bullet's angular motion: a computed yaw of repose
+instead of an approximated one, better long-range spin drift, and honest transonic behaviour. What it
+would <i>not</i> add is a better drag curve, which is where the dominant error lives. See also the
+<a href="risknotice.html">Risk Notice</a>.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="howwecalculate.corrections.html">The empirical corrections</a></p></li>
+  <li><p><a href="howwecalculate.integration.html">Integration modes</a></p></li>
+  <li><p><a href="guide.output.html">Understanding the output</a></p></li>
+</ul><p>
+  <center><a href="howwecalculate.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>
