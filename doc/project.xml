@@ -6,6 +6,7 @@
  <dg:source>
   <dg:file name="src/index.ds" encoding="utf-8" />
   <dg:file name="src/guide.ds" encoding="utf-8" />
+  <dg:file name="src/howwecalculate.ds" encoding="utf-8" />
   <dg:file name="src/ns/BallisticCalculator.ds" encoding="utf-8" />
   <dg:file name="src/ns/BallisticCalculator.Reticle.ds" encoding="utf-8" />
   <dg:file name="src/ns/BallisticCalculator.Reticle.Data.ds" encoding="utf-8" />
@@ -23,6 +24,7 @@
   <dg:define name="external-resources" value="yes" />
   <dg:define name="web-content-file-name" value="index" />
   <dg:define name="web-content-file-name-backward-compatibility" value="yes" />
+  <dg:define name="add-to-prolog-head" value="src/html/prolog-header.html" />
  </dg:output>
  <dg:output template="%docgen%/template/xmldoc/main.xsl" file="BallisticCaculator.xml" encoding="utf-8">
   <dg:define name="assembly" value="BallisticCalculator" />

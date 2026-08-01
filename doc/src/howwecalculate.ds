@@ -1,0 +1,969 @@
+@group
+    @key=howwecalculate
+    @title=How We Calculate
+    @ingroup=main
+    @brief=The mathematics the engine runs, formula by formula.
+    @order=custom
+    @sortarticles=no
+
+    What the library actually computes, written out rather than left in the source. Read these when you
+    want to check a number instead of taking it on trust, or when you are comparing this engine against
+    another solver and need to know exactly which terms are in it.
+
+    * [link=howwecalculate.bc]The ballistic coefficient[/link]
+    * [link=howwecalculate.3dof]The 3DOF point-mass model[/link]
+    * [link=howwecalculate.corrections]The empirical corrections[/link]
+    * [link=howwecalculate.integration]Integration modes[/link]
+
+    Mathematical symbols are set as inline math; code identifiers, literal values and units stay in
+    `code` style.
+@end
+
+@article
+    @key=howwecalculate.bc
+    @title=The ballistic coefficient
+    @ingroup=howwecalculate
+    @brief=The drag law itself, and what the coefficient divides.
+
+    **Goal of this article:** show exactly where the ballistic coefficient enters the calculation, so
+    that "BC 0.223 G7" stops being a magic number and becomes a term in an equation you can read.
+
+    ## Start with the drag force, not the coefficient
+
+    A projectile in air feels a drag force opposing its motion through that air:
+
+    $$F_d = \tfrac{1}{2}\,\rho\,v^2\,C_d(M)\,A$$
+
+    * $F_d$ — the drag force
+    * $\rho$ — air density
+    * $v$ — speed **relative to the air**, not relative to the ground
+    * $C_d(M)$ — the drag coefficient, which is a function of Mach number $M$, not a constant
+    * $A$ — the projectile's frontal area, $\pi d^2 / 4$ for a bullet of diameter $d$
+
+    What moves the bullet is acceleration, so divide by mass:
+
+    $$a_d = \frac{F_d}{m} = \frac{\pi}{8}\,\rho\,v^2\,C_d(M)\,\frac{d^2}{m}$$
+
+    * $a_d$ — the deceleration drag produces
+    * $m$ — the projectile's mass
+
+    Everything about //this particular bullet// has collapsed into two groups: its shape, which lives in
+    $C_d(M)$, and the ratio $d^2/m$, which is pure geometry and mass. The ballistic coefficient is the
+    device that packages both.
+
+    ## Sectional density and the form factor
+
+    **Sectional density** is mass over frontal area, strictly mass over diameter squared:
+
+    $$\mathrm{SD} = \frac{m}{d^2}$$
+
+    In the library's units that is grains converted to pounds over square inches, which is how it is
+    computed from [clink=BallisticCalculator.Ammunition]Ammunition[/clink].Weight and
+    [clink=BallisticCalculator.Ammunition]Ammunition[/clink].BulletDiameter:
+
+    $$\mathrm{SD} = \frac{w_{\text{gr}}}{7000\,d_{\text{in}}^{2}} \quad \mathrm{lb/in^2}$$
+
+    * $w_{\text{gr}}$ — the bullet weight in **grains**
+    * $d_{\text{in}}$ — the bullet diameter in **inches**
+    * $7000$ — grains per pound, so the quotient comes out in `lb/in²`
+
+    **Form factor** $i$ is the shape term. It compares this bullet's drag coefficient to that of a
+    //reference// projectile, a standard shape whose $C_d(M)$ curve has been measured once and tabulated:
+
+    $$C_{d,\text{bullet}}(M) = i \cdot C_{d,\text{table}}(M)$$
+
+    A sleeker bullet than the reference has $i < 1$; a blunter one has $i > 1$. The assumption buried in
+    that single line is the important one: it says the bullet's drag curve has the **same shape** as the
+    reference curve, differing only by a constant multiplier. That assumption is what fails at some
+    velocities, and it is the reason for everything in the second half of this article.
+
+    The ballistic coefficient is the two combined:
+
+    $$\mathrm{BC} = \frac{\mathrm{SD}}{i} = \frac{m}{d^{2}\,i}$$
+
+    Substituting $d^2/m = 1/\mathrm{SD}$ and $C_{d,\text{bullet}} = i\,C_{d,\text{table}}$ back into the
+    acceleration:
+
+    $$a_d = \frac{\pi}{8}\,\rho\,v^2\,\frac{C_{d,\text{table}}(M)}{\mathrm{BC}}$$
+
+    That is the whole point of a BC. **One number divides the drag.** Double the BC and the bullet
+    decelerates half as fast; that is not a rule of thumb, it is the equation.
+
+    Its units are mass over area, `lb/in²` here, which is why a BC is not dimensionless and why comparing
+    one to a drag coefficient is a category error. The G1 reference projectile is one inch in diameter and
+    one pound in mass, so its own BC is exactly $1.0\ \mathrm{lb/in^2}$; every published BC is effectively
+    "this bullet's retardation, as a fraction of that standard bullet's".
+
+    ## What the engine actually evaluates
+
+    In code the constants are folded together. `PIR` is the fixed part of the coefficient:
+
+    $$\mathrm{PIR} = \frac{\pi}{8}\cdot\frac{\rho_0}{144} = 2.08551\times10^{-4}$$
+
+    with $\rho_0 = 0.076474\ \mathrm{lb/ft^3}$, the standard sea-level air density
+    ([clink=BallisticCalculator.Atmosphere]Atmosphere[/clink].StandardDensity), and the $144$ converting
+    the BC's square inches into square feet so the result comes out in `ft/s²`. Air density enters as a
+    dimensionless ratio to that standard, the **density factor** $\rho/\rho_0$, which
+    [clink=BallisticCalculator.Atmosphere]Atmosphere[/clink] produces for the bullet's current altitude.
+    The acceleration, now written as the vector $\mathbf{a}_d$ rather than the scalar $a_d$, is then
+
+    $$\mathbf{a}_d = -\,\mathrm{PIR}\cdot\frac{\rho}{\rho_0}\cdot\frac{C_d(M)}{\mathrm{BC}}\cdot\lvert\mathbf{v}_a\rvert\;\mathbf{v}_a$$
+
+    written with the velocity vector rather than the speed, because drag acts //along// the air-relative
+    velocity $\mathbf{v}_a = \mathbf{v} - \mathbf{w}$ — the projectile's velocity $\mathbf{v}$ less the
+    wind vector $\mathbf{w}$ — and it is $\lvert\mathbf{v}_a\rvert\,\mathbf{v}_a$ that carries both the
+    $v^2$ magnitude and the direction. This is the drag term of the equations of motion in
+    [link=howwecalculate.3dof]the 3DOF model[/link].
+
+    Two details of the lookup are worth knowing:
+
+    * **The Mach number is local.** $M = \lvert\mathbf{v}_a\rvert/c$, where $c$ is the speed of sound at
+      the bullet's //current// altitude and temperature, not at the muzzle. A bullet that has dropped far
+      enough for the atmosphere to have shifted is read off the drag curve at a different Mach for the
+      same speed.
+    * **The table is interpolated, not stepped.** Each row of a
+      [clink=BallisticCalculator.DragTable]DragTable[/clink] becomes a node carrying a quadratic fitted
+      through it and its two neighbours, evaluated as $C + M(B + A M)$. The first and last segments
+      degrade to linear and flat respectively. So $C_d$ is a smooth curve through the tabulated points,
+      and the transonic drag rise is followed rather than approximated by a staircase.
+
+    ## The two ways to give the engine a BC
+
+    [clink=BallisticCalculator.BallisticCoefficient]BallisticCoefficient[/clink] carries a
+    [clink=BallisticCalculator.BallisticCoefficientValueType]BallisticCoefficientValueType[/clink], and
+    the two are not interchangeable.
+
+    |!,Type|What you supply|What the engine computes|
+    |`Coefficient`|the published BC, for example `0.223 G7`|used as-is: $\mathrm{BC} = 0.223$|
+    |`FormFactor`|the shape factor $i$, for example `1.05 G7`|$\mathrm{BC} = \mathrm{SD}/i$, from the bullet's weight and diameter|
+
+    The coefficient path needs nothing but the number. The form-factor path **requires** the bullet weight
+    and diameter, because without them there is no sectional density to divide, and
+    [clink=BallisticCalculator.Ammunition]Ammunition[/clink].GetBallisticCoefficient throws rather than
+    guessing.
+
+    Either way the number that reaches the drag law is a BC in `lb/in²`. The form factor is simply the
+    honest way in when what you know is the bullet's shape relative to a standard, rather than a
+    manufacturer's quoted figure.
+
+    ## Why the same bullet has two different BCs
+
+    A 168 gr .308 match bullet is quoted at roughly `0.450 G1` and `0.223 G7`. Both are correct. Neither
+    describes the bullet on its own: each describes the bullet **relative to a different reference shape**.
+
+    From $\mathrm{BC} = \mathrm{SD}/i$, sectional density is a property of the bullet and cancels:
+
+    $$\frac{\mathrm{BC}_{G1}}{\mathrm{BC}_{G7}} = \frac{i_{G7}}{i_{G1}}$$
+
+    where $\mathrm{BC}_{G1}$ and $\mathrm{BC}_{G7}$ are the one bullet's coefficients against the two
+    tables, and $i_{G1}$, $i_{G7}$ its form factors against their two reference shapes.
+
+    The ratio near 2.0 says nothing about the bullet and everything about the two reference projectiles:
+    the G7 standard is a long boat-tailed shape that a modern match bullet resembles closely, so $i_{G7}$
+    lands near 1; the G1 standard is a blunt flat-based shape that it does not resemble at all, so
+    $i_{G1}$ is about half. Quoting a BC without its table is meaningless, which is why the value and the
+    [clink=BallisticCalculator.DragTableId]DragTableId[/clink] are one inseparable struct.
+
+    ## Where a single BC breaks down
+
+    The whole construction rests on $C_{d,\text{bullet}}(M) = i\,C_{d,\text{table}}(M)$, one constant
+    multiplier at every Mach number. Real bullets do not oblige. A modern boat-tail against the G1
+    reference disagrees most in the transonic region, so the multiplier that fits at 2700 ft/s is wrong by
+    the time the bullet is subsonic, and the discrepancy is systematic, not noise.
+
+    This is why:
+
+    * **G1 BCs are published in velocity bands.** The band is an admission that $i$ is not constant.
+    * **G7 works better for pointed rifle bullets.** Not because it is a better //table//, but because the
+      reference shape is closer, so the constant-multiplier assumption is asked to do less work.
+    * **The engine accepts a whole curve instead.** Two of them, in fact.
+
+    ### A multi-BC profile
+
+    Given BC quoted at several Mach numbers as a set of
+    [clink=BallisticCalculator.BcAtMach]BcAtMach[/clink] knots,
+    [clink=BallisticCalculator.DrgDragTableFactory]DrgDragTableFactory[/clink].Build stops treating BC as
+    a scalar and builds the projectile's own drag curve on the base table's Mach grid:
+
+    $$C_{d,\text{own}}(M) = \frac{C_{d,\text{base}}(M)}{\mathrm{BC}(M)}\cdot\mathrm{SD}$$
+
+    * $C_{d,\text{own}}(M)$ — the projectile's own drag coefficient, the curve being built
+    * $C_{d,\text{base}}(M)$ — the standard curve it is derived from, G1 or G7 or another
+    * $\mathrm{BC}(M)$ — the effective BC at that Mach number, from the quoted knots
+    * $\mathrm{SD}$ — the sectional density, from the bullet weight and diameter as above
+
+    $\mathrm{BC}(M)$ is interpolated linearly between the supplied knots and held flat beyond the end
+    ones. The resulting table is then run with a **form factor of exactly 1**, which the factory stamps
+    into the ammunition so the pair cannot be mismatched. Put the two together and the drag law becomes
+
+    $$a_d = \mathrm{PIR}\cdot\frac{\rho}{\rho_0}\cdot\frac{C_{d,\text{base}}(M)}{\mathrm{BC}(M)}\,v^2$$
+
+    the original equation with a **velocity-dependent BC** substituted for the constant one. The sectional
+    density in the numerator is what puts the curve on the physical scale a `.drg` file uses, so the
+    bullet weight and diameter are as much an input as the BC knots themselves.
+
+    Worked example: [link=guide.multibc]Multi-BC drag tables[/link].
+
+    ### A measured curve
+
+    A [clink=BallisticCalculator.DrgDragTable]DrgDragTable[/clink] stores $C_d(M)$ for the projectile
+    directly, measured, usually by radar, not inferred from a reference shape. There is no form factor
+    left to fit, so again it runs with a form factor of 1 and the drag law reads the bullet's own curve at
+    each Mach number. [clink=BallisticCalculator.Tools.RadarDragTableFactory]RadarDragTableFactory[/clink]
+    derives the same curve from measured downrange velocities.
+
+    At that point the BC has disappeared from the model as a concept. It was never a physical property of
+    the bullet; it was a compression of the bullet's drag curve into one number, useful exactly as long as
+    the reference shape was close enough. This is the sense in which better drag data beats a better
+    integrator, and beats a higher-order flight model too.
+
+    Worked example: [link=guide.customdrag]Custom drag: GC and .drg tables[/link].
+
+    ## Converting between tables
+
+    Because $\mathrm{BC} = \mathrm{SD}/i$ and the two $i$ values belong to different reference curves,
+    converting a G1 BC to a G7 BC means finding the pair that produce the same retardation, and they only
+    do so at one velocity, because the curves differ in shape. Any single conversion factor is therefore
+    tied to a reference velocity, which is why
+    [clink=BallisticCalculator.Tools.BallisticCoefficientConverter]BallisticCoefficientConverter[/clink]
+    asks for one rather than pretending otherwise.
+
+    ## Summary
+
+    * Drag acceleration is $(\pi/8)\,\rho\,v^2\,C_d(M)/\mathrm{BC}$. The BC is a divisor of drag, nothing
+      more.
+    * $\mathrm{BC} = \mathrm{SD}/i$: sectional density carries the mass and the calibre, the form factor
+      carries the shape.
+    * Units are $\mathrm{lb/in^2}$; the G1 standard projectile is 1 inch and 1 lb, hence
+      $\mathrm{BC} = 1$.
+    * A BC is meaningless without its drag table, because $i$ is measured against that table's reference.
+    * One scalar BC assumes the bullet's drag curve is a constant multiple of the reference's. When that
+      assumption hurts, replace the scalar with a curve, a multi-BC profile or a measured `.drg`.
+
+    ## See also
+
+    * [link=howwecalculate.3dof]The 3DOF point-mass model[/link]
+    * [link=guide.customdrag]Custom drag: GC and .drg tables[/link]
+    * [link=guide.multibc]Multi-BC drag tables[/link]
+@end
+
+@article
+    @key=howwecalculate.3dof
+    @title=The 3DOF point-mass model
+    @ingroup=howwecalculate
+    @brief=The equations of motion, the frame they are written in, and how a state becomes a trajectory point.
+
+    **Goal of this article:** write down the equations the engine integrates, the frame they are written
+    in, and how the integrated state becomes a
+    [clink=BallisticCalculator.TrajectoryPoint]TrajectoryPoint[/clink].
+
+    Two forces are integrated: drag and gravity. Everything else in the reported drop and windage is added
+    afterwards in closed form and is the subject of a separate article,
+    [link=howwecalculate.corrections]the empirical corrections[/link].
+
+    ## Three degrees of freedom
+
+    The projectile is a **point with mass**. Its state is six numbers, a position $\mathbf{r}$ and a
+    velocity $\mathbf{v}$, three components each, and the model advances them through time:
+
+    $$\mathbf{r} = (x, y, z), \qquad \mathbf{v} = (v_x, v_y, v_z)$$
+
+    Three degrees of freedom means the three translational ones. The bullet's **orientation** is not part
+    of the state: there is no yaw, no pitch, no precession, and no equation governing them. Everything the
+    model says about spin is therefore an add-on rather than a consequence, which is the single fact that
+    explains most of the model's limits.
+
+    ## The frame
+
+    Axes are fixed to the ground at the muzzle:
+
+    |!,Axis|Direction|Sign convention|
+    |$x$|horizontal, downrange, in the plane of fire|positive towards the target|
+    |$y$|true vertical, along gravity|positive **up**|
+    |$z$|horizontal, lateral|positive **left**|
+
+    Two consequences of that choice are worth stating explicitly, because they show up all over the
+    output:
+
+    * **$y$ is vertical, not perpendicular to the line of sight.** Gravity is a clean $-g\hat{\mathbf{y}}$
+      and needs no rotation. The line of sight is rotated //at output time// instead, which is where
+      inclined-fire drop comes from below.
+    * **$x$ is horizontal, not along the line of sight.** So the line-of-sight distance a point reports,
+      its `Distance`, is $x/\cos\alpha$, where $\alpha$ is the shot angle; the horizontal $x$ itself is
+      reported as `DistanceFlat`.
+
+    The lateral sign, left positive, is what makes a positive windage adjustment cancel a right-hand spin
+    drift, mirroring the way a positive elevation adjustment cancels drop.
+
+    ## Initial conditions
+
+    The muzzle sits $h$ below the sight line, $h$ being
+    [clink=BallisticCalculator.Sight]Sight[/clink].SightHeight above the bore:
+
+    $$\mathbf{r}(0) = (0,\; -h,\; 0)$$
+
+    so the very first point of any trajectory shows a drop of exactly $-h$. The velocity vector is the
+    muzzle velocity $V_0$ pointed along the bore:
+
+    $$\mathbf{v}(0) = V_0\,(\cos\theta\cos\psi,\;\; \sin\theta,\;\; \cos\theta\sin\psi)$$
+
+    where the two launch angles accumulate everything that tilts the barrel:
+
+    $$\theta = \underbrace{\theta_{\text{zero}}}_{\text{ZeroDropAdjustment}} + \underbrace{\theta_{\text{dialled}}}_{\text{ShotDropAdjustment}} + \underbrace{\alpha}_{\text{ShotAngle}}$$
+
+    $$\psi = \underbrace{\psi_{\text{zero}}}_{\text{ZeroWindageAdjustment}} + \underbrace{\psi_{\text{dialled}}}_{\text{ShotWindageAdjustment}}$$
+
+    all four of them properties of [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink].
+    $\theta$ is the elevation of the bore above the horizontal and $\psi$ its horizontal offset, positive
+    to the left; $V_0$ is the muzzle velocity and $h$ the sight height. The shot angle enters here, as
+    part of the launch direction, rather than as a rotation of gravity.
+
+    **Barrel azimuth is not in this vector.** `BarrelAzimuth`, the compass bearing, does not tilt the
+    muzzle: the bullet is always integrated along $x$, and the azimuth enters only as a scalar in the
+    Coriolis terms. That is deliberate — steering the velocity vector by the bearing would collapse $v_x$
+    (and with it the time step, which is derived from $v_x$) for a shot fired east.
+
+    ## The equations of motion
+
+    $$\frac{d\mathbf{r}}{dt} = \mathbf{v}$$
+
+    $$\frac{d\mathbf{v}}{dt} = -\,k\,\frac{\rho}{\rho_0}\,C_d(M)\,\lvert\mathbf{v}_a\rvert\,\mathbf{v}_a \;-\; g\,\hat{\mathbf{y}}$$
+
+    with
+
+    $$\mathbf{v}_a = \mathbf{v} - \mathbf{w}, \qquad M = \frac{\lvert\mathbf{v}_a\rvert}{c}, \qquad k = \frac{\mathrm{PIR}}{\mathrm{BC}}$$
+
+    Two forces, and that is all: **drag along the air-relative velocity, and constant gravity.**
+
+    * $\mathbf{w}$ — the wind vector. Drag depends on motion through the //air//, so wind enters by
+      shifting the velocity the drag law sees, not as a force of its own. A tailwind reduces drag; a
+      crosswind produces a lateral component of drag which is what pushes the bullet sideways.
+    * $\mathbf{v}_a$ — the air-relative velocity, which is what drag acts along, and $M$ the Mach number
+      it corresponds to.
+    * $C_d(M)$ — read from the [clink=BallisticCalculator.DragTable]DragTable[/clink] at the local Mach
+      number.
+    * $k = \mathrm{PIR}/\mathrm{BC}$ — the drag scale: the ballistic coefficient and the fixed constant
+      `PIR` that carries the frontal-area geometry and the unit conversions. See
+      [link=howwecalculate.bc]the ballistic coefficient[/link] for this term in full.
+    * $\rho/\rho_0$ — the **density factor**: the air's density as a fraction of the standard sea-level
+      value $\rho_0$, which is the form the drag law needs it in.
+    * $g$ — `9.80665 m/s²`, constant. No altitude variation.
+    * $\hat{\mathbf{y}}$ — the vertical unit vector, so gravity acts straight down and nowhere else.
+    * $c$ — the local speed of sound, so $M$ is evaluated against the air the bullet is //currently// in.
+
+    Note that the acceleration depends on **velocity alone**; position enters only through the atmosphere,
+    which is held fixed across a step. That is why both schemes in
+    [link=howwecalculate.integration]integration modes[/link] are written on the velocity.
+
+    ## Velocity, and what is read off it
+
+    The `Velocity` reported per point is the magnitude of the full velocity vector,
+    $\lvert\mathbf{v}\rvert = \sqrt{v_x^2 + v_y^2 + v_z^2}$, the ground-relative speed, not the
+    air-relative one. The distinction matters in a headwind: $\mathbf{v}_a$ is what the drag law and the
+    Mach number use, $\mathbf{v}$ is what the point reports and what energy is computed from.
+
+    Three published properties are functions of that magnitude only:
+
+    $$M_{\text{reported}} = \frac{\lvert\mathbf{v}\rvert}{c}, \qquad E = \tfrac{1}{2}\,m\,\lvert\mathbf{v}\rvert^{2}$$
+
+    $$\text{OGW} = w_{\text{gr}}^{2}\,\lvert\mathbf{v}\rvert^{3}\cdot1.5\times10^{-12}\ \mathrm{lb}$$
+
+    * $M_{\text{reported}}$ — the `Mach` property
+    * $E$ — `Energy`, the kinetic energy, from the bullet mass $m$
+    * $\text{OGW}$ — `OptimalGameWeight`, an empirical formula taking the bullet weight $w_{\text{gr}}$ in
+      **grains** and $\lvert\mathbf{v}\rvert$ in **ft/s**. Note that $w_{\text{gr}}$, a weight, is a
+      different quantity from the wind vector $\mathbf{w}$ above
+
+    Note the reported Mach uses $\lvert\mathbf{v}\rvert$, while the drag lookup inside the step uses
+    $\lvert\mathbf{v}_a\rvert$; in calm air they are identical.
+
+    Velocity decay is not modelled by any formula, it is whatever the integration produces. There is no
+    retardation coefficient, no $v(x)$ approximation, no Pejsa-style closed form: velocity falls out of
+    accumulating the drag deceleration step by step, which is why a measured $C_d(M)$ curve translates
+    directly into a better velocity prediction.
+
+    ## Wind
+
+    A [clink=BallisticCalculator.Wind]Wind[/clink] is a **horizontal** vector, given as a speed $W$ and a
+    direction $\varphi$. It is decomposed into a range component and a cross component,
+
+    $$W_{\text{range}} = W\cos\varphi, \qquad W_{\text{cross}} = W\sin\varphi$$
+
+    and then rotated into the shooting frame by the sight incline $\theta$ and the cant angle $\kappa$:
+
+    $$w_x = W_{\text{range}}\cos\theta$$
+
+    $$w_y = -W_{\text{range}}\sin\theta\,\cos\kappa + W_{\text{cross}}\sin\kappa$$
+
+    $$w_z = W_{\text{cross}}\cos\kappa + W_{\text{range}}\sin\theta\,\sin\kappa$$
+
+    $W_{\text{range}}$ and $W_{\text{cross}}$ are the head/tail and cross parts of the wind, and
+    $w_x, w_y, w_z$ are the components of $\mathbf{w}$ along the three axes of the frame, the vector that
+    enters the equations of motion above.
+
+    A head- or tailwind on an inclined shot therefore acquires a vertical component, and a cant mixes the
+    range and cross components into each other; both fall straight out of the rotation, with no special
+    casing.
+
+    Wind acts on the trajectory through **one mechanism only**: it changes $\mathbf{v}_a$, and therefore
+    the magnitude and direction of the drag vector. A crosswind is not a sideways push applied to the
+    bullet; it is the bullet's drag acquiring a lateral component because the air it flies through is
+    moving. The familiar consequence, that wind deflection grows faster than linearly with range and that
+    the first part of the flight path matters most, is a result of the integration, not an input to it.
+
+    **Zones.** Winds are ordered by `MaximumRange`. The active zone's vector is substituted the moment $x$
+    crosses that boundary, and the last zone extends to the end of the flight. The vector is piecewise
+    constant: no blending across a boundary.
+
+    What is //not// here is vertical wind. $w_y$ above is non-zero only as a projection of a horizontal
+    wind on an inclined shot; updraughts and thermals have no representation.
+
+    ## The atmosphere along the flight path
+
+    Density and speed of sound are functions of altitude, and the bullet's altitude changes as it falls:
+    its vertical displacement is accumulated onto the launch altitude. The
+    [clink=BallisticCalculator.Atmosphere]Atmosphere[/clink] is re-evaluated whenever that altitude has
+    moved more than **1 m** from the last evaluation, which for a long shot with a lot of drop means
+    several times.
+
+    Within one integration step, density and Mach are held constant. What is //not// modelled is any
+    horizontal variation: one set of surface conditions describes the whole flight.
+
+    ## The time step
+
+    The step is chosen in **distance** and converted to time using the current horizontal velocity:
+
+    $$\Delta t = \frac{\Delta s}{v_x}$$
+
+    so the along-bore advance per step is approximately constant, and steps automatically lengthen in time
+    as the bullet slows. $\Delta t$ is quantized to a `TimeSpan` tick (100 ns) and floored there.
+
+    $\Delta s$ comes from the requested output `Step`, not directly from it; see
+    [link=howwecalculate.integration]integration modes[/link] for how one becomes the other, and for the
+    two schemes that consume it. The sub-step that would cross the next output range is shortened so the
+    point lands on the distance you asked for.
+
+    ## Stopping
+
+    The run ends at the first of:
+
+    |!,Condition|Value|
+    |requested maximum range reached|one calculation step past `MaximumDistance`|
+    |output array full|`MaximumDistance / Step + 1` points|
+    |velocity floor|$\lvert\mathbf{v}\rvert < 50\ \mathrm{ft/s}$, **or** $v_x < 50\ \mathrm{ft/s}$|
+    |drop floor|more than `10 000 ft` below the sight line|
+    |non-finite velocity|raises `TrajectoryCannotBeCalculatedException`|
+    |a step that does not advance $x$|raises `TrajectoryCannotBeCalculatedException`|
+
+    The floors are the statics `TrajectoryCalculator.MinimumVelocity` and
+    `TrajectoryCalculator.MaximumDrop`. The $v_x$ floor is the guard for a projectile plunging
+    near-vertically: total speed alone stays above the floor at terminal velocity, but a bullet that is no
+    longer going downrange has no trajectory left to report, and since $\Delta t = \Delta s / v_x$,
+    letting it continue would inflate the step without limit.
+
+    Because the run can stop early, the returned array can hold trailing nulls; treat the first null as
+    the end of the trajectory.
+
+    ## Turning the state into a trajectory point
+
+    At each requested range the integrated state is converted into the reported figures. The
+    [link=howwecalculate.corrections]empirical corrections[/link] are applied at this point; they adjust
+    the $y$ and $z$ used below, and nothing else.
+
+    **Drop.** With no shot angle, `Drop` is the vertical ordinate $y$. With one, it is measured
+    **perpendicular to the line of sight**, so the ordinate is rotated into the sight frame:
+
+    $$\text{drop} = \big(-x\sin\alpha + (y + h)\cos\alpha\big) - h$$
+
+    The sight height is added in the vertical frame and subtracted in the rotated one; the leftover
+    $h(\cos\alpha - 1)$ term is intentional, and pins the muzzle point to exactly $-h$. Both conventions
+    are reported: `Drop` is this perpendicular figure, `DropFlat` the plain vertical one relative to the
+    muzzle.
+
+    **Windage** is the lateral ordinate $z$, corrected as described in the other article.
+
+    **Adjustments.** The correction that would move the impact to the aim point, as an angle:
+
+    $$\theta_{\text{adj}} = \arctan\!\left(\frac{\text{drop}}{R}\right)$$
+
+    where $\theta_{\text{adj}}$ is `DropAdjustment`, $R = x/\cos\alpha$ the line-of-sight distance to the
+    point being reported, and $\text{drop}$ the figure above. The same expression gives
+    `WindageAdjustment` from the windage. This is a true angle, not the small-angle approximation.
+
+    **Reference lines.** Two straight lines are reported alongside, both linear in $x$:
+    `LineOfSightElevation` is $x\tan\alpha$, and `LineOfDepartureElevation`, the bore line, is
+    $x\tan\theta - h$.
+
+    ## Zeroing is the same model, solved backwards
+
+    The launch angle $\theta_{\text{zero}}$ is not given, it is found.
+    [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].CalculateZeroParameters
+    runs the **full** trajectory to the zero distance and corrects the launch angles by Newton steps until
+    the impact lands on the aim point:
+
+    $$\theta \leftarrow \theta + \arctan\!\left(\frac{\text{miss}}{D}\right)$$
+
+    where $D$ is [clink=BallisticCalculator.ZeroingParameters]ZeroingParameters[/clink].Distance and
+    $\text{miss}$ how far the impact at that distance falls short of the aim point, the target offset less
+    the computed drop, in the same perpendicular convention as above.
+
+    The linear miss over the zero distance is, to first order, exactly the angular correction needed, so
+    convergence takes a handful of passes; the loop allows up to 100 and a default tolerance of
+    **0.1 mm**. The result is a
+    [clink=BallisticCalculator.ZeroCalculatedParameters]ZeroCalculatedParameters[/clink], which
+    [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink].Apply puts on the shot.
+
+    Because each pass runs the complete trajectory, the corrections and the zeroing wind are all
+    //inside// the zero, which is what lets a rifle be zeroed with one cartridge, atmosphere or wind and
+    fired with another. Windage is solved the same way, and only when there is a horizontal effect to
+    correct.
+
+    If the required elevation walks past the vertical, the launch no longer sends the projectile downrange
+    and the solve reports `ZeroRangeCantBeReachedException` rather than a bad number.
+
+    ## What this buys, and what it does not
+
+    The model is exact about the two forces it includes and honest about the rest. Its accuracy is set,
+    overwhelmingly, by the quality of $C_d(M)$, not by the integrator, and not by the missing degrees of
+    freedom. A point-mass solver running a measured drag curve tracks a 4DOF solver closely; the same
+    solver fed a guessed G1 coefficient does not.
+
+    What a fourth degree of freedom would add is the bullet's angular motion: a computed yaw of repose
+    instead of an approximated one, better long-range spin drift, and honest transonic behaviour. What it
+    would //not// add is a better drag curve, which is where the dominant error lives. See also the
+    [link=risknotice]Risk Notice[/link].
+
+    ## See also
+
+    * [link=howwecalculate.corrections]The empirical corrections[/link]
+    * [link=howwecalculate.integration]Integration modes[/link]
+    * [link=guide.output]Understanding the output[/link]
+@end
+
+@article
+    @key=howwecalculate.corrections
+    @title=The empirical corrections
+    @ingroup=howwecalculate
+    @brief=Spin drift, aerodynamic jump and earth rotation, added to the trajectory rather than integrated with it.
+
+    **Goal of this article:** document the four effects that are //not// integrated with the trajectory
+    but added to it afterwards, where each formula comes from, and what each one needs from you to appear
+    at all.
+
+    [link=howwecalculate.3dof]The 3DOF model[/link] integrates two forces, drag and gravity. Everything
+    else in the reported drop and windage arrives here.
+
+    ## What "applied at output" means
+
+    Each of these corrections is evaluated **per trajectory point, in closed form, from the integrated
+    state** — range, time of flight, velocity — and added to the reported drop or windage. None of them
+    feeds back into the integration.
+
+    The consequence is precise and worth being clear about: **they do not change velocity, time of flight,
+    or range.** A shot fired east and the same shot fired west have identical `Velocity` and `Time`;
+    only the `Drop` differs. In reality the coupling exists but is negligible at these magnitudes, and
+    this is the form the field references the engine is validated against use.
+
+    There is a second, deeper reason these are add-ons rather than terms in the equations of motion: three
+    of the four are consequences of the bullet's **orientation and spin**, and a point mass has neither.
+    They are empirical formulae, fitted to measurement and published, grafted onto a model that cannot
+    derive them. That makes them the least fundamental part of the calculation and the first place to be
+    sceptical when a number looks odd.
+
+    The four are mutually independent and simply sum. Two are horizontal, two are vertical:
+
+    |!,Correction|Moves the impact|Needs|
+    |Spin drift|horizontally, with the twist direction|twist + bullet diameter + bullet **length**|
+    |Aerodynamic jump|**vertically**|the above, plus a crosswind|
+    |Coriolis, horizontal|horizontally, right in the N hemisphere|latitude|
+    |Coriolis, vertical (Eötvös)|vertically|latitude **and** barrel azimuth|
+
+    ## The gyroscopic stability coefficient
+
+    Both spin corrections are scaled by the **Miller twist-rate stability coefficient**, computed once at
+    the muzzle:
+
+    $$S_g = \frac{30\,w_{\text{gr}}}{t^{2}\,d_{\text{in}}^{3}\,L\,(1+L^{2})}\cdot\left(\frac{V_0}{2800}\right)^{1/3}\cdot\frac{T_F+460}{519}\cdot\frac{29.92}{P}$$
+
+    * $S_g$ — the stability coefficient, dimensionless; above 1 the bullet is gyroscopically stable
+    * $w_{\text{gr}}$ — bullet weight in **grains**
+    * $d_{\text{in}}$ — bullet diameter in **inches**
+    * $t$ — the twist expressed in **calibres**, $t = \text{twist}/d_{\text{in}}$: inches of barrel per
+      turn, from [clink=BallisticCalculator.Rifling]Rifling[/clink].RiflingStep, divided by the diameter
+    * $L$ — the bullet length in **calibres**, $L = \text{length}/d_{\text{in}}$
+    * $V_0$ — muzzle velocity in **ft/s**
+    * $T_F$ — air temperature in **Fahrenheit**, $P$ — pressure in **inches of mercury**
+    * $30$ — Miller's empirical constant, which carries the units of the first factor
+
+    The three factors are, in order: Miller's base formula from the bullet's geometry and mass, a velocity
+    correction normalised to 2800 ft/s, and an air correction normalised to standard sea-level conditions,
+    where $519 = 59 + 460$ is 59 °F in Rankine and 29.92 inHg is standard pressure, so both fractions are
+    1 in standard air.
+
+    Two things about $S_g$ in this engine:
+
+    * **It needs three inputs: twist, diameter and length.** That is
+      [clink=BallisticCalculator.Rifle]Rifle[/clink].Rifling,
+      [clink=BallisticCalculator.Ammunition]Ammunition[/clink].BulletDiameter and
+      [clink=BallisticCalculator.Ammunition]Ammunition[/clink].BulletLength. Miss any one of them and
+      $S_g$ cannot be computed, so spin drift and aerodynamic jump are both **silently absent** from the
+      answer. Not zero because physics says so; simply not there. This is the most common reason two
+      solvers disagree on windage at long range.
+    * **It is computed at the muzzle and never updated.** The corrections below use that muzzle value for
+      the whole flight. The //reported// `GyroscopicStability` is different: it is grown downrange as
+
+    $$S_g(x) = S_g\left(\frac{V_0}{\lvert\mathbf{v}\rvert}\right)^{1.25}$$
+
+    where $S_g(x)$ is the value reported at downrange distance $x$ and $\lvert\mathbf{v}\rvert$ the
+    velocity there, both from the integrated trajectory, because spin decays more slowly than forward
+    velocity, so stability rises with range. That growth is displayed but not fed back into the drift.
+
+    $S_g$ is also never judged. A bullet that comes out marginally stabilised, $S_g$ near or below 1.4, is
+    treated exactly like one that flies perfectly, because a point mass cannot be unstable. Nothing warns
+    you. [clink=BallisticCalculator.Tools.BarrelTwist]BarrelTwist[/clink] is the separate tool that
+    answers the stability question directly.
+
+    ## Spin drift
+
+    A spin-stabilised bullet flies at a small **yaw of repose**: its nose sits slightly off the velocity
+    vector, to the side, and the resulting lift component pushes it laterally, right for a right-hand
+    twist. This is a genuine consequence of gyroscopic precession, which the 3DOF state cannot represent,
+    so it is supplied by Litz's approximation:
+
+    $$\Delta z_{\text{drift}} = 1.25\,(S_g + 1.2)\;t_{\text{flight}}^{1.83}\;\cdot s_{\text{twist}}\cdot\cos\alpha$$
+
+    * $\Delta z_{\text{drift}}$ — the lateral displacement, in **inches**, added to the reported `Windage`
+    * $S_g$ — the muzzle stability coefficient above; $1.25$ and $1.2$ are Litz's fitted constants
+    * $t_{\text{flight}}$ — time of flight to that point, in **seconds**
+    * $s_{\text{twist}}$ — the twist sign: $-1$ for a right-hand
+      [clink=BallisticCalculator.TwistDirection]TwistDirection[/clink], drift to the right, which is
+      negative in the left-positive convention of the frame; $+1$ for a left-hand one
+    * $\alpha$ — the shot angle, so $\cos\alpha$ projects the drift for an inclined shot
+
+    Note what it depends on: **time of flight, not range.** A slower bullet drifts more at the same
+    distance, and the exponent 1.83 means drift grows appreciably faster than linearly, a few inches at
+    500 yd, roughly a foot at 1000 yd for a typical match load.
+
+    It is folded into the reported `Windage` and never listed on its own, so a windage figure in calm air
+    is spin drift plus Coriolis, not zero.
+
+    ## Crosswind aerodynamic jump
+
+    The counter-intuitive one: **a purely horizontal crosswind moves the impact vertically.**
+
+    The mechanism is again gyroscopic. A crosswind changes the direction of the air flow over the bullet
+    as it leaves the muzzle; the bullet's nose responds by precessing //perpendicular// to that change,
+    upwards for a wind from the right with a right-hand twist. The deflection is imparted in the first
+    moments of flight and then persists as a constant **angle**. From Litz, //Applied Ballistics// Eq. 5.4:
+
+    $$\Delta y'_{\mathrm{MOA}} = \left(0.01\,S_g - 0.0024\,L + 0.032\right)\,W_\perp\cdot s_{\text{twist}}$$
+
+    * $\Delta y'_{\mathrm{MOA}}$ — the jump **angle**, in MOA; the same for every range
+    * $S_g$ and $L$ — the stability coefficient and the bullet length in calibres, as above
+    * $W_\perp$ — the crosswind component in **mph**, positive from the right
+    * $s_{\text{twist}}$ — the same twist sign as for spin drift
+
+    Only the **first wind zone** contributes to $W_\perp$, because the jump happens at the muzzle; a wind
+    that starts 300 yards downrange produces none of it.
+
+    Being an angle, it becomes a vertical offset **linear in range**:
+
+    $$\Delta\text{drop} = \Delta y' \cdot R$$
+
+    with $R$ the line-of-sight distance to the point, and the result added to the reported drop.
+
+    That linearity is the signature to look for: a 10 mph full-value crosswind might lift the impact a
+    fraction of a MOA, constant in angular terms at every distance, which is why it is easy to mistake for
+    a zeroing error rather than a wind effect.
+
+    ## Earth rotation, term one: horizontal
+
+    The rotating frame of the earth deflects a projectile sideways. This term depends on **latitude only**
+    and is completely independent of which way you are facing:
+
+    $$\Delta z_{\text{Coriolis}} = -\,\Omega\sin\phi\;R\,t_{\text{flight}}, \qquad \Omega = 7.2921159\times10^{-5}\ \mathrm{rad/s}$$
+
+    * $\Delta z_{\text{Coriolis}}$ — the lateral displacement added to the reported `Windage`
+    * $\Omega$ — the earth's rotation rate, in radians per second
+    * $\phi$ — the shooter's **latitude**, `ShotParameters.Latitude`, positive north
+    * $R$ and $t_{\text{flight}}$ — the line-of-sight distance to the point and the time of flight to it
+
+    The sign is carried by $\sin\phi$: positive latitudes (northern hemisphere) deflect the bullet
+    **right**, which is why the term is subtracted in the left-positive windage convention. It vanishes at
+    the equator and is largest at the poles. The product $R\,t$ means it grows roughly with the square of
+    range.
+
+    ## Earth rotation, term two: vertical (Eötvös)
+
+    The second earth-rotation term depends on the **compass bearing**, and acts vertically. Firing east,
+    in the direction of the earth's rotation, adds to the bullet's absolute velocity and effectively
+    lightens it; firing west does the opposite. It is expressed as a ratio of effective to true gravity,
+    constant for the shot:
+
+    $$\frac{g_{\text{eff}}}{g} = 1 - \frac{2\,\Omega\cos\phi\,\sin(Az)\,V_0}{g}$$
+
+    * $g_{\text{eff}}/g$ — the effective gravity as a fraction of the true value; dimensionless and
+      constant for the shot
+    * $g$ — gravity, `9.80665 m/s²`, and $\Omega$, $\phi$ — as above
+    * $Az$ — `ShotParameters.BarrelAzimuth`: the compass bearing of the shot, measured clockwise from
+      north, so due east is 90° and $\sin(Az) = 1$
+    * $V_0$ — the muzzle velocity, in metres per second to match $g$
+
+    East ($\sin Az > 0$) lifts the bullet, less drop; west lowers it; due north or south cancels it
+    entirely. Note it uses the **muzzle** velocity, not the current one.
+
+    Because this is a modification of //gravity//, it may only act on the part of the trajectory that
+    gravity produced: the fall below the no-gravity bore line. So the fall is scaled and the ordinate
+    rebuilt:
+
+    $$y_{\text{bore}} = x\tan\theta - h, \qquad y_{\text{eff}} = y_{\text{bore}} + (y - y_{\text{bore}})\cdot\frac{g_{\text{eff}}}{g}$$
+
+    * $y_{\text{bore}}$ — the vacuum bore line: where the bullet would be with no gravity at all
+    * $x$, $y$, $\theta$, $h$ — as in the 3DOF frame: downrange distance, vertical ordinate, launch
+      elevation and sight height
+    * $y_{\text{eff}}$ — the ordinate the reported drop is then computed from
+
+    Scaling the fall rather than the whole ordinate is what keeps the launch geometry untouched, in
+    particular the exact $-h$ drop at the muzzle, where the fall is zero and the correction must therefore
+    do nothing. The integrator's own $y$ is never modified; $y_{\text{eff}}$ is a display quantity,
+    computed per point.
+
+    **Latitude alone is a valid input.** Give `Latitude` without a `BarrelAzimuth` and you get the
+    horizontal term correctly and the vertical term not at all, which is the honest answer when you do not
+    know which way you are facing.
+
+    ## Magnitudes, and why they are ordered this way
+
+    For a typical centrefire rifle load at long range, these effects rank roughly:
+
+    0 **Spin drift** — inches, growing with $t^{1.83}$; the largest of the four, and the one most often
+      missing from a comparison because of the bullet-length requirement.
+    0 **Aerodynamic jump** — a fraction of a MOA per 10 mph of crosswind, constant in angle.
+    0 **Horizontal Coriolis** — inches at 1000 yd and beyond, negligible closer.
+    0 **Eötvös** — the smallest, and zero on a north-south shot.
+
+    All four are smaller than a wind call error, and all four are smaller than the difference between a
+    guessed G1 BC and a measured drag curve. They are included because they are systematic — they do not
+    average out over a string of shots the way a wind misjudgement does — not because they dominate.
+
+    ## Summary
+
+    * Four corrections, applied per trajectory point from the integrated state, never fed back into it:
+      velocity, time of flight and range are unaffected by all of them.
+    * Three of the four exist because the bullet spins, which a point mass cannot express, so they are
+      empirical formulae (Miller, Litz) rather than derived terms.
+    * Spin drift and aerodynamic jump both require twist, bullet diameter **and** bullet length; without
+      all three they are silently absent.
+    * Coriolis is two independent effects: horizontal from latitude alone, vertical from latitude and
+      bearing together.
+    * $S_g$ is computed at the muzzle, used constant, reported grown, and never judged.
+
+    ## See also
+
+    * [link=howwecalculate.3dof]The 3DOF point-mass model[/link]
+    * [link=howwecalculate.integration]Integration modes[/link]
+    * [link=guide.atmosphere]Atmosphere, wind, and drift[/link]
+@end
+
+@article
+    @key=howwecalculate.integration
+    @title=Integration modes
+    @ingroup=howwecalculate
+    @brief=Semi-implicit Euler against midpoint Runge-Kutta, and measured figures for what the choice is worth.
+
+    **Goal of this article:** explain how the continuous equations of motion become a finite number of
+    arithmetic steps, what the two schemes of
+    [clink=BallisticCalculator.IntegrationMethod]IntegrationMethod[/clink] do differently, and what that
+    difference is measured to be worth.
+
+    This is the only article in the series about **numerical** accuracy rather than physics. The equations
+    being discretized are in [link=howwecalculate.3dof]the 3DOF model[/link]; the corrections applied
+    afterwards are the same in both schemes and are covered in
+    [link=howwecalculate.corrections]the empirical corrections[/link].
+
+    ## Why there is a step at all
+
+    The equations of motion have no closed-form solution: drag depends on velocity through a tabulated
+    curve, so the trajectory has to be advanced in small increments. Every result the library returns is
+    the sum of thousands of such increments, and two questions follow — **how big is a step**, and **how
+    is the acceleration used within it**. The first sets the cost, the second sets how much error each
+    step leaves behind.
+
+    ## How big a step
+
+    [clink=BallisticCalculator.ShotParameters]ShotParameters[/clink].Step is an **output** step: it
+    decides how many points the returned array has. The integration step is derived from it, and is
+    always finer:
+
+    0 Halve the output step.
+    0 If the result still exceeds
+      [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink].MaximumCalculationStepSize
+      (default **1 m**), divide it by a power of ten until it does, specifically by
+      $10^{(\text{order} - \text{maxOrder} + 1)}$, comparing decimal orders of magnitude.
+
+    The powers-of-ten quantization means the internal step changes in decade jumps rather than
+    continuously:
+
+    |!,Output step|Halved|Internal step (1 m cap)|Steps per 1000 yd|
+    |25 yd (22.86 m)|11.43 m|**11.4 cm**|~8 000|
+    |100 m|50 m|**50 cm**|~1 800|
+    |2.5 m|1.25 m|**12.5 cm**|~7 300|
+    |1 m|0.5 m|**50 cm** — unchanged, already under the cap|~1 800|
+
+    So the output step affects accuracy only through this quantization, and coarsely. **The number of
+    points you ask for is not what decides how accurately they were computed** — the cap is. The step that
+    would cross an output range is shortened so the point lands on the requested distance rather than up
+    to one full step past it. That costs roughly one short step per point.
+
+    Time comes from distance via the current horizontal velocity, $\Delta t = \Delta s / v_x$, quantized to
+    a 100 ns tick. The step is constant in //distance//, so it grows in //time// as the bullet slows.
+
+    ## The two schemes
+
+    Both advance the same state with the same acceleration function
+
+    $$\mathbf{a}(\mathbf{v}) = -\,k\,\frac{\rho}{\rho_0}\,C_d(M)\,\lvert\mathbf{v}_a\rvert\,\mathbf{v}_a - g\hat{\mathbf{y}}$$
+
+    the drag scale $k$, the density factor $\rho/\rho_0$, the drag coefficient $C_d(M)$ at the air-relative
+    Mach number, the air-relative velocity $\mathbf{v}_a$ and gravity $g$, all exactly as defined in
+    [link=howwecalculate.3dof]the equations of motion[/link], and differ only in where that function is
+    sampled inside the step. Below, $\mathbf{v}_n$ and $\mathbf{r}_n$ are the velocity and position at the
+    start of a step, $n+1$ the same at its end, and $\Delta t$ the step length in time. Note the
+    acceleration depends on velocity alone; position enters only through the atmosphere, which is held
+    fixed across a step, which is why both schemes are written on the velocity.
+
+    ### Semi-implicit Euler
+
+    $$\mathbf{v}_{n+1} = \mathbf{v}_n + \mathbf{a}(\mathbf{v}_n)\,\Delta t$$
+
+    $$\mathbf{r}_{n+1} = \mathbf{r}_n + \mathbf{v}_{n+1}\,\Delta t$$
+
+    One acceleration evaluation per step. It is //semi-implicit// (symplectic) rather than plain explicit
+    Euler because the position update uses the **already updated** velocity: cheap, and better behaved
+    than using the old one.
+
+    Local truncation error is $O(\Delta t^2)$, global error $O(\Delta t)$: **halve the step, halve the
+    error.** This was the original engine's only scheme.
+
+    ### Midpoint Runge-Kutta (RK2)
+
+    $$\mathbf{a}_1 = \mathbf{a}(\mathbf{v}_n)$$
+
+    $$\mathbf{v}_m = \mathbf{v}_n + \mathbf{a}_1\,\tfrac{\Delta t}{2}$$
+
+    $$\mathbf{a}_2 = \mathbf{a}(\mathbf{v}_m)$$
+
+    $$\mathbf{v}_{n+1} = \mathbf{v}_n + \mathbf{a}_2\,\Delta t, \qquad \mathbf{r}_{n+1} = \mathbf{r}_n + \mathbf{v}_m\,\Delta t$$
+
+    $\mathbf{a}_1$ is the acceleration at the start of the step, $\mathbf{v}_m$ the velocity half a step
+    later, the **midpoint**, hence the name, and $\mathbf{a}_2$ the acceleration there.
+
+    Two evaluations per step: probe half a step forward, then use the acceleration found //there// for the
+    whole step. Position advances on the midpoint velocity, which is the matching second-order estimate
+    for $\mathbf{r}' = \mathbf{v}$.
+
+    Global error is $O(\Delta t^2)$: **halve the step, quarter the error.** The extra evaluation costs
+    about 2x per step and buys an entire order of convergence, which is a good trade whenever the step can
+    then be lengthened, and it can.
+
+    ## What the difference is worth, measured
+
+    The repository ships a harness that answers this rather than asserting it. Method: a **converged
+    reference** from a fine Euler run at a 0.114 mm internal step (800 000 steps per 1000 yd), then each
+    candidate compared against it at its own emitted distances by interpolation, so output-placement
+    artefacts do not contaminate the integrator comparison. Worst per-point deviation over the whole
+    trajectory, in the units you actually read.
+
+    The .308 168 gr G7 at 2700 ft/s, 100 yd zero, out to 1000 yd, 25 yd steps:
+
+    |!,Scheme|Cap|Internal step|Worst drop|Worst velocity|Worst TOF|Time per run|
+    |Euler|0.01 m|0.114 mm|0.0001 MOA|0.00 fps|0.00 ms|17.1 ms|
+    |Euler|0.1 m|1.14 cm|0.0018 MOA|0.02 fps|0.02 ms|1.67 ms|
+    |Euler|1 m|11.4 cm|0.0183 MOA|0.18 fps|0.25 ms|0.19 ms|
+    |Euler|10 m|1.14 m|0.1834 MOA|1.76 fps|2.54 ms|0.03 ms|
+    |**RK2**|0.01 m|0.114 mm|< 0.0001 MOA|0.00 fps|0.00 ms|33.9 ms|
+    |**RK2**|0.1 m|1.14 cm|< 0.0001 MOA|0.00 fps|0.00 ms|3.41 ms|
+    |**RK2**|**1 m**|**11.4 cm**|**< 0.0001 MOA**|**0.00 fps**|**0.00 ms**|**0.36 ms**|
+    |**RK2**|10 m|1.14 m|< 0.0001 MOA|0.00 fps|0.00 ms|0.05 ms|
+
+    Read the Euler column downwards: 0.0018, 0.0183, 0.1834 for each 10x coarsening. Exactly linear,
+    first-order convergence, confirmed rather than assumed. RK2 stays below the reporting resolution at
+    every step tested, including 1.14 m, where Euler is off by nearly two tenths of a MOA.
+
+    The comparison that matters is the bold row against the second: **RK2 at its 11.4 cm default is about
+    4.7x faster than Euler at the historical 1.14 cm default, and simultaneously two orders of magnitude
+    closer to the converged answer.** That is the whole reason for the change; it is not a
+    speed-for-accuracy trade.
+
+    The other three cases in the harness, a .338 250 gr to 1500 yd, a subsonic .22 LR to 300 yd, and the
+    .308 with a 10 mph full-value crosswind, behave the same. The largest Euler-at-default drop error
+    among them is 0.0039 MOA (the subsonic case, where velocities are low and the step in time is long);
+    RK2 never exceeded 0.0001 MOA anywhere, at any step.
+
+    //Times are one development machine's, .NET 8 release build, and only the ratios are meaningful.//
+
+    ## The defaults
+
+    A fresh [clink=BallisticCalculator.TrajectoryCalculator]TrajectoryCalculator[/clink] is
+    `MidpointRK2` at the 1 m cap, the bold line above: roughly 8 000 integration steps per 1000 yd, at a
+    numerical error far below anything else in the answer. Both are properties, so a calculator can be
+    configured once and shared.
+
+    @example
+        @title=Selecting the historical scheme
+        @highlight=cs
+        @show=yes
+       !var calc = new TrajectoryCalculator
+       !{
+       !    Integrator = IntegrationMethod.Euler,
+       !    MaximumCalculationStepSize = new Measurement<DistanceUnit>(0.1, DistanceUnit.Meter),
+       !};
+    @end
+
+    Euler is retained for reproducing the historical engine's numbers when a result needs to be checked
+    against an older version; lower the cap to 0.1 m with it, as above, to get the historical accuracy
+    back. The zeroing solve inherits the same configuration and runs the trajectory once per Newton pass,
+    so the integrator choice affects the zero at exactly the same relative cost.
+
+    ## Putting the numbers in perspective
+
+    Numerical error is the smallest error in the system, and deliberately so:
+
+    |!,Source|Order of magnitude|
+    |Integration (RK2 at the default step)|< 0.0001 MOA|
+    |Zero solve tolerance|0.1 mm at the zero distance|
+    |A published G1 BC, used outside its velocity band|tenths of a MOA to several MOA at distance|
+    |Wind call, muzzle velocity spread, unmodelled vertical wind|the honest error budget|
+
+    Which is the practical argument for not fiddling with the step. Lowering `MaximumCalculationStepSize`
+    below the default with RK2 buys nothing measurable, the answer is already on the converged reference,
+    and costs time linearly.
+
+    Two caveats:
+
+    * **The dangerous end of the step range is the large one, not the small one.**
+      $\Delta t = \Delta s / v_x$ means a coarse cap combined with a very slow projectile produces a long
+      step in time; the guards described in [link=howwecalculate.3dof]the 3DOF model[/link] exist for that
+      case.
+    * **A higher-order scheme is not the next improvement.** RK4 would cost two more drag evaluations per
+      step to reduce an error that is already three orders of magnitude below the drag data's. Better
+      $C_d(M)$ is always the better investment; see
+      [link=howwecalculate.bc]the ballistic coefficient[/link].
+
+    ## Summary
+
+    * The output step is halved and then decade-quantized down to the `MaximumCalculationStepSize` cap;
+      points requested and accuracy delivered are nearly independent.
+    * Semi-implicit Euler: one drag evaluation, error $O(\Delta t)$.
+    * Midpoint RK2: two drag evaluations, error $O(\Delta t^2)$.
+    * Measured, RK2 at a 10x coarser step is both faster and far more accurate than the Euler default it
+      replaced; it is what a fresh calculator uses.
+    * Numerical error is the least of the errors in a ballistic solution, and should be kept that way
+      rather than optimized further.
+
+    ## See also
+
+    * [link=howwecalculate.bc]The ballistic coefficient[/link]
+    * [link=howwecalculate.3dof]The 3DOF point-mass model[/link]
+    * [link=howwecalculate.corrections]The empirical corrections[/link]
+@end
