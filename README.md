@@ -91,7 +91,7 @@ The library is available in
 
 * Java: https://github.com/nikolaygekht/ballistic.calculator.java
 
-For those who are looking for a JavaScript version, I highly recommend [Yet Another Ballistic Calculator](https://ptosis.ch/ebalka/ebalka.html) project of our friend Alexandre Trofimov.
+For those who are looking for a JavaScript version, I highly recommend [Yet Another Ballistic Calculator](https://ptosis.ch/ebalka/ebalka.html) and [Ballistic Tools repo](https://github.com/geladen-ch/ballistic-tools) projects of our friend [Alexandre Trofimov](https://github.com/geladen-ch).
 
 The current status of the project is BETA version. The physics and the public API are considered
 settled — the model is validated against the references listed above and the API is documented and
